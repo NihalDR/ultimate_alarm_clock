@@ -48,6 +48,7 @@ class AlarmRingController extends GetxController {
   SettingsController settingsController = Get.find<SettingsController>();
   RxBool get is24HourFormat => settingsController.is24HrsEnabled;
   Rx<AlarmModel> currentlyRingingAlarm = Utils.alarmModelInit.obs;
+  final RxList<bool> taskCompletion = <bool>[].obs;
   final formattedDate = Utils.getFormattedDate(DateTime.now()).obs;
   final timeNow =
       Utils.convertTo12HourFormat(Utils.timeOfDayToString(TimeOfDay.now())).obs;
@@ -242,6 +243,17 @@ class AlarmRingController extends GetxController {
       }
     });
   }
+
+  void _initializeTaskCompletion() {
+    final tasks = currentlyRingingAlarm.value.tasks;
+    taskCompletion.value = List<bool>.filled(tasks.length, false);
+  }
+
+  void toggleTaskCompletion(int index) {
+    if (index < 0 || index >= taskCompletion.length) return;
+    taskCompletion[index] = !taskCompletion[index];
+    taskCompletion.refresh();
+  }
   
   Future<void> _initializeSunriseEffect() async {
     if (currentlyRingingAlarm.value.isSunriseEnabled) {
@@ -344,6 +356,8 @@ class AlarmRingController extends GetxController {
       currentlyRingingAlarm.value = args;
       isPreviewMode.value = false;
     }
+
+    _initializeTaskCompletion();
 
     // Initialize maxSnoozeCount with the correct value from alarm model
     // For local alarms, try to get fresh data from database

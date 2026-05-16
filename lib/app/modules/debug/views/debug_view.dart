@@ -768,13 +768,27 @@ class DebugView extends GetView<DebugController> {
           style: TextStyle(color: controller.themeController.primaryTextColor.value),
         ),
         content: Text(
-          'Export functionality coming soon! You will be able to export logs as CSV or JSON.',
+          'Choose a format to export alarm history logs.',
           style: TextStyle(color: controller.themeController.primaryTextColor.value),
         ),
         actions: [
           TextButton(
+            onPressed: () {
+              Get.back();
+              controller.exportLogs(format: 'csv');
+            },
+            child: const Text('CSV'),
+          ),
+          TextButton(
+            onPressed: () {
+              Get.back();
+              controller.exportLogs(format: 'json');
+            },
+            child: const Text('JSON'),
+          ),
+          TextButton(
             onPressed: () => Get.back(),
-            child: Text('OK'),
+            child: const Text('Cancel'),
           ),
         ],
       ),

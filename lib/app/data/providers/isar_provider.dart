@@ -56,7 +56,7 @@ class IsarDb {
 
     final dir = await getDatabasesPath();
     final dbPath = '$dir/alarms.db';
-    db = await openDatabase(dbPath, version: 4, onCreate: _onCreate, onUpgrade: _onUpgrade);
+    db = await openDatabase(dbPath, version: 5, onCreate: _onCreate, onUpgrade: _onUpgrade);
     return db;
   }
 
@@ -158,6 +158,16 @@ class IsarDb {
         }
       }
     }
+    if (oldVersion < 5) {
+      // Add task list column if it doesn't exist
+      try {
+        await db.execute('ALTER TABLE alarms ADD COLUMN tasks TEXT');
+      } catch (e) {
+        if (!e.toString().contains('duplicate column name')) {
+          rethrow;
+        }
+      }
+    }
   }
 
   void _onCreate(Database db, int version) async {
@@ -205,6 +215,7 @@ class IsarDb {
         gradient INTEGER,
         ringtoneName TEXT,
         note TEXT,
+        tasks TEXT,
         deleteAfterGoesOff INTEGER NOT NULL DEFAULT 0,
         showMotivationalQuote INTEGER NOT NULL DEFAULT 0,
         volMin REAL,

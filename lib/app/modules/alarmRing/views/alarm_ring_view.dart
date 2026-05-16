@@ -146,6 +146,106 @@ class AlarmRingView extends GetView<AlarmRingController> {
                       },
                     ),
                     Obx(
+                      () {
+                        final tasks =
+                            controller.currentlyRingingAlarm.value.tasks;
+                        if (tasks.isEmpty) {
+                          return const SizedBox();
+                        }
+
+                        return Container(
+                          width: width * 0.8,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 10,
+                          ),
+                          decoration: BoxDecoration(
+                            color: themeController
+                                .secondaryBackgroundColor.value
+                                .withOpacity(0.75),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'Tasks'.tr,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge!
+                                    .copyWith(
+                                      color: themeController
+                                          .primaryTextColor.value,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                              ),
+                              const SizedBox(height: 8),
+                              SizedBox(
+                                height: height * 0.18,
+                                child: ListView.builder(
+                                  itemCount: tasks.length,
+                                  itemBuilder: (context, index) {
+                                    final isDone =
+                                        controller.taskCompletion.length >
+                                                index &&
+                                            controller.taskCompletion[index];
+
+                                    return InkWell(
+                                      onTap: () {
+                                        Utils.hapticFeedback();
+                                        controller
+                                            .toggleTaskCompletion(index);
+                                      },
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 4.0,
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Icon(
+                                              isDone
+                                                  ? Icons.check_circle
+                                                  : Icons
+                                                      .radio_button_unchecked,
+                                              color: isDone
+                                                  ? kprimaryColor
+                                                  : themeController
+                                                      .primaryDisabledTextColor
+                                                      .value,
+                                              size: 20,
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Expanded(
+                                              child: Text(
+                                                tasks[index],
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .bodyMedium!
+                                                    .copyWith(
+                                                      color: themeController
+                                                          .primaryTextColor
+                                                          .value,
+                                                      decoration: isDone
+                                                          ? TextDecoration
+                                                              .lineThrough
+                                                          : TextDecoration
+                                                              .none,
+                                                    ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                    Obx(
                       () => Visibility(
                         visible: !controller.isSnoozing.value,
                         child: Obx(

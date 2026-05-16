@@ -28,13 +28,20 @@ class GoogleCloudProvider {
       Get.put(SettingsController());
       SettingsController settingsController = Get.find<SettingsController>();
 
-      if (await _firebaseAuthInstance.currentUser == null) {
-        var googleSignInAccount = await _googleSignIn.signIn();
+      GoogleSignInAccount? googleSignInAccount =
+          _googleSignIn.currentUser ??
+              await _googleSignIn.signInSilently();
 
-        // User cancelled the sign-in
-        if (googleSignInAccount == null) {
-          return null;
-        }
+      if (googleSignInAccount == null) {
+        googleSignInAccount = await _googleSignIn.signIn();
+      }
+
+      // User cancelled the sign-in
+      if (googleSignInAccount == null) {
+        return null;
+      }
+
+      if (_firebaseAuthInstance.currentUser == null) {
 
         final GoogleSignInAuthentication? googleAuth =
             await googleSignInAccount.authentication;
@@ -87,7 +94,7 @@ class GoogleCloudProvider {
         return googleSignInAccount;
       } else {
         print(_firebaseAuthInstance.currentUser!.email);
-        return _firebaseAuthInstance.currentUser;
+        return googleSignInAccount;
       }
     } catch (e) {
       print('Google Sign-In Error: $e');
@@ -100,9 +107,9 @@ class GoogleCloudProvider {
   }
 
   static Future<List<CalendarListEntry>?> getCalenders() async {
-    if (_googleSignIn.currentUser == null) {
-      await _firebaseAuthInstance.signOut();
-      await getInstance();
+    final account = await getInstance();
+    if (account == null || _googleSignIn.currentUser == null) {
+      return null;
     }
     final authHeaders = await _googleSignIn.currentUser!.authHeaders;
     final httpClient = GoogleHttpClient(authHeaders);
@@ -116,7 +123,10 @@ class GoogleCloudProvider {
   }
 
   static Future<List<Event>?> getEvents(String calenderId) async {
-    await getInstance();
+    final account = await getInstance();
+    if (account == null || _googleSignIn.currentUser == null) {
+      return null;
+    }
     final authHeaders = await _googleSignIn.currentUser!.authHeaders;
     final httpClient = GoogleHttpClient(authHeaders);
     var dataList = await CalendarApi(httpClient).events.list(calenderId);

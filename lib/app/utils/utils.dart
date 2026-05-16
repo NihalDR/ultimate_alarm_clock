@@ -79,6 +79,7 @@ class Utils {
     minutesSinceMidnight: Utils.timeOfDayToInt(TimeOfDay.now()),
     ringtoneName: 'Digital Alarm 1',
     note: '',
+    tasks: const [],
     showMotivationalQuote: false,
     activityMonitor: 0,
     profile: 'Default',

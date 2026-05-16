@@ -15,6 +15,11 @@ class AlarmModel {
   String? firestoreId;
   late String alarmTime;
   late String alarmID;
+  String? calendarEventId;
+  String? calendarEventStart;
+  String? calendarEventUpdated;
+  String? calendarId;
+  late bool isCalendarEvent;
   late bool isEnabled;
   late bool isLocationEnabled;
   late int locationConditionType; 
@@ -51,6 +56,7 @@ class AlarmModel {
   late int gradient;
   late String ringtoneName;
   late String note;
+  List<String> tasks = const [];
   late bool deleteAfterGoesOff;
   late bool showMotivationalQuote;
   late double volMax;
@@ -77,6 +83,11 @@ class AlarmModel {
   AlarmModel(
       {required this.alarmTime,
       required this.alarmID,
+      this.calendarEventId,
+      this.calendarEventStart,
+      this.calendarEventUpdated,
+      this.calendarId,
+      this.isCalendarEvent = false,
       this.sharedUserIds = const [],
       required this.ownerId,
       required this.ownerName,
@@ -114,6 +125,7 @@ class AlarmModel {
       required this.gradient,
       required this.ringtoneName,
       required this.note,
+      this.tasks = const [],
       required this.deleteAfterGoesOff,
       required this.showMotivationalQuote,
       required this.volMax,
@@ -200,6 +212,11 @@ class AlarmModel {
     snoozeDuration = _asInt(data['snoozeDuration'], 0);
     maxSnoozeCount = _asInt(data['maxSnoozeCount'], 3);
     gradient = _asInt(data['gradient'], 0);
+    calendarEventId = _asString(data['calendarEventId'], '');
+    calendarEventStart = _asString(data['calendarEventStart'], '');
+    calendarEventUpdated = _asString(data['calendarEventUpdated'], '');
+    calendarId = _asString(data['calendarId'], '');
+    isCalendarEvent = _asBool(data['isCalendarEvent'], false);
     label = _asString(data['label'], '');
     isOneTime = _asBool(data['isOneTime'], false);
     firestoreId = documentSnapshot.id;
@@ -233,6 +250,7 @@ class AlarmModel {
   numberOfSteps = _asInt(data['numberOfSteps'], 0);
   ringtoneName = _asString(data['ringtoneName'], 'Digital Alarm 1');
   note = _asString(data['note'], '');
+  tasks = _asStringList(data['tasks']);
   deleteAfterGoesOff = _asBool(data['deleteAfterGoesOff'], false);
   showMotivationalQuote = _asBool(data['showMotivationalQuote'], false);
 
@@ -262,6 +280,11 @@ class AlarmModel {
     return AlarmModel(
       alarmTime: map['alarmTime'],
       alarmID: map['alarmID'],
+      calendarEventId: map['calendarEventId'],
+      calendarEventStart: map['calendarEventStart'],
+      calendarEventUpdated: map['calendarEventUpdated'],
+      calendarId: map['calendarId'],
+      isCalendarEvent: map['isCalendarEvent'] == 1,
       isEnabled: map['isEnabled'] == 1,
       isLocationEnabled: map['isLocationEnabled'] == 1,
       locationConditionType: map['locationConditionType'] ?? 2, 
@@ -300,6 +323,9 @@ class AlarmModel {
       gradient: map['gradient'],
       ringtoneName: map['ringtoneName'],
       note: map['note'],
+        tasks: _asStringList(map['tasks'] is String && map['tasks'].toString().isNotEmpty
+          ? jsonDecode(map['tasks'])
+          : map['tasks']),
       deleteAfterGoesOff: map['deleteAfterGoesOff'] == 1,
       showMotivationalQuote: map['showMotivationalQuote'] == 1,
       volMin: map['volMin'],
@@ -328,6 +354,11 @@ class AlarmModel {
       'firestoreId': firestoreId,
       'alarmTime': alarmTime,
       'alarmID': alarmID,
+      'calendarEventId': calendarEventId,
+      'calendarEventStart': calendarEventStart,
+      'calendarEventUpdated': calendarEventUpdated,
+      'calendarId': calendarId,
+      'isCalendarEvent': isCalendarEvent ? 1 : 0,
       'isEnabled': isEnabled ? 1 : 0,
       'isLocationEnabled': isLocationEnabled ? 1 : 0,
       'locationConditionType': locationConditionType,
@@ -364,6 +395,7 @@ class AlarmModel {
       'gradient': gradient,
       'ringtoneName': ringtoneName,
       'note': note,
+      'tasks': jsonEncode(tasks),
       'deleteAfterGoesOff': deleteAfterGoesOff ? 1 : 0,
       'showMotivationalQuote': showMotivationalQuote ? 1 : 0,
       'volMin': volMin,
@@ -394,6 +426,11 @@ class AlarmModel {
     maxSnoozeCount = _asInt(data['maxSnoozeCount'], 3);
     gradient = _asInt(data['gradient'], 0);
     isSharedAlarmEnabled = _asBool(data['isSharedAlarmEnabled'], false);
+    calendarEventId = _asString(data['calendarEventId'], '');
+    calendarEventStart = _asString(data['calendarEventStart'], '');
+    calendarEventUpdated = _asString(data['calendarEventUpdated'], '');
+    calendarId = _asString(data['calendarId'], '');
+    isCalendarEvent = _asBool(data['isCalendarEvent'], false);
     minutesSinceMidnight = _asInt(data['minutesSinceMidnight'], 0);
     alarmTime = _asString(data['alarmTime'], '00:00');
     mainAlarmTime = data['mainAlarmTime'] != null
@@ -433,6 +470,7 @@ class AlarmModel {
     isOneTime = _asBool(data['isOneTime'], false);
     ringtoneName = _asString(data['ringtoneName'], 'Digital Alarm 1');
     note = _asString(data['note'], '');
+    tasks = _asStringList(data['tasks']);
     deleteAfterGoesOff = _asBool(data['deleteAfterGoesOff'], false);
     showMotivationalQuote = _asBool(data['showMotivationalQuote'], false);
 
@@ -486,6 +524,11 @@ class AlarmModel {
     final alarmMap = <String, dynamic>{
       'firestoreId': alarmRecord.firestoreId,
       'alarmID': alarmRecord.alarmID,
+      'calendarEventId': alarmRecord.calendarEventId,
+      'calendarEventStart': alarmRecord.calendarEventStart,
+      'calendarEventUpdated': alarmRecord.calendarEventUpdated,
+      'calendarId': alarmRecord.calendarId,
+      'isCalendarEvent': alarmRecord.isCalendarEvent,
       'ownerId': alarmRecord.ownerId,
       'lastEditedUserId': alarmRecord.lastEditedUserId,
       'mutexLock': alarmRecord.mutexLock,
@@ -522,6 +565,7 @@ class AlarmModel {
       'gradient': alarmRecord.gradient,
       'ringtoneName': alarmRecord.ringtoneName,
       'note': alarmRecord.note,
+      'tasks': alarmRecord.tasks,
       'deleteAfterGoesOff': alarmRecord.deleteAfterGoesOff,
       'showMotivationalQuote': alarmRecord.showMotivationalQuote,
       'volMin': alarmRecord.volMin,

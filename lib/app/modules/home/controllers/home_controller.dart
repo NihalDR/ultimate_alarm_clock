@@ -212,7 +212,20 @@ class HomeController extends GetxController {
             return true;
           }).toList();
 
-          latestIsarAlarms = isarData as List<AlarmModel>;
+            final sharedAlarmIds = latestFirestoreAlarms
+              .map((alarm) => alarm.alarmID)
+              .where((id) => id.isNotEmpty)
+              .toSet();
+            final sharedFirestoreIds = latestFirestoreAlarms
+              .map((alarm) => alarm.firestoreId ?? '')
+              .where((id) => id.isNotEmpty)
+              .toSet();
+
+            latestIsarAlarms = (isarData as List<AlarmModel>)
+              .where((alarm) =>
+                !sharedAlarmIds.contains(alarm.alarmID) &&
+                !sharedFirestoreIds.contains(alarm.firestoreId ?? ''))
+              .toList();
 
           List<AlarmModel> alarms = [
             ...latestFirestoreAlarms,
@@ -1153,36 +1166,49 @@ class HomeController extends GetxController {
   }
 
   Future<void> fetchGoogleCalendars() async {
-    Calendars.value = (await GoogleCloudProvider.getCalenders()) ?? [];
-    if (Calendars.value.isEmpty) {
-      calendarFetchStatus.value = 'Empty';
-    } else {
-      calendarFetchStatus.value = 'Loaded';
+    try {
+      Calendars.value = (await GoogleCloudProvider.getCalenders()) ?? [];
+      if (Calendars.value.isEmpty) {
+        calendarFetchStatus.value = 'Empty';
+      } else {
+        calendarFetchStatus.value = 'Loaded';
+      }
+    } catch (e) {
+      debugPrint('❌ Error fetching calendars: $e');
+      calendarFetchStatus.value = 'Error';
     }
   }
 
   Future<void> fetchEvents(String calenderId) async {
-    Events.value = await GoogleCloudProvider.getEvents(calenderId) ?? [];
-    if (Events.value.isEmpty) {
-      calendarFetchStatus.value = 'Empty';
-      // print("DEBUG: Events list is empty. Setting status to Empty.");
-      Get.snackbar('Events', 'No events available');
-    } else {
-      calendarFetchStatus.value = 'Loaded';
-      isCalender.value = false;
+    try {
+      Events.value = await GoogleCloudProvider.getEvents(calenderId) ?? [];
+      if (Events.value.isEmpty) {
+        calendarFetchStatus.value = 'Empty';
+        Get.snackbar('Events', 'No events available');
+      } else {
+        calendarFetchStatus.value = 'Loaded';
+        isCalender.value = false;
+      }
+      print(Events.value);
+    } catch (e) {
+      debugPrint('❌ Error fetching events: $e');
+      calendarFetchStatus.value = 'Error';
     }
-    print(Events.value);
   }
 
   Future<void> setAlarmFromEvent(CalendarApi.Event event, String date) async {
     AlarmModel alarmModel = genFakeAlarmModel();
-    alarmModel.alarmTime = Utils.formatDateTimeToHHMMSS(
-      event.start?.dateTime?.toLocal() ?? event.start!.date!.toLocal(),
-    );
+    final eventStart =
+        event.start?.dateTime?.toLocal() ?? event.start!.date!.toLocal();
+    alarmModel.alarmTime = Utils.formatDateTimeToHHMMSS(eventStart);
     alarmModel.isEnabled = true;
-    alarmModel.intervalToAlarm = Utils.calculateTimeDifference(
-      event.start?.dateTime ?? event.start!.date!,
-    );
+    alarmModel.intervalToAlarm = Utils.calculateTimeDifference(eventStart);
+    alarmModel.minutesSinceMidnight =
+        Utils.timeOfDayToInt(TimeOfDay.fromDateTime(eventStart));
+    alarmModel.alarmDate =
+        '${eventStart.year.toString().padLeft(4, '0')}'
+        '-${eventStart.month.toString().padLeft(2, '0')}'
+        '-${eventStart.day.toString().padLeft(2, '0')}';
     alarmModel.ringOn = true;
 
     alarmModel.label = event.summary!;

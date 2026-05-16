@@ -8,6 +8,7 @@ import 'package:ultimate_alarm_clock/app/data/providers/isar_provider.dart';
 import 'package:ultimate_alarm_clock/app/utils/shared_alarm_logger.dart';
 import 'package:ultimate_alarm_clock/app/utils/utils.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:ultimate_alarm_clock/app/data/providers/secure_storage_provider.dart';
 
 import '../../modules/home/controllers/home_controller.dart';
 import 'get_storage_provider.dart';
@@ -30,7 +31,7 @@ class FirestoreDb {
     final dbPath = '$dir/alarms.db';
     print(dir);
     db = await openDatabase(dbPath,
-        version: 6, onCreate: _onCreate, onUpgrade: _onUpgrade);
+      version: 7, onCreate: _onCreate, onUpgrade: _onUpgrade);
     return db;
   }
 
@@ -69,6 +70,11 @@ class FirestoreDb {
       // Add smart control combination type column
       await db.execute(
           'ALTER TABLE alarms ADD COLUMN smartControlCombinationType INTEGER NOT NULL DEFAULT 0');
+    }
+    if (oldVersion < 7) {
+      // Add task list column
+      await db.execute(
+          'ALTER TABLE alarms ADD COLUMN tasks TEXT');
     }
   }
 
@@ -115,6 +121,7 @@ class FirestoreDb {
         gradient INTEGER,
         ringtoneName TEXT,
         note TEXT,
+        tasks TEXT,
         deleteAfterGoesOff INTEGER NOT NULL DEFAULT 0,
         showMotivationalQuote INTEGER NOT NULL DEFAULT 0,
         volMin REAL,
@@ -452,10 +459,79 @@ class FirestoreDb {
       }
     }
 
+    if (alarmRecord.isSharedAlarmEnabled &&
+        alarmRecord.firestoreId != null &&
+        alarmRecord.firestoreId!.isNotEmpty) {
+      final alarmRef = _firebaseFirestore
+          .collection('sharedAlarms')
+          .doc(alarmRecord.firestoreId);
+
+      try {
+        final existingDoc = await alarmRef.get();
+        if (existingDoc.exists) {
+          final existingData = existingDoc.data() as Map<String, dynamic>;
+          final existingSharedUsers =
+              List<String>.from(existingData['sharedUserIds'] ?? []);
+          final mergedSharedUsers = <String>{
+            ...existingSharedUsers,
+            ...?alarmRecord.sharedUserIds,
+          }.toList();
+          alarmRecord.sharedUserIds = mergedSharedUsers;
+
+          final existingOffsetDetailsRaw = existingData['offsetDetails'];
+          alarmRecord.offsetDetails = _mergeOffsetDetails(
+            alarmRecord.offsetDetails,
+            existingOffsetDetailsRaw,
+          );
+        }
+      } catch (e) {
+        debugPrint('⚠️ Error merging shared alarm fields: $e');
+      }
+    }
+
     await _firebaseFirestore
         .collection('sharedAlarms')
         .doc(alarmRecord.firestoreId)
         .update(AlarmModel.toMap(alarmRecord));
+  }
+
+  static List<Map>? _mergeOffsetDetails(
+    List<Map>? incoming,
+    dynamic existingRaw,
+  ) {
+    final mergedByUser = <String, Map<String, dynamic>>{};
+
+    void addEntry(Map<String, dynamic> entry) {
+      final userId = entry['userId']?.toString();
+      if (userId == null || userId.isEmpty) return;
+      mergedByUser[userId] = Map<String, dynamic>.from(entry);
+    }
+
+    if (existingRaw is Map) {
+      final existingMap = Map<String, dynamic>.from(existingRaw);
+      for (final entry in existingMap.entries) {
+        final entryData = Map<String, dynamic>.from(entry.value ?? {});
+        entryData['userId'] = entry.key;
+        addEntry(entryData);
+      }
+    } else if (existingRaw is List) {
+      for (final item in existingRaw) {
+        if (item is Map) {
+          addEntry(Map<String, dynamic>.from(item));
+        }
+      }
+    }
+
+    if (incoming != null) {
+      for (final item in incoming) {
+        if (item is Map) {
+          addEntry(Map<String, dynamic>.from(item));
+        }
+      }
+    }
+
+    if (mergedByUser.isEmpty) return incoming;
+    return mergedByUser.values.toList();
   }
 
   static Future<String> userExists(String email) async {
@@ -548,6 +624,7 @@ class FirestoreDb {
     }
 
     alarm.profile = 'Default';
+    await _ensureSharedAlarmDocument(alarm);
     final alarmData = AlarmModel.toMap(alarm);
     Map sharedItem = {
       'type': 'alarm',
@@ -974,7 +1051,7 @@ class FirestoreDb {
   /// Checks whether the current user has already accepted a given shared alarm.
   static Future<bool> hasAlreadyAcceptedSharedAlarm(String? firestoreId) async {
     if (firestoreId == null || firestoreId.isEmpty) return false;
-    final currentUserId = _firebaseAuthInstance.currentUser?.uid;
+    final currentUserId = await _resolveSharedAlarmUserId();
     if (currentUserId == null) return false;
 
     try {
@@ -994,14 +1071,55 @@ class FirestoreDb {
     }
   }
 
+  static Future<String?> _resolveSharedAlarmUserId() async {
+    try {
+      final userModel = await SecureStorageProvider().retrieveUserModel();
+      if (userModel != null && userModel.id.isNotEmpty) {
+        return userModel.id;
+      }
+    } catch (e) {
+      debugPrint('⚠️ Error resolving shared alarm user id: $e');
+    }
+    return _firebaseAuthInstance.currentUser?.uid;
+  }
+
+  static Future<String> _ensureSharedAlarmDocument(AlarmModel alarm) async {
+    alarm.isSharedAlarmEnabled = true;
+    final alarmData = AlarmModel.toMap(alarm);
+
+    if (alarm.firestoreId != null && alarm.firestoreId!.isNotEmpty) {
+      await _firebaseFirestore
+          .collection('sharedAlarms')
+          .doc(alarm.firestoreId)
+          .set(alarmData, SetOptions(merge: true));
+      return alarm.firestoreId!;
+    }
+
+    final docRef =
+        await _firebaseFirestore.collection('sharedAlarms').add(alarmData);
+    alarm.firestoreId = docRef.id;
+    await docRef.update({
+      'firestoreId': docRef.id,
+      'isSharedAlarmEnabled': true,
+    });
+    return docRef.id;
+  }
+
   static acceptSharedAlarm(String alarmOwnerId, AlarmModel alarm) async {
-    String? currentUserId = _firebaseAuthInstance.currentUser!.uid;
+    final currentUserId = await _resolveSharedAlarmUserId();
+    if (currentUserId == null || currentUserId.isEmpty) {
+      debugPrint('⚠️ No current user id available for shared alarm accept');
+      return;
+    }
+
+    final ensuredFirestoreId = await _ensureSharedAlarmDocument(alarm);
+    alarm.firestoreId = ensuredFirestoreId;
 
     // ── Duplicate-accept guard ───────────────────────────────────────────
     final alreadyAccepted =
-        await hasAlreadyAcceptedSharedAlarm(alarm.firestoreId);
+        await hasAlreadyAcceptedSharedAlarm(ensuredFirestoreId);
     if (alreadyAccepted) {
-      SharedAlarmLogger.duplicateDetected(alarmId: alarm.firestoreId ?? '');
+      SharedAlarmLogger.duplicateDetected(alarmId: ensuredFirestoreId);
       debugPrint(
           '⚠️ User $currentUserId already accepted alarm ${alarm.firestoreId}, skipping');
       return;
@@ -1009,7 +1127,7 @@ class FirestoreDb {
 
     final alarmDoc = await _firebaseFirestore
         .collection('sharedAlarms')
-        .doc(alarm.firestoreId)
+        .doc(ensuredFirestoreId)
         .get();
 
     if (alarmDoc.exists) {
@@ -1035,7 +1153,7 @@ class FirestoreDb {
         debugPrint('🔧 Converted offsetDetails from Array to Map format');
       }
 
-      offsetDetails[currentUserId!] = {
+      offsetDetails[currentUserId] = {
         'isOffsetBefore': true,
         'offsetDuration': 0,
         'offsettedTime': alarm.alarmTime,

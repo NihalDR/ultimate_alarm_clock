@@ -665,7 +665,7 @@ class AddOrUpdateAlarmController extends GetxController {
       // is denied forever.
       return false;
     } else if (locationPermission == LocationPermission.denied ||
-        locationPermission == LocationPermission.whileInUse) {
+      locationPermission == LocationPermission.whileInUse) {
       bool? shouldAskPermission = await Get.defaultDialog<bool>(
         backgroundColor: themeController.secondaryBackgroundColor.value,
         barrierDismissible: false,
@@ -1300,9 +1300,9 @@ class AddOrUpdateAlarmController extends GetxController {
     }
 
     timeToAlarm.value = Utils.timeUntilAlarm(
-        TimeOfDay.fromDateTime(selectedTime.value),
-        repeatDays,
-        selectedDate.value);
+      TimeOfDay.fromDateTime(selectedTime.value),
+      repeatDays,
+      selectedDate.value);
 
     // store initial values of the variables
     initialValues.addAll({
@@ -1358,6 +1358,13 @@ class AddOrUpdateAlarmController extends GetxController {
       timeToAlarm.value = Utils.timeUntilAlarm(
           TimeOfDay.fromDateTime(time), repeatDays, selectedDate.value);
       _compareAndSetChange('selectedTime', time);
+    });
+    
+    selectedDate.listen((date) {
+      debugPrint('CHANGED CHANGED CHANGED CHANGED');
+      timeToAlarm.value =
+          Utils.timeUntilAlarm(TimeOfDay.fromDateTime(selectedTime.value), repeatDays, date);
+      _compareAndSetChange('selectedTime', date);
     });
 
     selectedDate.listen((date) {

@@ -28,8 +28,6 @@ class NotificationsView extends GetView<NotificationsController> {
                 Icons.notifications_active,
                 color: kprimaryColor,
                 size: 24,
-              ),
-            ),
             const SizedBox(width: 12),
             const Text(
               'Notifications',
@@ -37,130 +35,66 @@ class NotificationsView extends GetView<NotificationsController> {
                 fontSize: 24,
                 fontWeight: FontWeight.w600,
                 color: Colors.white,
-              ),
-            ),
-          ],
-        ),
-      ),
-      body: StreamBuilder(
-        stream: FirestoreDb.getNotifications(),
-        builder: (context, snapshot) {
-          debugPrint('🔔 NotificationsView StreamBuilder update:');
-          debugPrint('   - Connection state: ${snapshot.connectionState}');
-          debugPrint('   - Has data: ${snapshot.hasData}');
-          debugPrint('   - Has error: ${snapshot.hasError}');
-          debugPrint('   - Error: ${snapshot.error}');
-
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            debugPrint('   - Showing loading indicator');
-            return const Center(
-              child: CircularProgressIndicator(color: kprimaryColor),
-            );
-          }
-
-          if (snapshot.hasError) {
-            debugPrint('   - Showing error state: ${snapshot.error}');
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.error_outline,
-                    size: 64,
-                    color: Colors.red.withOpacity(0.6),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Error loading notifications',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.white.withOpacity(0.7),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          if (snapshot.hasData && snapshot.data != null) {
-            final document = snapshot.data!;
-            final data = document.data();
-            final List notif =
-                data != null ? (data['receivedItems'] ?? []) : [];
-            controller.notifications = notif;
-
-            debugPrint('   - Document exists: ${document.exists}');
-            debugPrint('   - Document ID: ${document.id}');
-            debugPrint('   - Document data exists: ${data != null}');
-            debugPrint('   - Raw document data: $data');
-            debugPrint('   - Notifications count: ${notif.length}');
-            for (int i = 0; i < notif.length && i < 3; i++) {
-              debugPrint('   - Notification ${i + 1}: ${notif[i]}');
-            }
-
-            if (controller.notifications.isEmpty) {
-              debugPrint('   - Showing empty state');
-              return _buildEmptyState();
-            }
-
-            debugPrint(
-                '   - Showing notifications list with ${controller.notifications.length} items');
-            return RefreshIndicator(
-              color: kprimaryColor,
-              backgroundColor: ksecondaryBackgroundColor,
-              onRefresh: () async {
-                // Trigger a refresh
-                await Future.delayed(const Duration(milliseconds: 500));
-              },
-              child: ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: controller.notifications.length,
-                itemBuilder: (context, index) {
-                  final notificationItem = controller.notifications[index];
-                  if (notificationItem is! Map) {
-                    debugPrint(
-                        'Skipping invalid notification item: $notificationItem');
-                    return const SizedBox.shrink();
-                  }
-                  final notification =
-                      Map<String, dynamic>.from(notificationItem);
-                  return _buildNotificationCard(notification, index);
-                },
-              ),
-            );
-          }
-
-          debugPrint('   - Falling back to empty state');
-          return _buildEmptyState();
-        },
-      ),
-    );
-  }
-
-  Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(32),
-            decoration: BoxDecoration(
-              color: ksecondaryBackgroundColor.withOpacity(0.3),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.notifications_none,
-              size: 64,
-              color: Colors.white.withOpacity(0.4),
-            ),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            'No notifications yet',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-              color: Colors.white.withOpacity(0.8),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                notification['type'] == 'profile'
+                    ? Text(
+                        '${notification['owner']} sent a profile.',
+                        style: TextStyle(
+                          fontSize:
+                              controller.homeController.scalingFactor * 14,
+                        ),
+                      )
+                    : Text(
+                        '${notification['owner']} sent an alarm.',
+                        style: TextStyle(
+                          fontSize:
+                              controller.homeController.scalingFactor * 14,
+                        ),
+                      ),
+                notification['type'] == 'profile'
+                    ? Text(
+                        notification['profileName'],
+                        style: TextStyle(
+                          color: kprimaryColor,
+                          fontSize:
+                              controller.homeController.scalingFactor * 20,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      )
+                    : Text(
+                        NotificationsController.getAlarmTime(notification),
+                        style: TextStyle(
+                          color: kprimaryColor,
+                          fontSize:
+                              controller.homeController.scalingFactor * 20,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                notification['type'] == 'profile'
+                    ? const SizedBox.shrink()
+                    : Text(
+                        NotificationsController.getAlarmLabel(notification)
+                                .trim()
+                                .isEmpty
+                            ? 'Label: -'
+                            : 'Label: ${NotificationsController.getAlarmLabel(notification)}',
+                        style: TextStyle(
+                          fontSize: controller.homeController.scalingFactor * 13,
+                        ),
+                      ),
+                notification['type'] == 'profile'
+                    ? const SizedBox.shrink()
+                    : Text(
+                        'Repeat: ${NotificationsController.getAlarmRepeat(notification)}',
+                        style: TextStyle(
+                          fontSize: controller.homeController.scalingFactor * 13,
+                        ),
+                      ),
+              ],
             ),
           ),
           const SizedBox(height: 8),

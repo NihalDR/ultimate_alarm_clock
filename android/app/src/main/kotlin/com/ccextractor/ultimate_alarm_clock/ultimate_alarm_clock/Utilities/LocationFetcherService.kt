@@ -46,6 +46,7 @@ class LocationFetcherService : Service() {
         displayManager = getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
         createNotificationChannel()
     }
+    }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.d("LocationFetcherService", "onStartCommand called")

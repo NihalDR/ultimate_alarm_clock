@@ -232,27 +232,27 @@ class AlarmModel {
     isActivityEnabled = _asBool(data['isActivityEnabled'], false);
     activityInterval = _asInt(data['activityInterval'], 0);
 
-  isLocationEnabled = _asBool(data['isLocationEnabled'], false);
-  locationConditionType = _asInt(data['locationConditionType'], 2);
-  isWeatherEnabled = _asBool(data['isWeatherEnabled'], false);
-  weatherConditionType = _asInt(data['weatherConditionType'], 2);
-  activityConditionType = _asInt(data['activityConditionType'], 2);
-  weatherTypes = _asIntList(data['weatherTypes']);
-  location = _asString(data['location'], '0.0,0.0');
-  isMathsEnabled = _asBool(data['isMathsEnabled'], false);
-  mathsDifficulty = _asInt(data['mathsDifficulty'], 0);
-  numMathsQuestions = _asInt(data['numMathsQuestions'], 0);
-  isQrEnabled = _asBool(data['isQrEnabled'], false);
-  qrValue = _asString(data['qrValue'], '');
-  isShakeEnabled = _asBool(data['isShakeEnabled'], false);
-  shakeTimes = _asInt(data['shakeTimes'], 0);
-  isPedometerEnabled = _asBool(data['isPedometerEnabled'], false);
-  numberOfSteps = _asInt(data['numberOfSteps'], 0);
-  ringtoneName = _asString(data['ringtoneName'], 'Digital Alarm 1');
-  note = _asString(data['note'], '');
-  tasks = _asStringList(data['tasks']);
-  deleteAfterGoesOff = _asBool(data['deleteAfterGoesOff'], false);
-  showMotivationalQuote = _asBool(data['showMotivationalQuote'], false);
+    isLocationEnabled = _asBool(data['isLocationEnabled'], false);
+    locationConditionType = _asInt(data['locationConditionType'], 2);
+    isWeatherEnabled = _asBool(data['isWeatherEnabled'], false);
+    weatherConditionType = _asInt(data['weatherConditionType'], 2);
+    activityConditionType = _asInt(data['activityConditionType'], 2);
+    weatherTypes = _asIntList(data['weatherTypes']);
+    location = _asString(data['location'], '0.0,0.0');
+    isMathsEnabled = _asBool(data['isMathsEnabled'], false);
+    mathsDifficulty = _asInt(data['mathsDifficulty'], 0);
+    numMathsQuestions = _asInt(data['numMathsQuestions'], 0);
+    isQrEnabled = _asBool(data['isQrEnabled'], false);
+    qrValue = _asString(data['qrValue'], '');
+    isShakeEnabled = _asBool(data['isShakeEnabled'], false);
+    shakeTimes = _asInt(data['shakeTimes'], 0);
+    isPedometerEnabled = _asBool(data['isPedometerEnabled'], false);
+    numberOfSteps = _asInt(data['numberOfSteps'], 0);
+    ringtoneName = _asString(data['ringtoneName'], 'Digital Alarm 1');
+    note = _asString(data['note'], '');
+    tasks = _asStringList(data['tasks']);
+    deleteAfterGoesOff = _asBool(data['deleteAfterGoesOff'], false);
+    showMotivationalQuote = _asBool(data['showMotivationalQuote'], false);
 
     volMax = _asDouble(data['volMax'], 1.0);
     volMin = _asDouble(data['volMin'], 0.0);
@@ -261,19 +261,19 @@ class AlarmModel {
     alarmDate = _asString(data['alarmDate'], '');
     profile = _asString(data['profile'], 'Default');
 
-  isGuardian = _asBool(data['isGuardian'], false);
-  guardianTimer = _asInt(data['guardianTimer'], 0);
-  guardian = _asString(data['guardian'], '');
-  isCall = _asBool(data['isCall'], false);
-  ringOn = _asBool(data['ringOn'], false);
-  isSunriseEnabled = _asBool(data['isSunriseEnabled'], false);
-  sunriseDuration = _asInt(data['sunriseDuration'], 30);
-  sunriseIntensity = _asDouble(data['sunriseIntensity'], 1.0);
-  sunriseColorScheme = _asInt(data['sunriseColorScheme'], 0);
-  timezoneId = _asString(data['timezoneId'], '');
-  isTimezoneEnabled = _asBool(data['isTimezoneEnabled'], false);
-  targetTimezoneOffset = _asInt(data['targetTimezoneOffset'], 0);
-  smartControlCombinationType = _asInt(data['smartControlCombinationType'], 0);
+    isGuardian = _asBool(data['isGuardian'], false);
+    guardianTimer = _asInt(data['guardianTimer'], 0);
+    guardian = _asString(data['guardian'], '');
+    isCall = _asBool(data['isCall'], false);
+    ringOn = _asBool(data['ringOn'], false);
+    isSunriseEnabled = _asBool(data['isSunriseEnabled'], false);
+    sunriseDuration = _asInt(data['sunriseDuration'], 30);
+    sunriseIntensity = _asDouble(data['sunriseIntensity'], 1.0);
+    sunriseColorScheme = _asInt(data['sunriseColorScheme'], 0);
+    timezoneId = _asString(data['timezoneId'], '');
+    isTimezoneEnabled = _asBool(data['isTimezoneEnabled'], false);
+    targetTimezoneOffset = _asInt(data['targetTimezoneOffset'], 0);
+    smartControlCombinationType = _asInt(data['smartControlCombinationType'], 0);
   }
 
   AlarmModel fromMapSQFlite(Map<String, dynamic> map) {
@@ -449,13 +449,13 @@ class AlarmModel {
     isActivityEnabled = _asBool(data['isActivityEnabled'], false);
     activityInterval = _asInt(data['activityInterval'], 0);
 
-  isLocationEnabled = _asBool(data['isLocationEnabled'], false);
-  locationConditionType = _asInt(data['locationConditionType'], 2);
-  isWeatherEnabled = _asBool(data['isWeatherEnabled'], false);
-  weatherConditionType = _asInt(data['weatherConditionType'], 2);
-  activityConditionType = _asInt(data['activityConditionType'], 2);
-  weatherTypes = _asIntList(data['weatherTypes']);
-  location = _asString(data['location'], '0.0,0.0');
+    isLocationEnabled = _asBool(data['isLocationEnabled'], false);
+    locationConditionType = _asInt(data['locationConditionType'], 2);
+    isWeatherEnabled = _asBool(data['isWeatherEnabled'], false);
+    weatherConditionType = _asInt(data['weatherConditionType'], 2);
+    activityConditionType = _asInt(data['activityConditionType'], 2);
+    weatherTypes = _asIntList(data['weatherTypes']);
+    location = _asString(data['location'], '0.0,0.0');
 
     isMathsEnabled = _asBool(data['isMathsEnabled'], false);
     mathsDifficulty = _asInt(data['mathsDifficulty'], 0);
@@ -470,7 +470,7 @@ class AlarmModel {
     isOneTime = _asBool(data['isOneTime'], false);
     ringtoneName = _asString(data['ringtoneName'], 'Digital Alarm 1');
     note = _asString(data['note'], '');
-    tasks = _asStringList(data['tasks']);
+  tasks = _asStringList(data['tasks']);
     deleteAfterGoesOff = _asBool(data['deleteAfterGoesOff'], false);
     showMotivationalQuote = _asBool(data['showMotivationalQuote'], false);
 

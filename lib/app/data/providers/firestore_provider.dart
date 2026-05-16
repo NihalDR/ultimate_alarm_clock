@@ -647,6 +647,7 @@ class FirestoreDb {
         .collection('sharedAlarms')
         .doc(alarm.alarmID)
         .set(alarmData);
+        .set(alarmData);
 
     debugPrint('🔄 Sharing alarm with ${emails.length} users');
     debugPrint('   - Alarm ID: ${alarm.alarmID}');
@@ -703,12 +704,10 @@ class FirestoreDb {
         debugPrint('📦 Current receivedItems: ${userData['receivedItems']}');
         debugPrint('📦 Adding shared item to receivedItems: $sharedItem');
 
-        // Verify the document update
         await _firebaseFirestore.collection('users').doc(docId).update({
           'receivedItems': FieldValue.arrayUnion([sharedItem])
         });
 
-        // Verify the update was successful
         final updatedDoc =
             await _firebaseFirestore.collection('users').doc(docId).get();
         final updatedData = updatedDoc.data() as Map<String, dynamic>;

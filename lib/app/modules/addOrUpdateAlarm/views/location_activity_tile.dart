@@ -246,14 +246,12 @@ class LocationTile extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
-        color: isSelected 
-          ? kprimaryColor.withOpacity(0.1)
-          : Colors.transparent,
+        color: isSelected ? kprimaryColor.withOpacity(0.1) : Colors.transparent,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isSelected 
-            ? kprimaryColor
-            : themeController.primaryDisabledTextColor.value.withOpacity(0.3),
+          color: isSelected
+              ? kprimaryColor
+              : themeController.primaryDisabledTextColor.value.withOpacity(0.3),
           width: isSelected ? 2 : 1,
         ),
       ),
@@ -262,8 +260,7 @@ class LocationTile extends StatelessWidget {
         onTap: () async {
           Utils.hapticFeedback();
           controller.locationConditionType.value = type;
-          
-    
+
           if (type != LocationConditionType.off) {
             final hasPermission = await controller.checkAndRequestPermission();
             if (hasPermission) {
@@ -289,16 +286,17 @@ class LocationTile extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: isSelected 
-                    ? kprimaryColor
-                    : themeController.primaryDisabledTextColor.value.withOpacity(0.2),
+                  color: isSelected
+                      ? kprimaryColor
+                      : themeController.primaryDisabledTextColor.value
+                          .withOpacity(0.2),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
                   _getLocationConditionIcon(type),
-                  color: isSelected 
-                    ? Colors.white
-                    : themeController.primaryTextColor.value,
+                  color: isSelected
+                      ? Colors.white
+                      : themeController.primaryTextColor.value,
                   size: 20,
                 ),
               ),
@@ -311,7 +309,8 @@ class LocationTile extends StatelessWidget {
                       _getLocationConditionText(type),
                       style: TextStyle(
                         color: themeController.primaryTextColor.value,
-                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                        fontWeight:
+                            isSelected ? FontWeight.w600 : FontWeight.w500,
                         fontSize: 16,
                       ),
                     ),
@@ -319,7 +318,8 @@ class LocationTile extends StatelessWidget {
                     Text(
                       _getLocationConditionDescription(type),
                       style: TextStyle(
-                        color: themeController.primaryTextColor.value.withOpacity(0.7),
+                        color: themeController.primaryTextColor.value
+                            .withOpacity(0.7),
                         fontSize: 12,
                       ),
                       maxLines: 2,
@@ -328,12 +328,6 @@ class LocationTile extends StatelessWidget {
                   ],
                 ),
               ),
-              if (isSelected)
-                Icon(
-                  Icons.check_circle,
-                  color: kprimaryColor,
-                  size: 24,
-                ),
             ],
           ),
         ),
@@ -348,9 +342,9 @@ class LocationTile extends StatelessWidget {
         margin: const EdgeInsets.symmetric(horizontal: 4),
         child: Column(
           children: [
-    
             ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               title: Row(
                 children: [
                   FittedBox(
@@ -368,7 +362,8 @@ class LocationTile extends StatelessWidget {
                     icon: Icon(
                       Icons.info_sharp,
                       size: 21,
-                      color: themeController.primaryTextColor.value.withOpacity(0.3),
+                      color: themeController.primaryTextColor.value
+                          .withOpacity(0.3),
                     ),
                     onPressed: () {
                       Utils.hapticFeedback();
@@ -382,66 +377,76 @@ class LocationTile extends StatelessWidget {
                             '• Cancel when AWAY: Alarm cancels if you\'re too far\n\n'
                             'All conditions use a 500m radius.',
                         iconData: Icons.location_on,
-                        isLightMode: themeController.currentTheme.value == ThemeMode.light,
+                        isLightMode:
+                            themeController.currentTheme.value == ThemeMode.light,
                       );
                     },
                   ),
                 ],
               ),
               trailing: Switch(
-                value: controller.locationConditionType.value != LocationConditionType.off,
+                value: controller.locationConditionType.value !=
+                    LocationConditionType.off,
                 onChanged: (bool value) {
                   Utils.hapticFeedback();
                   if (!value) {
-                    controller.locationConditionType.value = LocationConditionType.off;
+                    controller.locationConditionType.value =
+                        LocationConditionType.off;
                   } else {
-                    controller.locationConditionType.value = LocationConditionType.cancelWhenAt;
+                    controller.locationConditionType.value =
+                        LocationConditionType.cancelWhenAt;
                   }
                 },
                 activeColor: kprimaryColor,
               ),
             ),
-            
-    
             AnimatedContainer(
               duration: const Duration(milliseconds: 300),
               curve: Curves.easeInOut,
-              height: controller.locationConditionType.value != LocationConditionType.off 
-                ? null 
-                : 0,
-              child: controller.locationConditionType.value != LocationConditionType.off
-                ? Container(
-                    padding: const EdgeInsets.all(16),
-                    margin: const EdgeInsets.symmetric(horizontal: 16),
-                    decoration: BoxDecoration(
-                      color: themeController.secondaryBackgroundColor.value.withOpacity(0.5),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: kprimaryColor.withOpacity(0.2),
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Choose Location Condition',
-                          style: TextStyle(
-                            color: themeController.primaryTextColor.value,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 14,
-                          ),
+              height: controller.locationConditionType.value !=
+                      LocationConditionType.off
+                  ? null
+                  : 0,
+              child: controller.locationConditionType.value !=
+                      LocationConditionType.off
+                  ? Container(
+                      padding: const EdgeInsets.all(16),
+                      margin: const EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: themeController.secondaryBackgroundColor.value
+                            .withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: kprimaryColor.withOpacity(0.2),
                         ),
-                        const SizedBox(height: 12),
-                        ...LocationConditionType.values.where((type) => type != LocationConditionType.off).map(
-                          (type) => _buildConditionOption(
-                            type, 
-                            controller.locationConditionType.value == type,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Choose Location Condition',
+                            style: TextStyle(
+                              color: themeController.primaryTextColor.value,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                            ),
                           ),
-                        ).toList(),
-                      ],
-                    ),
-                  )
-                : const SizedBox.shrink(),
+                          const SizedBox(height: 12),
+                          ...LocationConditionType.values
+                              .where((type) =>
+                                  type != LocationConditionType.off)
+                              .map(
+                                (type) => _buildConditionOption(
+                                  type,
+                                  controller.locationConditionType.value ==
+                                      type,
+                                ),
+                              )
+                              .toList(),
+                        ],
+                      ),
+                    )
+                  : const SizedBox.shrink(),
             ),
           ],
         ),

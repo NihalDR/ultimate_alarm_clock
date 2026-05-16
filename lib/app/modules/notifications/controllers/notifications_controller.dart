@@ -66,10 +66,13 @@ class NotificationsController extends GetxController {
     }
   }
 
-  // Function to import alarm settings that's shared
-  Future importAlarm(String email, String alarmName) async {
-    final alarmMap = await FirestoreDb.receiveAlarm(email, alarmName);
-    final alarm = await AlarmModel.fromMap(alarmMap);
+  Future importAlarm(Map notification) async {
+    final alarmMap = await _resolveAlarmMap(notification);
+    if (alarmMap == null) {
+      Get.snackbar('Notification', 'Shared alarm data is missing');
+      return;
+    }
+    final alarm = AlarmModel.fromMap(alarmMap);
     alarm.alarmID = Uuid().v4();
     alarm.profile = selectedProfile.value;
     await IsarDb.addAlarm(alarm);
@@ -322,7 +325,6 @@ class NotificationsController extends GetxController {
         .toSet()
         .toList();
   }
-
   static String getAlarmLabel(Map notification) {
     final payload = parseAlarmPayload(notification);
     if (payload != null && payload['label'] is String) {

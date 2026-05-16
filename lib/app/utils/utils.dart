@@ -308,7 +308,6 @@ class Utils {
   static void clearTimeUntilAlarmCache() {
     _timeUntilAlarmCache.clear();
   }
-
   static String timeUntilAlarm(TimeOfDay alarmTime, List<bool> days, DateTime alarmDate) {
     final now = DateTime.now();
     

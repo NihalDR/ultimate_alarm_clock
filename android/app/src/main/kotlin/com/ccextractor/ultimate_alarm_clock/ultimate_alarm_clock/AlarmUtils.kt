@@ -146,12 +146,22 @@ object AlarmUtils {
         
         try {
             val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-            val intent = Intent(context, AlarmReceiver::class.java)
-            
             val requestCode = if (isShared) 
                 MainActivity.REQUEST_CODE_SHARED_ALARM 
             else 
                 MainActivity.REQUEST_CODE_LOCAL_ALARM
+            val activityRequestCode = if (isShared)
+                MainActivity.REQUEST_CODE_SHARED_ACTIVITY
+            else
+                MainActivity.REQUEST_CODE_LOCAL_ACTIVITY
+            val intent = Intent(context, AlarmReceiver::class.java).apply {
+                if (isShared) {
+                    putExtra("isSharedAlarm", true)
+                }
+                if (alarmID.isNotEmpty()) {
+                    putExtra("alarmID", alarmID)
+                }
+            }
             
             val pendingIntent = PendingIntent.getBroadcast(
                 context,
@@ -161,6 +171,22 @@ object AlarmUtils {
             )
             
             alarmManager.cancel(pendingIntent)
+            pendingIntent.cancel()
+
+            val activityIntent = Intent(context, ScreenMonitorService::class.java).apply {
+                if (isShared) {
+                    putExtra("isSharedAlarm", true)
+                }
+            }
+            val pendingActivityIntent = PendingIntent.getService(
+                context,
+                activityRequestCode,
+                activityIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
+            )
+
+            alarmManager.cancel(pendingActivityIntent)
+            pendingActivityIntent.cancel()
             
             Log.d("AlarmUtils", "Canceled $alarmType alarm with ID: $alarmID")
             

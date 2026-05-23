@@ -23,8 +23,10 @@ class SplashScreenController extends GetxController {
 
   getCurrentlyRingingAlarm() async {
     AlarmModel _alarmRecord = homeController.genFakeAlarmModel();
+    UserModel? _userModel = await SecureStorageProvider().retrieveUserModel();
+    final ownerId = _userModel?.id ?? '';
     AlarmModel latestAlarm =
-        await IsarDb.getLatestAlarm(_alarmRecord, false);
+      await IsarDb.getLatestAlarm(_alarmRecord, false, ownerId);
     debugPrint('CURRENT RINGING : ${latestAlarm.alarmTime}');
     return latestAlarm;
   }
@@ -32,8 +34,9 @@ class SplashScreenController extends GetxController {
   getNextAlarm() async {
     UserModel? _userModel = await SecureStorageProvider().retrieveUserModel();
     AlarmModel _alarmRecord = homeController.genFakeAlarmModel();
+    final ownerId = _userModel?.id ?? '';
     AlarmModel isarLatestAlarm =
-        await IsarDb.getLatestAlarm(_alarmRecord, true);
+      await IsarDb.getLatestAlarm(_alarmRecord, true, ownerId);
     AlarmModel firestoreLatestAlarm =
         await FirestoreDb.getLatestAlarm(_userModel, _alarmRecord, true);
     AlarmModel latestAlarm =

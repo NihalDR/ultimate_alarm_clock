@@ -8,8 +8,6 @@ import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 import 'dart:math';
 
-import 'package:telephony/telephony.dart';
-
 import 'package:ultimate_alarm_clock/app/data/models/alarm_model.dart';
 import 'package:ultimate_alarm_clock/app/data/models/quote_model.dart';
 import 'package:ultimate_alarm_clock/app/data/models/timer_model.dart';
@@ -32,6 +30,7 @@ class _TimeUntilAlarmCache {
 }
 
 class Utils {
+  static const MethodChannel _alarmChannel = MethodChannel('ulticlock');
   static String timeOfDayToString(TimeOfDay time) {
     final hours = time.hour.toString().padLeft(2, '0');
     final minutes = time.minute.toString().padLeft(2, '0');
@@ -79,6 +78,7 @@ class Utils {
     minutesSinceMidnight: Utils.timeOfDayToInt(TimeOfDay.now()),
     ringtoneName: 'Digital Alarm 1',
     note: '',
+    tasks: const [],
     showMotivationalQuote: false,
     activityMonitor: 0,
     profile: 'Default',
@@ -130,10 +130,10 @@ class Utils {
   static DateTime? stringToDateTime(String timeString) {
     try {
       final parts = timeString.split(':');
-      if (parts.length == 3) {
+      if (parts.length >= 2) {
         final hours = int.parse(parts[0]);
         final minutes = int.parse(parts[1]);
-        final seconds = int.parse(parts[2]);
+        final seconds = parts.length > 2 ? int.parse(parts[2]) : 0;
 
         // Create a DateTime object with today's date and the provided time
         final now = DateTime.now();
@@ -905,13 +905,34 @@ class Utils {
     await intent.launch();
   }
 
-  static sendSMS(String phoneNo, String text) async {
-    final Telephony telephony = Telephony.instance;
-    await telephony.requestPhoneAndSmsPermissions.then((value) {
-      if (value == true) {
-        telephony.sendSms(to: phoneNo, message: text);
-      }
-    });
+  static Future<void> sendSMS(String phoneNo, String text) async {
+    // Keep only digits and a leading '+' to avoid SMS manager failures.
+    final String sanitizedNo = phoneNo.replaceAll(RegExp(r'[^0-9+]'), '');
+    if (sanitizedNo.isEmpty) {
+      debugPrint('SMS number is empty after sanitizing.');
+      return;
+    }
+
+    PermissionStatus smsStatus = await Permission.sms.status;
+    if (!smsStatus.isGranted) {
+      smsStatus = await Permission.sms.request();
+    }
+
+    if (!smsStatus.isGranted) {
+      debugPrint('SMS permission not granted. Unable to send SMS.');
+      return;
+    }
+
+    try {
+      await _alarmChannel.invokeMethod('sendSms', {
+        'phoneNo': sanitizedNo,
+        'message': text,
+      });
+    } on PlatformException catch (e) {
+      debugPrint('Failed to send SMS: ${e.message}');
+    } catch (e) {
+      debugPrint('Failed to send SMS: $e');
+    }
   }
 
   static String _twoDigits(int n) => n.toString().padLeft(2, '0');

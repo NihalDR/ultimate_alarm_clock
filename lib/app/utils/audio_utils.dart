@@ -69,7 +69,7 @@ class AudioUtils {
     }
   }
 
-  static void playAlarm({
+  static Future<void> playAlarm({
     required AlarmModel alarmRecord,
   }) async {
     try {
@@ -87,8 +87,10 @@ class AudioUtils {
       );
 
       if (customRingtone != null) {
-        if (customRingtone.isSystemRingtone && customRingtone.ringtoneUri.isNotEmpty) {
-          await SystemRingtoneService.playSystemRingtone(customRingtone.ringtoneUri);
+        if (customRingtone.isSystemRingtone &&
+            customRingtone.ringtoneUri.isNotEmpty) {
+          await SystemRingtoneService.playSystemRingtone(
+              customRingtone.ringtoneUri);
         } else {
           String customRingtonePath = customRingtone.ringtonePath;
           if (defaultRingtones.contains(ringtoneName)) {
@@ -135,8 +137,10 @@ class AudioUtils {
         );
 
         if (customRingtone != null) {
-          if (customRingtone.isSystemRingtone && customRingtone.ringtoneUri.isNotEmpty) {
-            await SystemRingtoneService.playSystemRingtone(customRingtone.ringtoneUri);
+          if (customRingtone.isSystemRingtone &&
+              customRingtone.ringtoneUri.isNotEmpty) {
+            await SystemRingtoneService.playSystemRingtone(
+                customRingtone.ringtoneUri);
           } else {
             String customRingtonePath = customRingtone.ringtonePath;
             await playCustomSound(customRingtonePath);
@@ -206,12 +210,14 @@ class AudioUtils {
         );
 
         if (customRingtone != null) {
-          if (customRingtone.isSystemRingtone && customRingtone.ringtoneUri.isNotEmpty) {
+          if (customRingtone.isSystemRingtone &&
+              customRingtone.ringtoneUri.isNotEmpty) {
             await alarmChannel.invokeMethod('stopDefaultAlarm');
             await SystemRingtoneService.stopSystemRingtone();
             await audioSession!.setActive(false);
             await audioSession!.setActive(true);
-            await SystemRingtoneService.playSystemRingtone(customRingtone.ringtoneUri);
+            await SystemRingtoneService.playSystemRingtone(
+                customRingtone.ringtoneUri);
             isPreviewing = true;
           } else {
             String customRingtonePath = customRingtone.ringtonePath;
@@ -240,30 +246,33 @@ class AudioUtils {
       debugPrint(e.toString());
     } finally {
       // Guaranteed to execute even if the native channels throw an error!
-      isPreviewing = false; 
+      isPreviewing = false;
     }
   }
 
-  static void stopAlarm({
+  static Future<void> stopAlarm({
     required String ringtoneName,
   }) async {
     try {
-      if (audioSession != null) {
-        if (ringtoneName == 'Default') {
-          await alarmChannel.invokeMethod('stopDefaultAlarm');
-        } else {
-          int customRingtoneId = fastHash(ringtoneName);
-          RingtoneModel? customRingtone = await IsarDb.getCustomRingtone(
-            customRingtoneId: customRingtoneId,
-          );
-          
-          if (customRingtone != null && customRingtone.isSystemRingtone) {
-            await SystemRingtoneService.stopSystemRingtone();
-          } else {
-            await audioPlayer.stop();
-          }
-        }
+      await alarmChannel.invokeMethod('stopDefaultAlarm');
+    } catch (e) {
+      debugPrint(e.toString());
+    }
 
+    try {
+      await audioPlayer.stop();
+    } catch (e) {
+      debugPrint(e.toString());
+    }
+
+    try {
+      await SystemRingtoneService.stopSystemRingtone();
+    } catch (e) {
+      debugPrint(e.toString());
+    }
+
+    try {
+      if (audioSession != null) {
         await audioSession!.setActive(false);
       }
     } catch (e) {
@@ -283,7 +292,7 @@ class AudioUtils {
           RingtoneModel? customRingtone = await IsarDb.getCustomRingtone(
             customRingtoneId: customRingtoneId,
           );
-          
+
           if (customRingtone != null && customRingtone.isSystemRingtone) {
             await SystemRingtoneService.stopSystemRingtone();
           } else {

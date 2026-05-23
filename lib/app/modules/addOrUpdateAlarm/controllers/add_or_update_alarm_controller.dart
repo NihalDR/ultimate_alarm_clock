@@ -107,6 +107,7 @@ class AddOrUpdateAlarmController extends GetxController {
   var previousRingtone = '';
   final noteController = TextEditingController();
   final RxString note = ''.obs;
+  final RxList<String> alarmTasks = <String>[].obs;
   final deleteAfterGoesOff = false.obs;
 
   final RxBool showMotivationalQuote = false.obs;
@@ -1109,6 +1110,7 @@ class AddOrUpdateAlarmController extends GetxController {
       isGuardian.value = alarmRecord.value.isGuardian;
       guardian.value = alarmRecord.value.guardian;
       guardianTimer.value = alarmRecord.value.guardianTimer;
+      contactTextEditingController.text = guardian.value;
       isSunriseEnabled.value = alarmRecord.value.isSunriseEnabled;
       sunriseDuration.value = alarmRecord.value.sunriseDuration;
       sunriseIntensity.value = alarmRecord.value.sunriseIntensity;
@@ -1134,6 +1136,7 @@ class AddOrUpdateAlarmController extends GetxController {
       label.value = alarmRecord.value.label;
       customRingtoneName.value = alarmRecord.value.ringtoneName;
       note.value = alarmRecord.value.note;
+      alarmTasks.value = List<String>.from(alarmRecord.value.tasks);
       showMotivationalQuote.value = alarmRecord.value.showMotivationalQuote;
 
       sharedUserIds.value = alarmRecord.value.sharedUserIds!;
@@ -1311,6 +1314,7 @@ class AddOrUpdateAlarmController extends GetxController {
       'deleteAfterGoesOff': deleteAfterGoesOff.value,
       'label': label.value,
       'note': note.value,
+      'taskList': _taskListSignature(),
       'customRingtoneName': customRingtoneName.value,
       'volMin': volMin.value,
       'volMax': volMax.value,
@@ -1375,6 +1379,9 @@ class AddOrUpdateAlarmController extends GetxController {
     setupListener<bool>(deleteAfterGoesOff, 'deleteAfterGoesOff');
     setupListener<String>(label, 'label');
     setupListener<String>(note, 'note');
+    ever(alarmTasks, (_) {
+      _compareAndSetChange('taskList', _taskListSignature());
+    });
     setupListener<String>(customRingtoneName, 'customRingtoneName');
     setupListener<double>(volMin, 'volMin');
     setupListener<double>(volMax, 'volMax');
@@ -1454,6 +1461,10 @@ class AddOrUpdateAlarmController extends GetxController {
     rxVar.listen((value) {
       _compareAndSetChange(fieldName, value);
     });
+  }
+
+  String _taskListSignature() {
+    return alarmTasks.join('\n');
   }
 
   // if initialValues map contains fieldName and newValue is equal to currentValue
@@ -1553,6 +1564,7 @@ class AddOrUpdateAlarmController extends GetxController {
       numberOfSteps: numberOfSteps.value,
       ringtoneName: customRingtoneName.value,
       note: note.value,
+      tasks: alarmTasks.toList(),
       showMotivationalQuote: showMotivationalQuote.value,
       activityMonitor: isActivityMonitorenabled.value,
       alarmDate: selectedDate.value.toString().substring(0, 11),

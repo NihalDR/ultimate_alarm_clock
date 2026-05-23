@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:ultimate_alarm_clock/app/data/models/alarm_model.dart';
 import 'package:ultimate_alarm_clock/app/data/models/profile_model.dart';
 import 'package:ultimate_alarm_clock/app/data/models/ringtone_model.dart';
@@ -56,7 +57,7 @@ class IsarDb {
 
     final dir = await getDatabasesPath();
     final dbPath = '$dir/alarms.db';
-    db = await openDatabase(dbPath, version: 4, onCreate: _onCreate, onUpgrade: _onUpgrade);
+    db = await openDatabase(dbPath, version: 5, onCreate: _onCreate, onUpgrade: _onUpgrade);
     return db;
   }
 
@@ -88,7 +89,7 @@ class IsarDb {
     final dir = await getDatabasesPath();
     db = await openDatabase(
       '$dir/AlarmLogs.db',
-      version: 1,
+      version: 2,
       onCreate: (Database db, int version) async {
         await db.execute('''
           CREATE TABLE LOG (
@@ -98,9 +99,21 @@ class IsarDb {
             LogType TEXT CHECK(LogType IN ('DEV', 'NORMAL')) NOT NULL,
             Message TEXT NOT NULL,
             HasRung INTEGER DEFAULT 0,
-            AlarmID TEXT
+            AlarmID TEXT,
+            OwnerId TEXT
           )
         ''');
+      },
+      onUpgrade: (Database db, int oldVersion, int newVersion) async {
+        if (oldVersion < 2) {
+          try {
+            await db.execute('ALTER TABLE LOG ADD COLUMN OwnerId TEXT');
+          } catch (e) {
+            if (!e.toString().contains('duplicate column name')) {
+              rethrow;
+            }
+          }
+        }
       },
     );
     return db;
@@ -158,6 +171,16 @@ class IsarDb {
         }
       }
     }
+    if (oldVersion < 5) {
+      // Add task list column if it doesn't exist
+      try {
+        await db.execute('ALTER TABLE alarms ADD COLUMN tasks TEXT');
+      } catch (e) {
+        if (!e.toString().contains('duplicate column name')) {
+          rethrow;
+        }
+      }
+    }
   }
 
   void _onCreate(Database db, int version) async {
@@ -205,6 +228,7 @@ class IsarDb {
         gradient INTEGER,
         ringtoneName TEXT,
         note TEXT,
+        tasks TEXT,
         deleteAfterGoesOff INTEGER NOT NULL DEFAULT 0,
         showMotivationalQuote INTEGER NOT NULL DEFAULT 0,
         volMin REAL,
@@ -252,7 +276,14 @@ class IsarDb {
     }
     return Future.value(Isar.getInstance());
   }
-  Future<int> insertLog(String msg, {Status status = Status.warning, LogType type = LogType.dev, int hasRung = 0}) async {
+  Future<int> insertLog(
+    String msg, {
+    Status status = Status.warning,
+    LogType type = LogType.dev,
+    int hasRung = 0,
+    String? ownerId,
+    String? alarmId,
+  }) async {
     try {
       final db = await setAlarmLogs();
       if (db == null) {
@@ -261,6 +292,7 @@ class IsarDb {
       }
       String st = status.toString();
       String t = type.toString();
+      final resolvedOwnerId = ownerId ?? FirebaseAuth.instance.currentUser?.uid ?? '';
       final result = await db.insert(
         'LOG',
         {
@@ -269,6 +301,8 @@ class IsarDb {
           'LogType': t,
           'Message': msg,
           'HasRung': hasRung,
+          'AlarmID': alarmId,
+          'OwnerId': resolvedOwnerId,
         },
       );
       debugPrint('Successfully inserted log: $msg');
@@ -280,14 +314,29 @@ class IsarDb {
   }
 
   // Fetch all log entries
-  Future<List<Map<String, dynamic>>> getLogs() async {
+  Future<List<Map<String, dynamic>>> getLogs({String? ownerId}) async {
     try {
       final db = await setAlarmLogs();
       if (db == null) {
         debugPrint('Failed to initialize database for logs');
         return [];
       }
-      final logs = await db.query('LOG');
+      List<Map<String, dynamic>> logs;
+      if (ownerId == null) {
+        logs = await db.query('LOG');
+      } else if (ownerId.isEmpty) {
+        logs = await db.query(
+          'LOG',
+          where: 'OwnerId IS NULL OR OwnerId = ?',
+          whereArgs: [''],
+        );
+      } else {
+        logs = await db.query(
+          'LOG',
+          where: 'OwnerId = ?',
+          whereArgs: [ownerId],
+        );
+      }
       debugPrint('Successfully retrieved ${logs.length} logs');
       return logs;
     } catch (e) {
@@ -307,6 +356,28 @@ class IsarDb {
       debugPrint('Successfully cleared all logs');
     } catch (e) {
       debugPrint('Error clearing logs: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> clearLocalAlarmData({bool clearLogs = true}) async {
+    try {
+      final isarProvider = IsarDb();
+      final isarDb = await isarProvider.db;
+      await isarDb.writeTxn(() async {
+        await isarDb.alarmModels.clear();
+      });
+
+      final sql = await getAlarmSQLiteDatabase();
+      if (sql != null) {
+        await sql.delete('alarms');
+      }
+
+      if (clearLogs) {
+        await this.clearLogs();
+      }
+    } catch (e) {
+      debugPrint('Error clearing local alarm data: $e');
       rethrow;
     }
   }
@@ -358,6 +429,8 @@ class IsarDb {
       detailedMessage,
       status: Status.success,
       type: LogType.normal,
+      ownerId: alarmRecord.ownerId,
+      alarmId: alarmRecord.alarmID,
     );
     
     List a = await IsarDb().getLogs();
@@ -448,6 +521,7 @@ class IsarDb {
   static Future<AlarmModel> getLatestAlarm(
     AlarmModel alarmRecord,
     bool wantNextAlarm,
+    String ownerId,
   ) async {
     int nowInMinutes = 0;
     final isarProvider = IsarDb();
@@ -474,14 +548,16 @@ class IsarDb {
 
 
     List<AlarmModel> alarms = await db.alarmModels
-        .where()
-        .filter()
-        .isEnabledEqualTo(true)
-        .and()
-        .isSharedAlarmEnabledEqualTo(false)
-        .and()
-        .profileEqualTo(currentProfile)
-        .findAll();
+      .where()
+      .filter()
+      .isEnabledEqualTo(true)
+      .and()
+      .isSharedAlarmEnabledEqualTo(false)
+      .and()
+      .profileEqualTo(currentProfile)
+      .and()
+      .ownerIdEqualTo(ownerId)
+      .findAll();
 
     if (alarms.isEmpty) {
       alarmRecord.minutesSinceMidnight = -1;
@@ -545,7 +621,13 @@ class IsarDb {
     // Detailed alarm update log (NORMAL - always visible)
     String alarmType = alarmRecord.isSharedAlarmEnabled ? 'SHARED' : 'LOCAL';
     String detailedMessage = buildDetailedAlarmUpdateMessage(alarmRecord, alarmType);
-    await IsarDb().insertLog(detailedMessage, status: Status.success, type: LogType.normal);
+    await IsarDb().insertLog(
+      detailedMessage,
+      status: Status.success,
+      type: LogType.normal,
+      ownerId: alarmRecord.ownerId,
+      alarmId: alarmRecord.alarmID,
+    );
     
     if (!alarmRecord.isSharedAlarmEnabled) {
       final sql = await IsarDb().getAlarmSQLiteDatabase();
@@ -595,6 +677,95 @@ class IsarDb {
           .watch(fireImmediately: true);
     } catch (e) {
       debugPrint(e.toString());
+      rethrow;
+    }
+  }
+
+  static getAlarmsForOwner(String name, String ownerId) async* {
+    try {
+      final isarProvider = IsarDb();
+      final db = await isarProvider.db;
+      yield* db.alarmModels
+          .filter()
+          .profileEqualTo(name)
+          .and()
+          .ownerIdEqualTo(ownerId)
+          .watch(fireImmediately: true);
+    } catch (e) {
+      debugPrint(e.toString());
+      rethrow;
+    }
+  }
+
+  static Future<void> assignOwnerToUnownedAlarms({
+    required String ownerId,
+    required String ownerName,
+  }) async {
+    if (ownerId.isEmpty) return;
+    final isarProvider = IsarDb();
+    final db = await isarProvider.db;
+    final unownedAlarms = await db.alarmModels
+        .filter()
+        .ownerIdEqualTo('')
+        .findAll();
+
+    if (unownedAlarms.isEmpty) return;
+
+    await db.writeTxn(() async {
+      for (final alarm in unownedAlarms) {
+        alarm.ownerId = ownerId;
+        alarm.ownerName = ownerName;
+        await db.alarmModels.put(alarm);
+      }
+    });
+
+    final sql = await IsarDb().getAlarmSQLiteDatabase();
+    if (sql != null) {
+      for (final alarm in unownedAlarms) {
+        if (!alarm.isSharedAlarmEnabled) {
+          await sql.update(
+            'alarms',
+            {
+              'ownerId': ownerId,
+              'ownerName': ownerName,
+            },
+            where: 'alarmID = ?',
+            whereArgs: [alarm.alarmID],
+          );
+        }
+      }
+    }
+  }
+
+  Future<void> assignOwnerToUnownedLogs({required String ownerId}) async {
+    if (ownerId.isEmpty) return;
+    try {
+      final logDb = await setAlarmLogs();
+      if (logDb == null) {
+        debugPrint('Failed to initialize database for logs');
+        return;
+      }
+
+      final isarProvider = IsarDb();
+      final isarDb = await isarProvider.db;
+      final ownedAlarms = await isarDb.alarmModels
+          .filter()
+          .ownerIdEqualTo(ownerId)
+          .findAll();
+
+      if (ownedAlarms.isEmpty) return;
+
+      for (final alarm in ownedAlarms) {
+        if (alarm.alarmID.isEmpty) continue;
+        await logDb.update(
+          'LOG',
+          {'OwnerId': ownerId},
+          where: '(OwnerId IS NULL OR OwnerId = ?) AND AlarmID = ?',
+          whereArgs: ['', alarm.alarmID],
+        );
+      }
+    } catch (e) {
+      debugPrint('Error assigning owner to logs: $e');
       rethrow;
     }
   }
@@ -655,7 +826,13 @@ class IsarDb {
     if (tobedeleted.note.isNotEmpty) {
       detailedMessage += ", Note: \"${tobedeleted.note}\"";
     }
-    await IsarDb().insertLog(detailedMessage, status: Status.warning, type: LogType.normal);
+    await IsarDb().insertLog(
+      detailedMessage,
+      status: Status.warning,
+      type: LogType.normal,
+      ownerId: tobedeleted.ownerId,
+      alarmId: tobedeleted.alarmID,
+    );
     
 
     if (!tobedeleted.isSharedAlarmEnabled) {

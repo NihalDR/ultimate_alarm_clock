@@ -28,6 +28,7 @@ import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/views/shared_a
 import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/views/shared_users_tile.dart';
 import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/views/snooze_settings_tile.dart';
 import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/views/sunrise_alarm_tile.dart';
+import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/views/task_list_tile.dart';
 import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/views/timezone_tile.dart';
 import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/views/weather_tile.dart';
 import 'package:ultimate_alarm_clock/app/modules/settings/controllers/settings_controller.dart';
@@ -772,6 +773,14 @@ class AddOrUpdateAlarmView extends GetView<AddOrUpdateAlarmController> {
                                         color: themeController
                                             .primaryDisabledTextColor.value,
                                       ),
+                                      TaskListTile(
+                                        controller: controller,
+                                        themeController: themeController,
+                                      ),
+                                      Divider(
+                                        color: themeController
+                                            .primaryDisabledTextColor.value,
+                                      ),
                                       ChooseRingtoneTile(
                                         controller: controller,
                                         themeController: themeController,
@@ -1082,9 +1091,8 @@ class AddOrUpdateAlarmView extends GetView<AddOrUpdateAlarmController> {
                                 profile: controller
                                     .homeController.selectedProfile.value,
                                 isGuardian: controller.isGuardian.value,
-                                guardianTimer: 0,
-                                guardian: controller
-                                    .contactTextEditingController.text,
+                                guardianTimer: controller.guardianTimer.value,
+                                guardian: controller.guardian.value,
                                 isCall: controller.isCall.value,
                                 ringOn: controller.isFutureDate.value,
                                 isSunriseEnabled: controller.isSunriseEnabled.value,

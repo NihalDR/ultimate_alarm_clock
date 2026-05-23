@@ -87,6 +87,8 @@ class SettingsController extends GetxController {
   // Logins user using GoogleSignIn
 
   Future<void> logoutGoogle() async {
+    await homeController.clearAllAlarmTracking();
+    await homeController.clearSharedAlarmCache();
     await GoogleCloudProvider.logoutGoogle();
     await SecureStorageProvider().deleteUserModel();
     userModel.value = null;

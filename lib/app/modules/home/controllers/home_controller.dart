@@ -133,6 +133,7 @@ class HomeController extends GetxController {
       if (await _googleSignIn.isSignedIn()) {
         GoogleSignInAccount? googleSignInAccount =
             await _googleSignIn.signInSilently();
+        final firebaseUser = FirebaseAuth.instance.currentUser;
         String fullName = googleSignInAccount!.displayName.toString();
         List<String> parts = fullName.split(' ');
         String lastName = ' ';
@@ -152,7 +153,7 @@ class HomeController extends GetxController {
         String firstName = parts[0].toLowerCase().capitalizeFirst.toString();
 
         userModel.value = UserModel(
-          id: googleSignInAccount.id,
+          id: firebaseUser?.uid ?? googleSignInAccount.id,
           fullName: fullName,
           firstName: firstName,
           lastName: lastName,
@@ -170,10 +171,18 @@ class HomeController extends GetxController {
     debugPrint('   - User ID: ${user?.id ?? 'null'}');
     debugPrint('   - Selected Profile: ${selectedProfile.value}');
 
-    // Always create local alarm stream
-    isarStreamAlarms = IsarDb.getAlarms(selectedProfile.value);
+    // Always create local alarm stream, scoped to the active account
+    final ownerId = user?.id ?? '';
+    if (ownerId.isNotEmpty) {
+      await IsarDb.assignOwnerToUnownedAlarms(
+        ownerId: ownerId,
+        ownerName: user?.fullName ?? user?.email ?? '',
+      );
+      await IsarDb().assignOwnerToUnownedLogs(ownerId: ownerId);
+    }
+    isarStreamAlarms = IsarDb.getAlarmsForOwner(selectedProfile.value, ownerId);
 
-    if (user != null) {
+    if (user != null && FirebaseAuth.instance.currentUser != null) {
       // Only create Firestore stream if user is signed in
       firestoreStreamAlarms = FirestoreDb.getSharedAlarms(user);
       debugPrint(
@@ -212,7 +221,20 @@ class HomeController extends GetxController {
             return true;
           }).toList();
 
-          latestIsarAlarms = isarData as List<AlarmModel>;
+          final sharedAlarmIds = latestFirestoreAlarms
+              .map((alarm) => alarm.alarmID)
+              .where((id) => id.isNotEmpty)
+              .toSet();
+          final sharedFirestoreIds = latestFirestoreAlarms
+              .map((alarm) => alarm.firestoreId ?? '')
+              .where((id) => id.isNotEmpty)
+              .toSet();
+
+          latestIsarAlarms = (isarData as List<AlarmModel>)
+              .where((alarm) =>
+                  !sharedAlarmIds.contains(alarm.alarmID) &&
+                  !sharedFirestoreIds.contains(alarm.firestoreId ?? ''))
+              .toList();
 
           List<AlarmModel> alarms = [
             ...latestFirestoreAlarms,
@@ -441,7 +463,13 @@ class HomeController extends GetxController {
     debugPrint(
         '   - Firebase user: ${FirebaseAuth.instance.currentUser?.email ?? 'null'}');
 
-    if (userModel.value == null) {
+    final firebaseUser = FirebaseAuth.instance.currentUser;
+
+    if (firebaseUser != null) {
+      await _syncUserModelWithFirebase(firebaseUser);
+    }
+
+    if (userModel.value == null || firebaseUser == null) {
       debugPrint('❌ No stored user model found, setting up auth listener');
       FirebaseAuth.instance.authStateChanges().listen((user) {
         if (user == null) {
@@ -459,26 +487,32 @@ class HomeController extends GetxController {
       isUserSignedIn.value = true;
 
       // Ensure user document exists in Firestore with receivedItems field
-      try {
-        await FirestoreDb.addUser(userModel.value!);
-        debugPrint('✅ Ensured user document exists in Firestore');
-      } catch (e) {
-        debugPrint('⚠️ Error ensuring user document exists: $e');
+      if (FirebaseAuth.instance.currentUser != null) {
+        try {
+          await FirestoreDb.addUser(userModel.value!);
+          debugPrint('✅ Ensured user document exists in Firestore');
+        } catch (e) {
+          debugPrint('⚠️ Error ensuring user document exists: $e');
+        }
+      } else {
+        debugPrint('⚠️ Skipping Firestore init; FirebaseAuth user is null');
       }
 
-      try {
-        await forceRefreshSharedAlarms();
+      if (FirebaseAuth.instance.currentUser != null) {
+        try {
+          await forceRefreshSharedAlarms();
 
-        await checkAndReschedulePersistedSharedAlarms();
-      } catch (e) {
-        debugPrint('Error during initial shared alarm refresh: $e');
+          await checkAndReschedulePersistedSharedAlarms();
+        } catch (e) {
+          debugPrint('Error during initial shared alarm refresh: $e');
+        }
+
+        setupSharedAlarmListener();
+
+        setupPeriodicSharedAlarmCheck();
+
+        setupUserNotificationListener();
       }
-
-      setupSharedAlarmListener();
-
-      setupPeriodicSharedAlarmCheck();
-
-      setupUserNotificationListener();
     }
 
     isSortedAlarmListEnabled.value = await SecureStorageProvider()
@@ -503,6 +537,11 @@ class HomeController extends GetxController {
       debugPrint('🔄 Initializing user after authentication...');
       userModel.value = await SecureStorageProvider().retrieveUserModel();
 
+      final firebaseUser = FirebaseAuth.instance.currentUser;
+      if (firebaseUser != null) {
+        await _syncUserModelWithFirebase(firebaseUser);
+      }
+
       if (userModel.value != null) {
         debugPrint('✅ User model retrieved: ${userModel.value!.email}');
 
@@ -522,6 +561,29 @@ class HomeController extends GetxController {
       }
     } catch (e) {
       debugPrint('❌ Error initializing user after auth: $e');
+    }
+  }
+
+  Future<void> _syncUserModelWithFirebase(User firebaseUser) async {
+    final stored = userModel.value;
+
+    if (stored == null || stored.id != firebaseUser.uid) {
+      final displayName = firebaseUser.displayName ?? stored?.fullName ?? '';
+      final parts = displayName.split(' ');
+      final firstName = parts.isNotEmpty ? parts[0] : '';
+      final lastName = parts.length > 1 ? parts.last : '';
+
+      userModel.value = UserModel(
+        id: firebaseUser.uid,
+        fullName: displayName,
+        firstName: firstName,
+        lastName: lastName,
+        email: firebaseUser.email ?? stored?.email ?? '',
+        receivedItems: stored?.receivedItems ?? [],
+      );
+
+      await SecureStorageProvider().storeUserModel(userModel.value!);
+      debugPrint('✅ Synced stored user model with Firebase UID');
     }
   }
 
@@ -615,7 +677,11 @@ class HomeController extends GetxController {
   }
 
   void setupSharedAlarmListener() {
-    if (userModel.value == null) return;
+    if (userModel.value == null || FirebaseAuth.instance.currentUser == null) {
+      debugPrint(
+          '⚠️ Skipping shared alarm listener; FirebaseAuth user is null');
+      return;
+    }
 
     debugPrint('🎧 Setting up real-time shared alarm listener...');
 
@@ -707,7 +773,10 @@ class HomeController extends GetxController {
   }
 
   Future<void> forceRefreshSharedAlarms() async {
-    if (userModel.value == null) return;
+    if (userModel.value == null || FirebaseAuth.instance.currentUser == null) {
+      debugPrint('⚠️ Skipping shared alarm refresh; FirebaseAuth user is null');
+      return;
+    }
 
     try {
       debugPrint('🔄 Force refreshing shared alarms on app startup...');
@@ -853,8 +922,9 @@ class HomeController extends GetxController {
         AlarmModel alarmRecord = genFakeAlarmModel();
 
         // Get local non-shared alarms from Isar
+        final ownerId = userModel.value?.id ?? '';
         AlarmModel isarLatestAlarm =
-            await IsarDb.getLatestAlarm(alarmRecord, true);
+          await IsarDb.getLatestAlarm(alarmRecord, true, ownerId);
 
         // Get shared alarms from Firestore
         AlarmModel firestoreLatestAlarm = await FirestoreDb.getLatestAlarm(
@@ -1153,36 +1223,48 @@ class HomeController extends GetxController {
   }
 
   Future<void> fetchGoogleCalendars() async {
-    Calendars.value = (await GoogleCloudProvider.getCalenders()) ?? [];
-    if (Calendars.value.isEmpty) {
-      calendarFetchStatus.value = 'Empty';
-    } else {
-      calendarFetchStatus.value = 'Loaded';
+    try {
+      Calendars.value = (await GoogleCloudProvider.getCalenders()) ?? [];
+      if (Calendars.value.isEmpty) {
+        calendarFetchStatus.value = 'Empty';
+      } else {
+        calendarFetchStatus.value = 'Loaded';
+      }
+    } catch (e) {
+      debugPrint('❌ Error fetching calendars: $e');
+      calendarFetchStatus.value = 'Error';
     }
   }
 
   Future<void> fetchEvents(String calenderId) async {
-    Events.value = await GoogleCloudProvider.getEvents(calenderId) ?? [];
-    if (Events.value.isEmpty) {
-      calendarFetchStatus.value = 'Empty';
-      // print("DEBUG: Events list is empty. Setting status to Empty.");
-      Get.snackbar('Events', 'No events available');
-    } else {
-      calendarFetchStatus.value = 'Loaded';
-      isCalender.value = false;
+    try {
+      Events.value = await GoogleCloudProvider.getEvents(calenderId) ?? [];
+      if (Events.value.isEmpty) {
+        calendarFetchStatus.value = 'Empty';
+        Get.snackbar('Events', 'No events available');
+      } else {
+        calendarFetchStatus.value = 'Loaded';
+        isCalender.value = false;
+      }
+      print(Events.value);
+    } catch (e) {
+      debugPrint('❌ Error fetching events: $e');
+      calendarFetchStatus.value = 'Error';
     }
-    print(Events.value);
   }
 
   Future<void> setAlarmFromEvent(CalendarApi.Event event, String date) async {
     AlarmModel alarmModel = genFakeAlarmModel();
-    alarmModel.alarmTime = Utils.formatDateTimeToHHMMSS(
-      event.start?.dateTime?.toLocal() ?? event.start!.date!.toLocal(),
-    );
+    final eventStart =
+        event.start?.dateTime?.toLocal() ?? event.start!.date!.toLocal();
+    alarmModel.alarmTime = Utils.formatDateTimeToHHMMSS(eventStart);
     alarmModel.isEnabled = true;
-    alarmModel.intervalToAlarm = Utils.calculateTimeDifference(
-      event.start?.dateTime ?? event.start!.date!,
-    );
+    alarmModel.intervalToAlarm = Utils.calculateTimeDifference(eventStart);
+    alarmModel.minutesSinceMidnight =
+        Utils.timeOfDayToInt(TimeOfDay.fromDateTime(eventStart));
+    alarmModel.alarmDate = '${eventStart.year.toString().padLeft(4, '0')}'
+        '-${eventStart.month.toString().padLeft(2, '0')}'
+        '-${eventStart.day.toString().padLeft(2, '0')}';
     alarmModel.ringOn = true;
 
     alarmModel.label = event.summary!;
@@ -1555,23 +1637,29 @@ class HomeController extends GetxController {
   }
 
   // Method to clear the last scheduled alarm tracking data
-  Future<void> clearLastScheduledAlarm() async {
+  Future<void> clearLastScheduledAlarm({AlarmModel? alarm}) async {
     // Check if we have a valid alarm type flag
-    if (lastScheduledAlarmIsShared == null) {
+    if (alarm == null && lastScheduledAlarmIsShared == null) {
       debugPrint(
           '⚠️ Warning: lastScheduledAlarmIsShared is null, defaulting to false');
       lastScheduledAlarmIsShared = false;
     }
 
-    bool isShared = lastScheduledAlarmIsShared ?? false;
+    bool isShared =
+        alarm?.isSharedAlarmEnabled ?? lastScheduledAlarmIsShared ?? false;
+    String alarmId = isShared
+        ? (alarm?.firestoreId ?? lastScheduledAlarmId ?? '')
+        : (alarm?.alarmID.toString() ?? lastScheduledLocalAlarmId ?? '');
     debugPrint('🔔 Clearing ${isShared ? "SHARED" : "LOCAL"} alarm');
 
-    // Use the cancelSpecificAlarm method in our native channel
-    // This will only cancel the specific alarm type (shared or local) that rang
-    // without canceling other scheduled alarms
-    await alarmChannel.invokeMethod('cancelSpecificAlarm', {
-      'isSharedAlarm': isShared,
-    });
+    try {
+      await alarmChannel.invokeMethod('cancelAlarmById', {
+        'alarmID': alarmId,
+        'isSharedAlarm': isShared,
+      });
+    } catch (e) {
+      debugPrint('⚠️ cancelAlarmById failed: $e');
+    }
 
     // Only clear tracking for the specific type of alarm
     if (isShared) {
@@ -1749,7 +1837,12 @@ class HomeController extends GetxController {
 
   /// Sets up a listener for user notifications (works as backup when push notifications fail)
   void setupUserNotificationListener() {
-    if (userModel.value == null) return;
+    final authUid = FirebaseAuth.instance.currentUser?.uid;
+    if (userModel.value == null || authUid == null) {
+      debugPrint(
+          '⚠️ Skipping user notification listener; FirebaseAuth user is null');
+      return;
+    }
 
     // Cancel existing subscription first to prevent multiple listeners
     _userNotificationSubscription?.cancel();
@@ -1758,7 +1851,7 @@ class HomeController extends GetxController {
 
     _userNotificationSubscription = FirebaseFirestore.instance
         .collection('userNotifications')
-        .doc(userModel.value!.id)
+        .doc(authUid)
         .collection('notifications')
         .where('read', isEqualTo: false)
         .where('type', isEqualTo: 'alarm_update')

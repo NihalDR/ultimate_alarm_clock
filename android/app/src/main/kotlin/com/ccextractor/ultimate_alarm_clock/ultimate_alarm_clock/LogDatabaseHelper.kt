@@ -9,7 +9,7 @@ class LogDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_N
 
     companion object {
         private const val DATABASE_NAME = "AlarmLogs.db"
-        private const val DATABASE_VERSION = 1
+        private const val DATABASE_VERSION = 2
         private const val TABLE_NAME = "LOG"
         private const val COLUMN_LOG_ID = "LogID"
         private const val COLUMN_LOG_TIME = "LogTime"
@@ -45,14 +45,27 @@ class LogDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_N
                 LogType TEXT CHECK(LogType IN ('DEV', 'NORMAL')) NOT NULL,
                 Message TEXT NOT NULL,
                 HasRung INTEGER DEFAULT 0,
-                AlarmID TEXT
+                AlarmID TEXT,
+                OwnerId TEXT
             )
         """.trimIndent()
         db?.execSQL(createTableQuery)
     }
 
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
-        // Drop the table if it exists and recreate it
+        if (oldVersion < 2) {
+            try {
+                db?.execSQL("ALTER TABLE $TABLE_NAME ADD COLUMN OwnerId TEXT")
+            } catch (e: Exception) {
+                if (!e.message.orEmpty().contains("duplicate column")) {
+                    throw e
+                }
+            }
+        }
+    }
+
+    override fun onDowngrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
+        // Keep behavior consistent with upgrades to avoid crashes on version mismatch
         db?.execSQL("DROP TABLE IF EXISTS $TABLE_NAME")
         onCreate(db)
     }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:flutter/services.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/controllers/add_or_update_alarm_controller.dart';
 import 'package:ultimate_alarm_clock/app/modules/settings/controllers/theme_controller.dart';
@@ -43,7 +44,10 @@ class GuardianAngel extends StatelessWidget {
                     child: InternationalPhoneNumberInput(
                       textFieldController:
                           controller.contactTextEditingController,
-                      onInputChanged: (value) {},
+                      onInputChanged: (value) {
+                        controller.guardian.value =
+                            value.phoneNumber?.trim() ?? '';
+                      },
                       onInputValidated: (value) {},
                       spaceBetweenSelectorAndTextField: 0,
                       selectorConfig: SelectorConfig(
@@ -53,6 +57,33 @@ class GuardianAngel extends StatelessWidget {
                         trailingSpace: false,
                         countryComparator: controller.orderedCountryCode,
                       ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 8.0,
+                      horizontal: 12.0,
+                    ),
+                    child: TextFormField(
+                      initialValue: controller.guardianTimer.value.toString(),
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      decoration: InputDecoration(
+                        labelText: 'Guardian Timer (seconds)'.tr,
+                        hintText: '120'.tr,
+                        filled: true,
+                        fillColor:
+                            themeController.secondaryBackgroundColor.value,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onChanged: (value) {
+                        final parsed = int.tryParse(value);
+                        if (parsed != null && parsed > 0) {
+                          controller.guardianTimer.value = parsed;
+                        }
+                      },
                     ),
                   ),
                   Padding(
@@ -217,9 +248,16 @@ class GuardianAngel extends StatelessWidget {
             child: InkWell(
               borderRadius: BorderRadius.circular(28),
               onTap: () {
-                if (controller.contactTextEditingController.text.isNotEmpty) {
-                  controller.guardian.value =
-                      controller.contactTextEditingController.text;
+                final String guardianPhone =
+                    controller.guardian.value.trim().isNotEmpty
+                        ? controller.guardian.value.trim()
+                        : controller.contactTextEditingController.text.trim();
+
+                if (guardianPhone.isNotEmpty) {
+                  controller.guardian.value = guardianPhone;
+                  if (controller.guardianTimer.value <= 0) {
+                    controller.guardianTimer.value = 120;
+                  }
                   controller.isGuardian.value = true;
                   Get.back();
                 } else {

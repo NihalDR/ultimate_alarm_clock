@@ -48,6 +48,7 @@ class AlarmRingController extends GetxController {
   SettingsController settingsController = Get.find<SettingsController>();
   RxBool get is24HourFormat => settingsController.is24HrsEnabled;
   Rx<AlarmModel> currentlyRingingAlarm = Utils.alarmModelInit.obs;
+  final RxList<bool> taskCompletion = <bool>[].obs;
   final formattedDate = Utils.getFormattedDate(DateTime.now()).obs;
   final timeNow =
       Utils.convertTo12HourFormat(Utils.timeOfDayToString(TimeOfDay.now())).obs;
@@ -68,8 +69,9 @@ class AlarmRingController extends GetxController {
     AlarmModel _alarmRecord = homeController.genFakeAlarmModel();
     
   
+    final ownerId = _userModel?.id ?? '';
     AlarmModel isarLatestAlarm =
-        await IsarDb.getLatestAlarm(_alarmRecord, true);
+      await IsarDb.getLatestAlarm(_alarmRecord, true, ownerId);
     
   
     AlarmModel firestoreLatestAlarm =
@@ -175,6 +177,25 @@ class AlarmRingController extends GetxController {
     debugPrint('🔔 Foreground lock released (FGBG subscription cancelled)');
   }
 
+  Future<void> stopRingingNow() async {
+    if (isPreviewMode.value) {
+      return;
+    }
+
+    Vibration.cancel();
+    vibrationTimer?.cancel();
+    isAlarmActive = false;
+    await AudioUtils.stopAlarm(
+      ringtoneName: currentlyRingingAlarm.value.ringtoneName,
+    );
+  }
+
+  Future<void> clearCurrentAlarmSchedule() async {
+    await homeController.clearLastScheduledAlarm(
+      alarm: currentlyRingingAlarm.value,
+    );
+  }
+
   Future<void> _fadeInAlarmVolume() async {
     if (currentlyRingingAlarm.value.volMin == 0 &&
         currentlyRingingAlarm.value.volMax == 0) {
@@ -241,6 +262,17 @@ class AlarmRingController extends GetxController {
         }
       }
     });
+  }
+
+  void _initializeTaskCompletion() {
+    final tasks = currentlyRingingAlarm.value.tasks;
+    taskCompletion.value = List<bool>.filled(tasks.length, false);
+  }
+
+  void toggleTaskCompletion(int index) {
+    if (index < 0 || index >= taskCompletion.length) return;
+    taskCompletion[index] = !taskCompletion[index];
+    taskCompletion.refresh();
   }
   
   Future<void> _initializeSunriseEffect() async {
@@ -345,6 +377,8 @@ class AlarmRingController extends GetxController {
       isPreviewMode.value = false;
     }
 
+    _initializeTaskCompletion();
+
     // Initialize maxSnoozeCount with the correct value from alarm model
     // For local alarms, try to get fresh data from database
     // For shared alarms, use the value from the alarm model
@@ -434,7 +468,14 @@ class AlarmRingController extends GetxController {
       // Log detailed alarm ringing (NORMAL - always visible)
       String alarmType = currentlyRingingAlarm.value.isSharedAlarmEnabled ? 'SHARED' : 'LOCAL';
       String ringMessage = IsarDb.buildDetailedAlarmRingMessage(currentlyRingingAlarm.value, alarmType);
-      await IsarDb().insertLog(ringMessage, status: Status.success, type: LogType.normal, hasRung: 1);
+      await IsarDb().insertLog(
+        ringMessage,
+        status: Status.success,
+        type: LogType.normal,
+        hasRung: 1,
+        ownerId: currentlyRingingAlarm.value.ownerId,
+        alarmId: currentlyRingingAlarm.value.alarmID,
+      );
     }
 
     startTimer();

@@ -68,15 +68,20 @@ class AlarmRingView extends GetView<AlarmRingController> {
             children: [
               // Sunrise Effect Background
               Obx(() => SunriseEffectWidget(
-                isEnabled: controller.currentlyRingingAlarm.value.isSunriseEnabled,
-                durationMinutes: controller.currentlyRingingAlarm.value.sunriseDuration,
-                maxIntensity: controller.currentlyRingingAlarm.value.sunriseIntensity,
-                colorScheme: SunriseColorScheme.values[controller.currentlyRingingAlarm.value.sunriseColorScheme.clamp(0, 2)],
-                onComplete: () {
-                  debugPrint('Sunrise effect completed');
-                },
-              )),
-              
+                    isEnabled:
+                        controller.currentlyRingingAlarm.value.isSunriseEnabled,
+                    durationMinutes:
+                        controller.currentlyRingingAlarm.value.sunriseDuration,
+                    maxIntensity:
+                        controller.currentlyRingingAlarm.value.sunriseIntensity,
+                    colorScheme: SunriseColorScheme.values[controller
+                        .currentlyRingingAlarm.value.sunriseColorScheme
+                        .clamp(0, 2)],
+                    onComplete: () {
+                      debugPrint('Sunrise effect completed');
+                    },
+                  )),
+
               // Original UI Content
               Center(
                 child: Column(
@@ -113,7 +118,8 @@ class AlarmRingView extends GetView<AlarmRingController> {
                             () => Visibility(
                               visible: controller.isSnoozing.value,
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
                                 children: [
                                   getAddSnoozeButtons(context, 1, '+1 min'),
                                   getAddSnoozeButtons(context, 2, '+2 min'),
@@ -146,6 +152,104 @@ class AlarmRingView extends GetView<AlarmRingController> {
                       },
                     ),
                     Obx(
+                      () {
+                        final tasks =
+                            controller.currentlyRingingAlarm.value.tasks;
+                        if (tasks.isEmpty) {
+                          return const SizedBox();
+                        }
+
+                        return Container(
+                          width: width * 0.8,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 10,
+                          ),
+                          decoration: BoxDecoration(
+                            color: themeController
+                                .secondaryBackgroundColor.value
+                                .withOpacity(0.75),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'Tasks'.tr,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge!
+                                    .copyWith(
+                                      color: themeController
+                                          .primaryTextColor.value,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                              ),
+                              const SizedBox(height: 8),
+                              SizedBox(
+                                height: height * 0.18,
+                                child: ListView.builder(
+                                  itemCount: tasks.length,
+                                  itemBuilder: (context, index) {
+                                    final isDone =
+                                        controller.taskCompletion.length >
+                                                index &&
+                                            controller.taskCompletion[index];
+
+                                    return InkWell(
+                                      onTap: () {
+                                        Utils.hapticFeedback();
+                                        controller.toggleTaskCompletion(index);
+                                      },
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 4.0,
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Icon(
+                                              isDone
+                                                  ? Icons.check_circle
+                                                  : Icons
+                                                      .radio_button_unchecked,
+                                              color: isDone
+                                                  ? kprimaryColor
+                                                  : themeController
+                                                      .primaryDisabledTextColor
+                                                      .value,
+                                              size: 20,
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Expanded(
+                                              child: Text(
+                                                tasks[index],
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .bodyMedium!
+                                                    .copyWith(
+                                                      color: themeController
+                                                          .primaryTextColor
+                                                          .value,
+                                                      decoration: isDone
+                                                          ? TextDecoration
+                                                              .lineThrough
+                                                          : TextDecoration.none,
+                                                    ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                    Obx(
                       () => Visibility(
                         visible: !controller.isSnoozing.value,
                         child: Obx(
@@ -159,7 +263,8 @@ class AlarmRingView extends GetView<AlarmRingController> {
                                   width: width * 0.5,
                                   child: TextButton(
                                     style: ButtonStyle(
-                                      backgroundColor: MaterialStateProperty.all(
+                                      backgroundColor:
+                                          MaterialStateProperty.all(
                                         themeController
                                             .secondaryBackgroundColor.value,
                                       ),
@@ -222,36 +327,38 @@ class AlarmRingView extends GetView<AlarmRingController> {
                         onPressed: () async {
                           Utils.hapticFeedback();
                           debugPrint('🔔 Dismiss button pressed');
-                          
+
                           // Handle preview mode differently
                           if (controller.isPreviewMode.value) {
-                            debugPrint('🔔 Preview mode - simple navigation back');
+                            debugPrint(
+                                '🔔 Preview mode - simple navigation back');
                             controller.cancelForegroundLock();
                             Get.offAllNamed('/bottom-navigation-bar');
                             return;
-                          } 
+                          }
                           controller.cancelForegroundLock();
+                          await controller.stopRingingNow();
 
-                          if (controller.currentlyRingingAlarm.value.isGuardian) {
+                          if (controller
+                              .currentlyRingingAlarm.value.isGuardian) {
                             controller.guardianTimer.cancel();
                             debugPrint('🔔 Guardian timer canceled');
                           }
-                          
-                          
-                          if (controller.currentlyRingingAlarm.value.isSharedAlarmEnabled) {
+
+                          if (controller.currentlyRingingAlarm.value
+                              .isSharedAlarmEnabled) {
                             controller.rememberDismissedAlarm();
-                            debugPrint('🔔 Blocked shared alarm: ${controller.currentlyRingingAlarm.value.alarmTime}, ID: ${controller.currentlyRingingAlarm.value.firestoreId}');
+                            debugPrint(
+                                '🔔 Blocked shared alarm: ${controller.currentlyRingingAlarm.value.alarmTime}, ID: ${controller.currentlyRingingAlarm.value.firestoreId}');
                           }
-                          
-                          
-                          await controller.homeController.clearLastScheduledAlarm();
+
+                          await controller.clearCurrentAlarmSchedule();
                           debugPrint('🔔 Cleared all scheduled alarms');
-                          
-                          
+
                           controller.homeController.refreshTimer = true;
-                          debugPrint('🔔 Set refresh flag for alarm scheduling');
-                          
-                          
+                          debugPrint(
+                              '🔔 Set refresh flag for alarm scheduling');
+
                           if (Utils.isChallengeEnabled(
                             controller.currentlyRingingAlarm.value,
                           )) {

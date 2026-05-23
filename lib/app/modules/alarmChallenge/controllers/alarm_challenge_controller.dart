@@ -94,7 +94,7 @@ class AlarmChallengeController extends GetxController {
 
     String ringtoneName = alarmRecord.ringtoneName;
 
-    AudioUtils.stopAlarm(ringtoneName: ringtoneName);
+    await AudioUtils.stopAlarm(ringtoneName: ringtoneName);
     if (alarmRecord.isShakeEnabled) {
       isShakeOngoing.listen((value) {
         if (value == Status.ongoing) {
@@ -276,17 +276,16 @@ class AlarmChallengeController extends GetxController {
     String ringtoneName = alarmRecord.ringtoneName;
 
     if (!Utils.isChallengeEnabled(alarmRecord)) {
-      AudioUtils.stopAlarm(ringtoneName: ringtoneName);
+      await AudioUtils.stopAlarm(ringtoneName: ringtoneName);
     } else {
-      AudioUtils.playAlarm(alarmRecord: alarmRecord);
+      await AudioUtils.playAlarm(alarmRecord: alarmRecord);
     }
   }
+
   void removeDigit() {
-  if (displayValue.value.isNotEmpty) {
-    displayValue.value = displayValue.value.substring(
-      0, 
-      displayValue.value.length - 1
-    );
+    if (displayValue.value.isNotEmpty) {
+      displayValue.value =
+          displayValue.value.substring(0, displayValue.value.length - 1);
+    }
   }
-}
 }

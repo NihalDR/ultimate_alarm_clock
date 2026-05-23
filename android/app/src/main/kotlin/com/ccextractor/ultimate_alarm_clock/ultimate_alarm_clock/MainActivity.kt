@@ -23,7 +23,12 @@ import android.os.PowerManager
 import android.provider.Settings
 import android.util.Log
 import android.view.WindowManager
+import android.Manifest
+import android.content.pm.PackageManager
+import android.telephony.SmsManager
+import android.telephony.SubscriptionManager
 import androidx.annotation.NonNull
+import androidx.core.content.ContextCompat
 import com.ccextractor.ultimate_alarm_clock.getLatestTimer
 import com.ccextractor.ultimate_alarm_clock.ultimate_alarm_clock.AlarmUtils
 import com.ccextractor.ultimate_alarm_clock.LogDatabaseHelper
@@ -444,6 +449,44 @@ class MainActivity : FlutterActivity() {
                 } else {
                     Log.d("MainActivity", "No persisted shared alarm found")
                     result.success(null)
+                }
+            } else if (call.method == "sendSms") {
+                val phoneNo = call.argument<String>("phoneNo") ?: ""
+                val message = call.argument<String>("message") ?: ""
+
+                if (phoneNo.isEmpty() || message.isEmpty()) {
+                    result.error("INVALID_ARGUMENT", "phoneNo and message are required", null)
+                    return@setMethodCallHandler
+                }
+
+                if (ContextCompat.checkSelfPermission(
+                        this,
+                        Manifest.permission.SEND_SMS
+                    ) != PackageManager.PERMISSION_GRANTED
+                ) {
+                    result.error("PERMISSION_DENIED", "SEND_SMS permission not granted", null)
+                    return@setMethodCallHandler
+                }
+
+                try {
+                    val smsManager: SmsManager = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        val subId = SubscriptionManager.getDefaultSmsSubscriptionId()
+                        if (subId != SubscriptionManager.INVALID_SUBSCRIPTION_ID) {
+                            SmsManager.getSmsManagerForSubscriptionId(subId)
+                        } else {
+                            @Suppress("DEPRECATION")
+                            SmsManager.getDefault()
+                        }
+                    } else {
+                        @Suppress("DEPRECATION")
+                        SmsManager.getDefault()
+                    }
+
+                    smsManager.sendTextMessage(phoneNo, null, message, null, null)
+                    result.success(true)
+                } catch (e: Exception) {
+                    Log.e("MainActivity", "SMS send failed: ${e.message}")
+                    result.error("SMS_FAILED", e.message, null)
                 }
             } else {
                 result.notImplemented()

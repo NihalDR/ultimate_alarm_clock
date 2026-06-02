@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
-import 'package:googleapis/calendar/v3.dart' as CalendarApi;
+import 'package:googleapis/calendar/v3.dart' as calendar_api;
 import 'package:intl/intl.dart';
 import 'package:rxdart/rxdart.dart' as rx;
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -10,21 +10,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:ultimate_alarm_clock/app/data/models/alarm_model.dart';
-import 'package:ultimate_alarm_clock/app/data/models/quote_model.dart';
-import 'package:ultimate_alarm_clock/app/data/models/user_model.dart';
-import 'package:ultimate_alarm_clock/app/data/providers/firestore_provider.dart';
-import 'package:ultimate_alarm_clock/app/data/providers/get_storage_provider.dart';
-import 'package:ultimate_alarm_clock/app/data/providers/isar_provider.dart';
-import 'package:ultimate_alarm_clock/app/data/providers/secure_storage_provider.dart';
-import 'package:ultimate_alarm_clock/app/modules/settings/controllers/theme_controller.dart';
-import 'package:ultimate_alarm_clock/app/utils/constants.dart';
-import 'package:ultimate_alarm_clock/app/utils/shared_alarm_logger.dart';
-import 'package:ultimate_alarm_clock/app/utils/utils.dart';
-import 'package:ultimate_alarm_clock/app/modules/timer/controllers/timer_controller.dart';
-
+import '../../../data/models/alarm_model.dart';
 import '../../../data/models/profile_model.dart';
+import '../../../data/models/user_model.dart';
+import '../../../data/providers/firestore_provider.dart';
+import '../../../data/providers/get_storage_provider.dart';
 import '../../../data/providers/google_cloud_api_provider.dart';
+import '../../../data/providers/isar_provider.dart';
+import '../../../data/providers/secure_storage_provider.dart';
+import '../../../utils/constants.dart';
+import '../../../utils/shared_alarm_logger.dart';
+import '../../../utils/utils.dart';
+import '../../settings/controllers/theme_controller.dart';
 
 class Pair<T, U> {
   final T first;
@@ -35,7 +32,8 @@ class Pair<T, U> {
 
 class HomeController extends GetxController {
   static const String _webClientId =
-      '570321397153-9a9karigj3uhd7k18aerbe3fg845f333.apps.googleusercontent.com';
+      '570321397153-9a9karigj3uhd7k18aerbe3fg845f333.'
+      'apps.googleusercontent.com';
 
   MethodChannel alarmChannel = const MethodChannel('ulticlock');
 
@@ -59,7 +57,7 @@ class HomeController extends GetxController {
   final GoogleSignIn _googleSignIn = GoogleSignIn(
     serverClientId: _webClientId,
     scopes: <String>[
-      CalendarApi.CalendarApi.calendarScope,
+      calendar_api.CalendarApi.calendarScope,
     ],
   );
   final Rx<UserModel?> userModel = Rx<UserModel?>(null);
@@ -85,8 +83,8 @@ class HomeController extends GetxController {
   final RxDouble selecteddurationDouble = 0.0.obs;
 
   ThemeController themeController = Get.find<ThemeController>();
-  RxList Calendars = [].obs;
-  RxList Events = [].obs;
+  RxList calendars = [].obs;
+  RxList events = [].obs;
   final RxString calendarFetchStatus = 'Loading'.obs;
   final RxString selectedCalendar = ''.obs;
   RxBool isCalender = true.obs;
@@ -110,7 +108,7 @@ class HomeController extends GetxController {
   bool isRefreshing = false;
 
   // Cache to prevent rapid rescheduling of the same alarm
-  Map<String, int> _recentScheduleCache = {};
+  final Map<String, int> _recentScheduleCache = {};
 
   bool preventSharedAlarmRescheduling = false;
 
@@ -183,10 +181,13 @@ class HomeController extends GetxController {
     isarStreamAlarms = IsarDb.getAlarmsForOwner(selectedProfile.value, ownerId);
 
     if (user != null && FirebaseAuth.instance.currentUser != null) {
+      final currentUser = user;
       // Only create Firestore stream if user is signed in
-      firestoreStreamAlarms = FirestoreDb.getSharedAlarms(user);
+      firestoreStreamAlarms = FirestoreDb.getSharedAlarms(currentUser);
       debugPrint(
-          '✅ Streams created - Isar: ${isarStreamAlarms != null}, Firestore: ${firestoreStreamAlarms != null}');
+        '✅ Streams created - Isar: ${isarStreamAlarms != null}, '
+        'Firestore: ${firestoreStreamAlarms != null}',
+      );
 
       Stream<List<AlarmModel>> streamAlarms = rx.Rx.combineLatest2(
         firestoreStreamAlarms!,
@@ -200,10 +201,10 @@ class HomeController extends GetxController {
           latestFirestoreAlarms = firestoreDocuments.map((doc) {
             return AlarmModel.fromDocumentSnapshot(
               documentSnapshot: doc,
-              user: user,
+              user: currentUser,
             );
           }).where((alarm) {
-            if (alarm.isSharedAlarmEnabled && user != null) {
+            if (alarm.isSharedAlarmEnabled) {
               final docData = firestoreDocuments
                   .firstWhere((d) => d.id == alarm.firestoreId)
                   .data() as Map<String, dynamic>?;
@@ -211,9 +212,11 @@ class HomeController extends GetxController {
               if (docData != null) {
                 final dismissedByUsers =
                     List<String>.from(docData['dismissedByUsers'] ?? []);
-                if (dismissedByUsers.contains(user.id)) {
+                if (dismissedByUsers.contains(currentUser.id)) {
                   debugPrint(
-                      '🚫 Filtering out dismissed shared alarm: ${alarm.firestoreId}');
+                    '🚫 Filtering out dismissed shared alarm: '
+                    '${alarm.firestoreId}',
+                  );
                   return false; // Exclude this alarm
                 }
               }
@@ -231,9 +234,11 @@ class HomeController extends GetxController {
               .toSet();
 
           latestIsarAlarms = (isarData as List<AlarmModel>)
-              .where((alarm) =>
-                  !sharedAlarmIds.contains(alarm.alarmID) &&
-                  !sharedFirestoreIds.contains(alarm.firestoreId ?? ''))
+              .where(
+                (alarm) =>
+                    !sharedAlarmIds.contains(alarm.alarmID) &&
+                    !sharedFirestoreIds.contains(alarm.firestoreId ?? ''),
+              )
               .toList();
 
           List<AlarmModel> alarms = [
@@ -246,7 +251,9 @@ class HomeController extends GetxController {
           debugPrint('   - Local alarms: ${latestIsarAlarms.length}');
           for (int i = 0; i < alarms.length && i < 3; i++) {
             debugPrint(
-                '   - Alarm ${i + 1}: ${alarms[i].alarmTime} (${alarms[i].isSharedAlarmEnabled ? 'Shared' : 'Local'})');
+              '   - Alarm ${i + 1}: ${alarms[i].alarmTime} '
+              '(${alarms[i].isSharedAlarmEnabled ? 'Shared' : 'Local'})',
+            );
           }
 
           if (isSortedAlarmListEnabled.value) {
@@ -254,7 +261,8 @@ class HomeController extends GetxController {
               final String timeA = a.alarmTime;
               final String timeB = b.alarmTime;
 
-              // Convert the alarm time strings to DateTime objects for comparison
+              // Convert the alarm time strings to DateTime objects for
+              // comparison
               DateTime dateTimeA = DateFormat('HH:mm').parse(timeA);
               DateTime dateTimeB = DateFormat('HH:mm').parse(timeB);
 
@@ -276,7 +284,7 @@ class HomeController extends GetxController {
               bool aRepeats = a.days.any((day) => day);
               bool bRepeats = b.days.any((day) => day);
 
-              // If alarm repeats on any day, find the next up+coming day
+              // If alarm repeats on any day, find the next upcoming day
               if (aRepeats) {
                 int currentDay = DateTime.now().weekday - 1;
                 for (int i = 0; i < a.days.length; i++) {
@@ -287,7 +295,8 @@ class HomeController extends GetxController {
                   }
                 }
               } else {
-                // If alarm is one-time and has already passed, set upcoming time
+                // If alarm is one-time and has already passed, set upcoming
+                // time
                 // to next day
                 if (aUpcomingTime <=
                     DateTime.now().hour * 60 + DateTime.now().minute) {
@@ -305,7 +314,8 @@ class HomeController extends GetxController {
                   }
                 }
               } else {
-                // If alarm is one-time and has already passed, set upcoming time
+                // If alarm is one-time and has already passed, set upcoming
+                // time
                 // to next day
                 if (bUpcomingTime <=
                     DateTime.now().hour * 60 + DateTime.now().minute) {
@@ -325,7 +335,9 @@ class HomeController extends GetxController {
     } else {
       // User not signed in - only use local alarms
       debugPrint(
-          '✅ Streams created - Isar: ${isarStreamAlarms != null}, Firestore: false (user not signed in)');
+        '✅ Streams created - Isar: ${isarStreamAlarms != null}, '
+        'Firestore: false (user not signed in)',
+      );
 
       Stream<List<AlarmModel>> streamAlarms = isarStreamAlarms!.map((isarData) {
         debugPrint('📊 Stream data received (local only):');
@@ -340,7 +352,9 @@ class HomeController extends GetxController {
         debugPrint('   - Shared alarms: 0 (user not signed in)');
         debugPrint('   - Local alarms: ${latestIsarAlarms.length}');
         for (int i = 0; i < alarms.length && i < 3; i++) {
-          debugPrint('   - Alarm ${i + 1}: ${alarms[i].alarmTime} (Local)');
+          debugPrint(
+            '   - Alarm ${i + 1}: ${alarms[i].alarmTime} (Local)',
+          );
         }
 
         if (isSortedAlarmListEnabled.value) {
@@ -423,7 +437,7 @@ class HomeController extends GetxController {
     selectedProfile.value = profileName;
     ProfileModel? p = await IsarDb.getProfile(profileName);
     if (p != null) {
-      profileModel.value = p!;
+      profileModel.value = p;
     }
   }
 
@@ -432,7 +446,7 @@ class HomeController extends GetxController {
     selectedProfile.value = name;
     ProfileModel? p = await IsarDb.getProfile(name);
     if (p != null) {
-      profileModel.value = p!;
+      profileModel.value = p;
     }
   }
 
@@ -452,7 +466,7 @@ class HomeController extends GetxController {
     final checkDefault = await IsarDb.getProfile('Default');
     if (checkDefault == null) {
       IsarDb.addProfile(Utils.genDefaultProfileModel());
-      await storage.writeProfile("Default");
+      await storage.writeProfile('Default');
       profileModel.value = Utils.genDefaultProfileModel();
     }
     readProfileName();
@@ -461,7 +475,9 @@ class HomeController extends GetxController {
     debugPrint('🔐 User authentication check:');
     debugPrint('   - Stored user model: ${userModel.value?.email ?? 'null'}');
     debugPrint(
-        '   - Firebase user: ${FirebaseAuth.instance.currentUser?.email ?? 'null'}');
+      '   - Firebase user: '
+      '${FirebaseAuth.instance.currentUser?.email ?? 'null'}',
+    );
 
     final firebaseUser = FirebaseAuth.instance.currentUser;
 
@@ -556,7 +572,8 @@ class HomeController extends GetxController {
         refreshUpcomingAlarms();
       } else {
         debugPrint(
-            '❌ No stored user model found, creating from Firebase user...');
+          '❌ No stored user model found, creating from Firebase user...',
+        );
         await _createUserModelFromFirebaseUser();
       }
     } catch (e) {
@@ -593,7 +610,8 @@ class HomeController extends GetxController {
       final firebaseUser = FirebaseAuth.instance.currentUser;
       if (firebaseUser != null) {
         debugPrint(
-            '🔧 Creating user model from Firebase user: ${firebaseUser.email}');
+          '🔧 Creating user model from Firebase user: ${firebaseUser.email}',
+        );
 
         // Extract name parts
         String fullName =
@@ -663,7 +681,8 @@ class HomeController extends GetxController {
 
         if (alarmDateTime.isAfter(now)) {
           debugPrint(
-              '⏰ Persisted shared alarm is still valid, keeping it scheduled');
+            '⏰ Persisted shared alarm is still valid, keeping it scheduled',
+          );
         } else {
           debugPrint('🗑️ Persisted shared alarm is in the past, clearing it');
           await alarmChannel.invokeMethod('clearSharedAlarmCache');
@@ -679,7 +698,8 @@ class HomeController extends GetxController {
   void setupSharedAlarmListener() {
     if (userModel.value == null || FirebaseAuth.instance.currentUser == null) {
       debugPrint(
-          '⚠️ Skipping shared alarm listener; FirebaseAuth user is null');
+        '⚠️ Skipping shared alarm listener; FirebaseAuth user is null',
+      );
       return;
     }
 
@@ -688,88 +708,107 @@ class HomeController extends GetxController {
     _sharedAlarmSubscription?.cancel();
     _sharedAlarmSubscription = FirebaseFirestore.instance
         .collection('sharedAlarms')
-        .where(Filter.or(
-          Filter('sharedUserIds', arrayContains: userModel.value!.id),
-          Filter('ownerId', isEqualTo: userModel.value!.id),
-        ))
+        .where(
+          Filter.or(
+            Filter('sharedUserIds', arrayContains: userModel.value!.id),
+            Filter('ownerId', isEqualTo: userModel.value!.id),
+          ),
+        )
         .snapshots(includeMetadataChanges: false)
-        .listen((QuerySnapshot snapshot) {
-      debugPrint(
-          '📡 Received shared alarm update: ${snapshot.docChanges.length} changes');
+        .listen(
+      (QuerySnapshot snapshot) {
+        debugPrint(
+          '📡 Received shared alarm update: '
+          '${snapshot.docChanges.length} changes',
+        );
 
-      for (DocumentChange change in snapshot.docChanges) {
-        if (change.type == DocumentChangeType.modified) {
-          try {
-            AlarmModel updatedAlarm = AlarmModel.fromDocumentSnapshot(
-              documentSnapshot: change.doc,
-              user: userModel.value!,
-            );
-
-            // Check if this alarm was updated by another user (not current user)
-            Map<String, dynamic>? docData =
-                change.doc.data() as Map<String, dynamic>?;
-            String? lastEditedUserId = docData?['lastEditedUserId'];
-            String? currentUserId = userModel.value?.id;
-
-            debugPrint('🔍 Alarm update detected:');
-            debugPrint('   - Alarm ID: ${updatedAlarm.firestoreId}');
-            debugPrint('   - Alarm Time: ${updatedAlarm.alarmTime}');
-            debugPrint('   - Edited by: $lastEditedUserId');
-            debugPrint('   - Current user: $currentUserId');
-            debugPrint('   - Is enabled: ${updatedAlarm.isEnabled}');
-            debugPrint('   - Is shared: ${updatedAlarm.isSharedAlarmEnabled}');
-
-            if (updatedAlarm.isEnabled && updatedAlarm.isSharedAlarmEnabled) {
-              TimeOfDay alarmTimeOfDay =
-                  Utils.stringToTimeOfDay(updatedAlarm.alarmTime);
-              int intervalToAlarm = Utils.getMillisecondsToAlarm(
-                DateTime.now(),
-                Utils.timeOfDayToDateTime(alarmTimeOfDay),
+        for (DocumentChange change in snapshot.docChanges) {
+          if (change.type == DocumentChangeType.modified) {
+            try {
+              AlarmModel updatedAlarm = AlarmModel.fromDocumentSnapshot(
+                documentSnapshot: change.doc,
+                user: userModel.value!,
               );
 
-              if (intervalToAlarm > 0) {
-                debugPrint(
-                    '🔄 Applying shared alarm update: ${updatedAlarm.alarmTime}');
+              // Check if this alarm was updated by another user (not current
+              // user)
+              Map<String, dynamic>? docData =
+                  change.doc.data() as Map<String, dynamic>?;
+              String? lastEditedUserId = docData?['lastEditedUserId'];
+              String? currentUserId = userModel.value?.id;
 
-                clearAlarmTracking(updatedAlarm.firestoreId ?? '', true);
+              debugPrint('🔍 Alarm update detected:');
+              debugPrint('   - Alarm ID: ${updatedAlarm.firestoreId}');
+              debugPrint('   - Alarm Time: ${updatedAlarm.alarmTime}');
+              debugPrint('   - Edited by: $lastEditedUserId');
+              debugPrint('   - Current user: $currentUserId');
+              debugPrint('   - Is enabled: ${updatedAlarm.isEnabled}');
+              debugPrint(
+                '   - Is shared: ${updatedAlarm.isSharedAlarmEnabled}',
+              );
 
-                updateSharedAlarmCache(updatedAlarm, intervalToAlarm);
+              if (updatedAlarm.isEnabled && updatedAlarm.isSharedAlarmEnabled) {
+                TimeOfDay alarmTimeOfDay =
+                    Utils.stringToTimeOfDay(updatedAlarm.alarmTime);
+                int intervalToAlarm = Utils.getMillisecondsToAlarm(
+                  DateTime.now(),
+                  Utils.timeOfDayToDateTime(alarmTimeOfDay),
+                );
 
-                debugPrint(
-                    '✅ Automatically updated shared alarm to new time: ${updatedAlarm.alarmTime}');
-
-                refreshTimer = true;
-                refreshUpcomingAlarms();
-
-                if (lastEditedUserId != null &&
-                    currentUserId != null &&
-                    lastEditedUserId != currentUserId) {
+                if (intervalToAlarm > 0) {
                   debugPrint(
-                      '👥 Alarm updated by another user - this is a receiver update');
-
-                  showSharedAlarmUpdateNotification(
-                    updatedAlarm.alarmTime,
-                    updatedAlarm.ownerName ?? 'Someone',
+                    '🔄 Applying shared alarm update: '
+                    '${updatedAlarm.alarmTime}',
                   );
+
+                  clearAlarmTracking(updatedAlarm.firestoreId ?? '', true);
+
+                  updateSharedAlarmCache(updatedAlarm, intervalToAlarm);
+
+                  debugPrint(
+                    '✅ Automatically updated shared alarm to new time: '
+                    '${updatedAlarm.alarmTime}',
+                  );
+
+                  refreshTimer = true;
+                  refreshUpcomingAlarms();
+
+                  if (lastEditedUserId != null &&
+                      currentUserId != null &&
+                      lastEditedUserId != currentUserId) {
+                    debugPrint(
+                      '👥 Alarm updated by another user - this is a receiver '
+                      'update',
+                    );
+
+                    showSharedAlarmUpdateNotification(
+                      updatedAlarm.alarmTime,
+                      updatedAlarm.ownerName,
+                    );
+                  }
+                } else {
+                  debugPrint(
+                    '⏰ Updated shared alarm time is in the past, clearing '
+                    'cache',
+                  );
+                  clearSharedAlarmCache();
                 }
               } else {
                 debugPrint(
-                    '⏰ Updated shared alarm time is in the past, clearing cache');
+                  '❌ Updated alarm is disabled or not shared, clearing cache',
+                );
                 clearSharedAlarmCache();
               }
-            } else {
-              debugPrint(
-                  '❌ Updated alarm is disabled or not shared, clearing cache');
-              clearSharedAlarmCache();
+            } catch (e) {
+              debugPrint('❌ Error processing shared alarm update: $e');
             }
-          } catch (e) {
-            debugPrint('❌ Error processing shared alarm update: $e');
           }
         }
-      }
-    }, onError: (error) {
-      debugPrint('❌ Error in shared alarm listener: $error');
-    });
+      },
+      onError: (error) {
+        debugPrint('❌ Error in shared alarm listener: $error');
+      },
+    );
   }
 
   Future<void> forceRefreshSharedAlarms() async {
@@ -783,15 +822,19 @@ class HomeController extends GetxController {
 
       QuerySnapshot sharedAlarmsSnapshot = await FirebaseFirestore.instance
           .collection('sharedAlarms')
-          .where(Filter.or(
-            Filter('sharedUserIds', arrayContains: userModel.value!.id),
-            Filter('ownerId', isEqualTo: userModel.value!.id),
-          ))
+          .where(
+            Filter.or(
+              Filter('sharedUserIds', arrayContains: userModel.value!.id),
+              Filter('ownerId', isEqualTo: userModel.value!.id),
+            ),
+          )
           .where('isEnabled', isEqualTo: true)
           .get();
 
       debugPrint(
-          '📊 Found ${sharedAlarmsSnapshot.docs.length} enabled shared alarms in Firestore');
+        '📊 Found ${sharedAlarmsSnapshot.docs.length} enabled shared alarms '
+        'in Firestore',
+      );
 
       if (sharedAlarmsSnapshot.docs.isEmpty) {
         debugPrint('❌ No shared alarms found, clearing cache');
@@ -815,7 +858,9 @@ class HomeController extends GetxController {
               Utils.getMillisecondsToAlarm(DateTime.now(), alarmDateTime);
 
           debugPrint(
-              '⏰ Checking alarm ${alarm.firestoreId}: ${alarm.alarmTime}, interval: ${intervalToAlarm}ms');
+            '⏰ Checking alarm ${alarm.firestoreId}: ${alarm.alarmTime}, '
+            'interval: ${intervalToAlarm}ms',
+          );
 
           if (intervalToAlarm > 0 &&
               (shortestInterval == -1 || intervalToAlarm < shortestInterval)) {
@@ -830,23 +875,32 @@ class HomeController extends GetxController {
 
       if (latestSharedAlarm != null && shortestInterval > 0) {
         debugPrint(
-            '🎯 Selected shared alarm: ${latestSharedAlarm.alarmTime} (ID: ${latestSharedAlarm.firestoreId})');
+          '🎯 Selected shared alarm: ${latestSharedAlarm.alarmTime} '
+          '(ID: ${latestSharedAlarm.firestoreId})',
+        );
 
-        SharedAlarmLogger.log('REFRESH_SELECTED_ALARM', details: {
-          'alarmId': latestSharedAlarm.firestoreId ?? '',
-          'time': latestSharedAlarm.alarmTime,
-          'intervalMs': shortestInterval,
-        });
+        SharedAlarmLogger.log(
+          'REFRESH_SELECTED_ALARM',
+          details: {
+            'alarmId': latestSharedAlarm.firestoreId ?? '',
+            'time': latestSharedAlarm.alarmTime,
+            'intervalMs': shortestInterval,
+          },
+        );
 
         await updateSharedAlarmCache(latestSharedAlarm, shortestInterval);
         debugPrint(
-            '✅ Updated shared alarm cache with latest data: ${latestSharedAlarm.alarmTime}');
+          '✅ Updated shared alarm cache with latest data: '
+          '${latestSharedAlarm.alarmTime}',
+        );
 
         refreshTimer = true;
         refreshUpcomingAlarms();
       } else {
         debugPrint(
-            '⏰ No valid shared alarms found or all are in the past, clearing cache');
+          '⏰ No valid shared alarms found or all are in the past, '
+          'clearing cache',
+        );
         await clearSharedAlarmCache();
       }
     } catch (e) {
@@ -855,7 +909,9 @@ class HomeController extends GetxController {
   }
 
   Future<void> updateSharedAlarmCache(
-      AlarmModel sharedAlarm, int intervalToAlarm) async {
+    AlarmModel sharedAlarm,
+    int intervalToAlarm,
+  ) async {
     try {
       await alarmChannel.invokeMethod('updateSharedAlarmCache', {
         'alarmTime': sharedAlarm.alarmTime,
@@ -895,7 +951,9 @@ class HomeController extends GetxController {
     final currentTime = DateTime.now().millisecondsSinceEpoch;
     if (currentTime - lastRefreshTime < 5000) {
       debugPrint(
-          'Skipping refresh - too soon since last refresh (${currentTime - lastRefreshTime}ms ago)');
+        'Skipping refresh - too soon since last refresh '
+        '(${currentTime - lastRefreshTime}ms ago)',
+      );
       delayToSchedule?.cancel();
       return;
     }
@@ -923,12 +981,18 @@ class HomeController extends GetxController {
 
         // Get local non-shared alarms from Isar
         final ownerId = userModel.value?.id ?? '';
-        AlarmModel isarLatestAlarm =
-          await IsarDb.getLatestAlarm(alarmRecord, true, ownerId);
+        AlarmModel isarLatestAlarm = await IsarDb.getLatestAlarm(
+          alarmRecord,
+          true,
+          ownerId,
+        );
 
         // Get shared alarms from Firestore
         AlarmModel firestoreLatestAlarm = await FirestoreDb.getLatestAlarm(
-            userModel.value, alarmRecord, true);
+          userModel.value,
+          alarmRecord,
+          true,
+        );
 
         // Check if the firestore alarm is blocked OR dismissed by current user
         bool isFirestoreAlarmBlocked = false;
@@ -949,7 +1013,9 @@ class HomeController extends GetxController {
                 if (dismissedByUsers.contains(userModel.value!.id)) {
                   isFirestoreAlarmBlocked = true;
                   debugPrint(
-                      '🚫 Shared alarm dismissed by current user, blocking: ${firestoreLatestAlarm.alarmTime}');
+                    '🚫 Shared alarm dismissed by current user, blocking: '
+                    '${firestoreLatestAlarm.alarmTime}',
+                  );
                 }
               }
             } catch (e) {
@@ -962,11 +1028,15 @@ class HomeController extends GetxController {
               isBlockedSharedAlarm(firestoreLatestAlarm.firestoreId)) {
             isFirestoreAlarmBlocked = true;
             debugPrint(
-                'Blocking blocked shared alarm in refresh: ${firestoreLatestAlarm.alarmTime}, ID: ${firestoreLatestAlarm.firestoreId}');
+              'Blocking blocked shared alarm in refresh: '
+              '${firestoreLatestAlarm.alarmTime}, ID: '
+              '${firestoreLatestAlarm.firestoreId}',
+            );
           }
         }
 
-        // IMPORTANT: We need to schedule BOTH types of alarms (local and shared)
+        // IMPORTANT: We need to schedule BOTH types of alarms (local and
+        // shared)
         // to ensure that local alarms aren't canceled when shared alarms ring
 
         // 1. First, schedule the local alarm if it's valid
@@ -985,10 +1055,13 @@ class HomeController extends GetxController {
             !isFirestoreAlarmBlocked) {
           await scheduleAlarmIfNeeded(firestoreLatestAlarm, true);
           debugPrint(
-              'Scheduled shared alarm: ${firestoreLatestAlarm.alarmTime}');
+            'Scheduled shared alarm: ${firestoreLatestAlarm.alarmTime}',
+          );
         } else if (isFirestoreAlarmBlocked) {
           debugPrint(
-              'Skipped blocked shared alarm: ${firestoreLatestAlarm.alarmTime}');
+            'Skipped blocked shared alarm: '
+            '${firestoreLatestAlarm.alarmTime}',
+          );
         } else {
           debugPrint('No valid shared alarm to schedule');
         }
@@ -1042,10 +1115,12 @@ class HomeController extends GetxController {
 
           // Cancel any existing timer to prevent leaks
           if (_timer.isActive) _timer.cancel();
-          if (_delayTimer != null && _delayTimer!.isActive)
+          if (_delayTimer != null && _delayTimer!.isActive) {
             _delayTimer!.cancel();
+          }
 
-          // Start a periodic timer that updates every 30 seconds for higher accuracy
+          // Start a periodic timer that updates every 30 seconds for higher
+          // accuracy
           _timer = Timer.periodic(const Duration(seconds: 30), (timer) {
             try {
               String updatedTimeToAlarm = Utils.timeUntilAlarm(
@@ -1060,10 +1135,12 @@ class HomeController extends GetxController {
             }
           });
         } else {
-          // No valid alarms - stop any existing timer and show appropriate message
+          // No valid alarms - stop any existing timer and show appropriate
+          // message
           if (_timer.isActive) _timer.cancel();
-          if (_delayTimer != null && _delayTimer!.isActive)
+          if (_delayTimer != null && _delayTimer!.isActive) {
             _delayTimer!.cancel();
+          }
           alarmTime.value = 'No upcoming alarms!';
           debugPrint('Set display to: No upcoming alarms!');
         }
@@ -1084,7 +1161,8 @@ class HomeController extends GetxController {
       return;
     }
 
-    // Note: Dismissal check is now handled at the higher level in refreshUpcomingAlarms()
+    // Note: Dismissal check is now handled at the higher level in
+    // refreshUpcomingAlarms()
     // to avoid duplicate checks and improve performance
 
     // Calculate time to alarm
@@ -1096,7 +1174,8 @@ class HomeController extends GetxController {
 
     if (intervalToAlarm <= 0) {
       debugPrint(
-          'Alarm time is in the past, not scheduling: ${alarm.alarmTime}');
+        'Alarm time is in the past, not scheduling: ${alarm.alarmTime}',
+      );
       return;
     }
 
@@ -1106,7 +1185,8 @@ class HomeController extends GetxController {
     // Enhanced tracking to prevent duplicate scheduling
     bool alreadyScheduled = false;
     String trackingKey =
-        "${isShared ? 'shared' : 'local'}_${alarmId}_${alarmTimeOfDay.hour}:${alarmTimeOfDay.minute}";
+        '${isShared ? 'shared' : 'local'}_${alarmId}_${alarmTimeOfDay.hour}:'
+        '${alarmTimeOfDay.minute}';
 
     if (isShared) {
       alreadyScheduled = lastScheduledAlarmIsShared == true &&
@@ -1121,7 +1201,9 @@ class HomeController extends GetxController {
 
     if (alreadyScheduled) {
       debugPrint(
-          '${isShared ? "Shared" : "Local"} alarm already scheduled with same time, skipping: ${alarm.alarmTime} (ID: $alarmId)');
+        '${isShared ? 'Shared' : 'Local'} alarm already scheduled with same '
+        'time, skipping: ${alarm.alarmTime} (ID: $alarmId)',
+      );
       return;
     }
 
@@ -1132,14 +1214,20 @@ class HomeController extends GetxController {
 
     if (now - lastScheduleTime < 10000) {
       debugPrint(
-          'Preventing rapid rescheduling of ${isShared ? "shared" : "local"} alarm: ${alarm.alarmTime} (scheduled ${now - lastScheduleTime}ms ago)');
+        'Preventing rapid rescheduling of '
+        '${isShared ? 'shared' : 'local'} alarm: ${alarm.alarmTime} '
+        '(scheduled ${now - lastScheduleTime}ms ago)',
+      );
       return;
     }
 
-    // If we reach here, either it's a new alarm or the time has changed, so schedule it
+    // If we reach here, either it's a new alarm or the time has changed, so
+    // schedule it
     try {
       debugPrint(
-          'Scheduling ${isShared ? "shared" : "local"} alarm: ${alarm.alarmTime}, id: $alarmId');
+        'Scheduling ${isShared ? 'shared' : 'local'} alarm: '
+        '${alarm.alarmTime}, id: $alarmId',
+      );
 
       // Schedule the alarm via native code
       await alarmChannel.invokeMethod('scheduleAlarm', {
@@ -1162,19 +1250,22 @@ class HomeController extends GetxController {
         lastScheduledAlarmTime = alarmTimeOfDay;
         lastScheduledAlarmIsShared = true;
         debugPrint(
-            'Updated shared alarm tracking: $alarmId at ${alarm.alarmTime}');
+          'Updated shared alarm tracking: $alarmId at ${alarm.alarmTime}',
+        );
       } else {
         lastScheduledLocalAlarmId = alarmId;
         lastScheduledLocalAlarmTime = alarmTimeOfDay;
         debugPrint(
-            'Updated local alarm tracking: $alarmId at ${alarm.alarmTime}');
+          'Updated local alarm tracking: $alarmId at ${alarm.alarmTime}',
+        );
       }
 
       // Update cache to prevent rapid rescheduling
       _recentScheduleCache[lastScheduleKey] = now;
 
       debugPrint(
-          '✅ Scheduled ${isShared ? "shared" : "local"} alarm successfully');
+        '✅ Scheduled ${isShared ? 'shared' : 'local'} alarm successfully',
+      );
 
       if (isShared) {
         SharedAlarmLogger.alarmScheduled(
@@ -1185,7 +1276,8 @@ class HomeController extends GetxController {
       }
     } catch (e) {
       debugPrint(
-          '❌ Error scheduling ${isShared ? "shared" : "local"} alarm: $e');
+        '❌ Error scheduling ${isShared ? 'shared' : 'local'} alarm: $e',
+      );
 
       if (isShared) {
         SharedAlarmLogger.alarmScheduleFailed(
@@ -1224,8 +1316,10 @@ class HomeController extends GetxController {
 
   Future<void> fetchGoogleCalendars() async {
     try {
-      Calendars.value = (await GoogleCloudProvider.getCalenders()) ?? [];
-      if (Calendars.value.isEmpty) {
+      calendars.assignAll(
+        (await GoogleCloudProvider.getCalenders()) ?? [],
+      );
+      if (calendars.isEmpty) {
         calendarFetchStatus.value = 'Empty';
       } else {
         calendarFetchStatus.value = 'Loaded';
@@ -1238,22 +1332,27 @@ class HomeController extends GetxController {
 
   Future<void> fetchEvents(String calenderId) async {
     try {
-      Events.value = await GoogleCloudProvider.getEvents(calenderId) ?? [];
-      if (Events.value.isEmpty) {
+      events.assignAll(
+        await GoogleCloudProvider.getEvents(calenderId) ?? [],
+      );
+      if (events.isEmpty) {
         calendarFetchStatus.value = 'Empty';
         Get.snackbar('Events', 'No events available');
       } else {
         calendarFetchStatus.value = 'Loaded';
         isCalender.value = false;
       }
-      print(Events.value);
+      debugPrint(events.toString());
     } catch (e) {
       debugPrint('❌ Error fetching events: $e');
       calendarFetchStatus.value = 'Error';
     }
   }
 
-  Future<void> setAlarmFromEvent(CalendarApi.Event event, String date) async {
+  Future<void> setAlarmFromEvent(
+    calendar_api.Event event,
+    String date,
+  ) async {
     AlarmModel alarmModel = genFakeAlarmModel();
     final eventStart =
         event.start?.dateTime?.toLocal() ?? event.start!.date!.toLocal();
@@ -1338,7 +1437,8 @@ class HomeController extends GetxController {
                   'isSharedAlarm': true,
                 });
                 debugPrint(
-                    '🗑️ Canceled native shared alarm before deletion: $alarmId');
+                  '🗑️ Canceled native shared alarm before deletion: $alarmId',
+                );
               } catch (e) {
                 debugPrint('⚠️ Error canceling native shared alarm: $e');
               }
@@ -1358,7 +1458,9 @@ class HomeController extends GetxController {
                   'isSharedAlarm': false,
                 });
                 debugPrint(
-                    '🗑️ Canceled native local alarm before deletion: ${alarmToDelete.alarmID}');
+                  '🗑️ Canceled native local alarm before deletion: '
+                  '${alarmToDelete.alarmID}',
+                );
               } catch (e) {
                 debugPrint('⚠️ Error canceling native local alarm: $e');
               }
@@ -1402,7 +1504,7 @@ class HomeController extends GetxController {
               refreshTimer = true;
               refreshUpcomingAlarms();
             },
-            child: Text(
+            child: const Text(
               'Undo',
               style: TextStyle(color: Colors.white),
             ),
@@ -1445,7 +1547,9 @@ class HomeController extends GetxController {
           'isSharedAlarm': true,
         });
         debugPrint(
-            '🗑️ Canceled native shared alarm before deletion: ${alarm.firestoreId}');
+          '🗑️ Canceled native shared alarm before deletion: '
+          '${alarm.firestoreId}',
+        );
       } catch (e) {
         debugPrint('⚠️ Error canceling native shared alarm: $e');
       }
@@ -1461,7 +1565,8 @@ class HomeController extends GetxController {
           'isSharedAlarm': false,
         });
         debugPrint(
-            '🗑️ Canceled native local alarm before deletion: ${alarm.alarmID}');
+          '🗑️ Canceled native local alarm before deletion: ${alarm.alarmID}',
+        );
       } catch (e) {
         debugPrint('⚠️ Error canceling native local alarm: $e');
       }
@@ -1522,8 +1627,8 @@ class HomeController extends GetxController {
                   onPressed: () {
                     Get.back();
                   },
-                  style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all(kprimaryColor),
+                  style: const ButtonStyle(
+                    backgroundColor: WidgetStatePropertyAll(kprimaryColor),
                   ),
                   child: Text(
                     'Cancel'.tr,
@@ -1544,7 +1649,8 @@ class HomeController extends GetxController {
 
                       numberOfAlarmsSelected.value = 0;
                       selectedAlarmSet.clear();
-                      // After deleting alarms, refreshing to schedule latest one
+                      // After deleting alarms, refreshing to schedule latest
+                      // one
                       refreshTimer = true;
                       refreshUpcomingAlarms();
 
@@ -1554,7 +1660,7 @@ class HomeController extends GetxController {
                       );
                     },
                     style: OutlinedButton.styleFrom(
-                      side: BorderSide(
+                      side: const BorderSide(
                         color: Colors.red,
                         width: 1,
                       ),
@@ -1581,59 +1687,60 @@ class HomeController extends GetxController {
 
   AlarmModel genFakeAlarmModel() {
     return AlarmModel(
-        volMax: profileModel.value.volMax,
-        volMin: profileModel.value.volMin,
-        snoozeDuration: profileModel.value.snoozeDuration,
-        gradient: profileModel.value.gradient,
-        label: profileModel.value.label,
-        isOneTime: profileModel.value.isOneTime,
-        deleteAfterGoesOff: profileModel.value.deleteAfterGoesOff,
-        offsetDetails: profileModel.value.offsetDetails,
-        mainAlarmTime: Utils.timeOfDayToString(TimeOfDay.now()),
-        lastEditedUserId: profileModel.value.lastEditedUserId,
-        mutexLock: profileModel.value.mutexLock,
-        ownerName: profileModel.value.ownerName,
-        ownerId: profileModel.value.ownerId,
-        alarmID: '',
-        activityInterval: profileModel.value.activityInterval,
-        isMathsEnabled: profileModel.value.isMathsEnabled,
-        numMathsQuestions: profileModel.value.numMathsQuestions,
-        mathsDifficulty: profileModel.value.mathsDifficulty,
-        qrValue: profileModel.value.qrValue,
-        isQrEnabled: profileModel.value.isQrEnabled,
-        isShakeEnabled: profileModel.value.isShakeEnabled,
-        shakeTimes: profileModel.value.shakeTimes,
-        isPedometerEnabled: profileModel.value.isPedometerEnabled,
-        numberOfSteps: profileModel.value.numberOfSteps,
-        days: profileModel.value.days,
-        weatherTypes: profileModel.value.weatherTypes,
-        isWeatherEnabled: profileModel.value.isWeatherEnabled,
-        weatherConditionType: 0,
-        activityConditionType: 0,
-        isEnabled: profileModel.value.isEnabled,
-        isActivityEnabled: profileModel.value.isActivityEnabled,
-        isLocationEnabled: profileModel.value.isLocationEnabled,
-        locationConditionType: 0,
-        isSharedAlarmEnabled: profileModel.value.isSharedAlarmEnabled,
-        intervalToAlarm: 0,
-        location: profileModel.value.location,
-        alarmTime: Utils.timeOfDayToString(TimeOfDay.now()),
-        minutesSinceMidnight: Utils.timeOfDayToInt(TimeOfDay.now()),
-        ringtoneName: profileModel.value.ringtoneName,
-        note: profileModel.value.note,
-        showMotivationalQuote: profileModel.value.showMotivationalQuote,
-        activityMonitor: profileModel.value.activityMonitor,
-        alarmDate: profileModel.value.alarmDate,
-        profile: profileModel.value.profileName,
-        isGuardian: profileModel.value.isGuardian,
-        guardianTimer: profileModel.value.guardianTimer,
-        guardian: profileModel.value.guardian,
-        isCall: profileModel.value.isCall,
-        ringOn: false,
-        isSunriseEnabled: false,
-        sunriseDuration: 30,
-        sunriseIntensity: 1.0,
-        sunriseColorScheme: 0);
+      volMax: profileModel.value.volMax,
+      volMin: profileModel.value.volMin,
+      snoozeDuration: profileModel.value.snoozeDuration,
+      gradient: profileModel.value.gradient,
+      label: profileModel.value.label,
+      isOneTime: profileModel.value.isOneTime,
+      deleteAfterGoesOff: profileModel.value.deleteAfterGoesOff,
+      offsetDetails: profileModel.value.offsetDetails,
+      mainAlarmTime: Utils.timeOfDayToString(TimeOfDay.now()),
+      lastEditedUserId: profileModel.value.lastEditedUserId,
+      mutexLock: profileModel.value.mutexLock,
+      ownerName: profileModel.value.ownerName,
+      ownerId: profileModel.value.ownerId,
+      alarmID: '',
+      activityInterval: profileModel.value.activityInterval,
+      isMathsEnabled: profileModel.value.isMathsEnabled,
+      numMathsQuestions: profileModel.value.numMathsQuestions,
+      mathsDifficulty: profileModel.value.mathsDifficulty,
+      qrValue: profileModel.value.qrValue,
+      isQrEnabled: profileModel.value.isQrEnabled,
+      isShakeEnabled: profileModel.value.isShakeEnabled,
+      shakeTimes: profileModel.value.shakeTimes,
+      isPedometerEnabled: profileModel.value.isPedometerEnabled,
+      numberOfSteps: profileModel.value.numberOfSteps,
+      days: profileModel.value.days,
+      weatherTypes: profileModel.value.weatherTypes,
+      isWeatherEnabled: profileModel.value.isWeatherEnabled,
+      weatherConditionType: 0,
+      activityConditionType: 0,
+      isEnabled: profileModel.value.isEnabled,
+      isActivityEnabled: profileModel.value.isActivityEnabled,
+      isLocationEnabled: profileModel.value.isLocationEnabled,
+      locationConditionType: 0,
+      isSharedAlarmEnabled: profileModel.value.isSharedAlarmEnabled,
+      intervalToAlarm: 0,
+      location: profileModel.value.location,
+      alarmTime: Utils.timeOfDayToString(TimeOfDay.now()),
+      minutesSinceMidnight: Utils.timeOfDayToInt(TimeOfDay.now()),
+      ringtoneName: profileModel.value.ringtoneName,
+      note: profileModel.value.note,
+      showMotivationalQuote: profileModel.value.showMotivationalQuote,
+      activityMonitor: profileModel.value.activityMonitor,
+      alarmDate: profileModel.value.alarmDate,
+      profile: profileModel.value.profileName,
+      isGuardian: profileModel.value.isGuardian,
+      guardianTimer: profileModel.value.guardianTimer,
+      guardian: profileModel.value.guardian,
+      isCall: profileModel.value.isCall,
+      ringOn: false,
+      isSunriseEnabled: false,
+      sunriseDuration: 30,
+      sunriseIntensity: 1.0,
+      sunriseColorScheme: 0,
+    );
   }
 
   // Method to clear the last scheduled alarm tracking data
@@ -1641,7 +1748,8 @@ class HomeController extends GetxController {
     // Check if we have a valid alarm type flag
     if (alarm == null && lastScheduledAlarmIsShared == null) {
       debugPrint(
-          '⚠️ Warning: lastScheduledAlarmIsShared is null, defaulting to false');
+        '⚠️ Warning: lastScheduledAlarmIsShared is null, defaulting to false',
+      );
       lastScheduledAlarmIsShared = false;
     }
 
@@ -1650,7 +1758,7 @@ class HomeController extends GetxController {
     String alarmId = isShared
         ? (alarm?.firestoreId ?? lastScheduledAlarmId ?? '')
         : (alarm?.alarmID.toString() ?? lastScheduledLocalAlarmId ?? '');
-    debugPrint('🔔 Clearing ${isShared ? "SHARED" : "LOCAL"} alarm');
+    debugPrint('🔔 Clearing ${isShared ? 'SHARED' : 'LOCAL'} alarm');
 
     try {
       await alarmChannel.invokeMethod('cancelAlarmById', {
@@ -1711,7 +1819,8 @@ class HomeController extends GetxController {
     debugPrint('🔔 Cleared all alarms and tracking data');
   }
 
-  // Method to temporarily prevent shared alarm scheduling (used after dismissal)
+  // Method to temporarily prevent shared alarm scheduling (used after
+  // dismissal)
   void temporarilyPreventSharedAlarmRescheduling() {
     preventSharedAlarmRescheduling = true;
     // Cancel any existing timer
@@ -1731,7 +1840,8 @@ class HomeController extends GetxController {
     // Add the alarm ID to the blocked set
     recentlyDismissedAlarmIds.add(firestoreId);
     debugPrint(
-        'Blocked rescheduling of shared alarm: $alarmTime, ID: $firestoreId');
+      'Blocked rescheduling of shared alarm: $alarmTime, ID: $firestoreId',
+    );
 
     // Cancel any existing cleanup timer
     _dismissedAlarmsCleanupTimer?.cancel();
@@ -1759,7 +1869,9 @@ class HomeController extends GetxController {
   // Force refresh alarms after an alarm update, clearing tracking first
   void forceRefreshAfterAlarmUpdate(String? alarmId, bool isShared) {
     debugPrint(
-        '🔄 Force refreshing alarms after ${isShared ? "shared" : "local"} alarm update: $alarmId');
+      '🔄 Force refreshing alarms after ${isShared ? 'shared' : 'local'} '
+      'alarm update: $alarmId',
+    );
 
     // Clear tracking for this specific alarm so it will be rescheduled
     if (alarmId != null) {
@@ -1776,7 +1888,8 @@ class HomeController extends GetxController {
     refreshUpcomingAlarms();
   }
 
-  /// Sets up periodic checks for shared alarm updates (every 30 seconds when app is active)
+  /// Sets up periodic checks for shared alarm updates (every 30 seconds when
+  /// app is active)
   void setupPeriodicSharedAlarmCheck() {
     // Cancel existing timer first to prevent multiple timers
     _periodicSharedAlarmTimer?.cancel();
@@ -1834,18 +1947,21 @@ class HomeController extends GetxController {
       }
 
       debugPrint(
-          '🔔 Showed alarm update notification: $ownerName -> $alarmTime');
+        '🔔 Showed alarm update notification: $ownerName -> $alarmTime',
+      );
     } catch (e) {
       debugPrint('❌ Error showing shared alarm update notification: $e');
     }
   }
 
-  /// Sets up a listener for user notifications (works as backup when push notifications fail)
+  /// Sets up a listener for user notifications (works as backup when push
+  /// notifications fail)
   void setupUserNotificationListener() {
     final authUid = FirebaseAuth.instance.currentUser?.uid;
     if (userModel.value == null || authUid == null) {
       debugPrint(
-          '⚠️ Skipping user notification listener; FirebaseAuth user is null');
+        '⚠️ Skipping user notification listener; FirebaseAuth user is null',
+      );
       return;
     }
 
@@ -1863,41 +1979,42 @@ class HomeController extends GetxController {
         .orderBy('timestamp', descending: true)
         .limit(10)
         .snapshots()
-        .listen((QuerySnapshot snapshot) {
-      for (DocumentChange change in snapshot.docChanges) {
-        if (change.type == DocumentChangeType.added) {
-          try {
-            Map<String, dynamic> notificationData =
-                change.doc.data() as Map<String, dynamic>;
+        .listen(
+      (QuerySnapshot snapshot) {
+        for (DocumentChange change in snapshot.docChanges) {
+          if (change.type == DocumentChangeType.added) {
+            try {
+              Map<String, dynamic> notificationData =
+                  change.doc.data() as Map<String, dynamic>;
 
-            String title = notificationData['title'] ?? 'Alarm Updated';
-            String message = notificationData['message'] ??
-                'Your shared alarm has been updated';
-            String alarmId = notificationData['alarmId'] ?? '';
-            String newAlarmTime = notificationData['newAlarmTime'] ?? '';
-            String ownerName = notificationData['ownerName'] ?? 'Someone';
+              String title = notificationData['title'] ?? 'Alarm Updated';
+              String alarmId = notificationData['alarmId'] ?? '';
+              String newAlarmTime = notificationData['newAlarmTime'] ?? '';
+              String ownerName = notificationData['ownerName'] ?? 'Someone';
 
-            debugPrint('📬 Received Firestore notification: $title');
+              debugPrint('📬 Received Firestore notification: $title');
 
-            // Show the notification to the user
-            showSharedAlarmUpdateNotification(newAlarmTime, ownerName);
+              // Show the notification to the user
+              showSharedAlarmUpdateNotification(newAlarmTime, ownerName);
 
-            // Mark the notification as read
-            change.doc.reference.update({'read': true});
+              // Mark the notification as read
+              change.doc.reference.update({'read': true});
 
-            // Trigger a shared alarm refresh to apply the update
-            if (alarmId.isNotEmpty) {
-              debugPrint('🔄 Triggering alarm refresh due to notification');
-              forceRefreshSharedAlarms();
+              // Trigger a shared alarm refresh to apply the update
+              if (alarmId.isNotEmpty) {
+                debugPrint('🔄 Triggering alarm refresh due to notification');
+                forceRefreshSharedAlarms();
+              }
+            } catch (e) {
+              debugPrint('❌ Error processing user notification: $e');
             }
-          } catch (e) {
-            debugPrint('❌ Error processing user notification: $e');
           }
         }
-      }
-    }, onError: (error) {
-      debugPrint('❌ Error in user notification listener: $error');
-    });
+      },
+      onError: (error) {
+        debugPrint('❌ Error in user notification listener: $error');
+      },
+    );
 
     debugPrint('🔔 User notification listener setup completed');
   }
@@ -1906,10 +2023,11 @@ class HomeController extends GetxController {
   Future<void> handleSharedAlarmFiring() async {
     try {
       debugPrint(
-          '🔔 Shared alarm is firing, preventing immediate Firestore refresh');
+        '🔔 Shared alarm is firing, preventing immediate Firestore refresh',
+      );
 
       // Wait 10 seconds before refreshing to allow alarm to ring properly
-      await Future.delayed(Duration(seconds: 10));
+      await Future.delayed(const Duration(seconds: 10));
 
       debugPrint('🔄 Delayed refresh after shared alarm fired');
       await forceRefreshSharedAlarms();

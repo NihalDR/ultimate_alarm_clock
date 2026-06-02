@@ -1,3 +1,5 @@
+// ignore_for_file: lines_longer_than_80_chars, require_trailing_commas, prefer_const_constructors
+
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -6,7 +8,7 @@ import 'package:ultimate_alarm_clock/app/data/models/saved_emails.dart';
 import 'package:ultimate_alarm_clock/app/data/providers/firestore_provider.dart';
 import 'package:ultimate_alarm_clock/app/data/providers/isar_provider.dart';
 import 'package:ultimate_alarm_clock/app/data/providers/push_notifications.dart';
-import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/controllers/add_or_update_alarm_controller.dart';
+import '../modules/addOrUpdateAlarm/controllers/add_or_update_alarm_controller.dart';
 import 'package:ultimate_alarm_clock/app/modules/home/controllers/home_controller.dart';
 import 'package:ultimate_alarm_clock/app/modules/settings/controllers/theme_controller.dart';
 import 'package:ultimate_alarm_clock/app/utils/constants.dart';
@@ -46,14 +48,6 @@ class ShareDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Function to dismiss loading dialog safely
-    void dismissLoadingDialog() {
-      // Only dismiss if there's a dialog open
-      if (Get.isDialogOpen ?? false) {
-        Get.back();
-      }
-    }
-
     return Material(
       color: Colors.transparent,
       child: Container(
@@ -164,7 +158,6 @@ class ShareDialog extends StatelessWidget {
                           Utils.hapticFeedback();
 
                           // Simple approach - show loading indicator in this screen
-                          bool isLoading = true;
 
                           // Create an overlay for the loading indicator that we can easily remove
                           OverlayEntry? overlayEntry;
@@ -288,8 +281,8 @@ class ShareDialog extends StatelessWidget {
                                       'alarmId': controller
                                               .alarmRecord.value.firestoreId ??
                                           controller.alarmRecord.value.alarmID,
-                                      'owner':
-                                          controller.alarmRecord.value.ownerName,
+                                      'owner': controller
+                                          .alarmRecord.value.ownerName,
                                       'alarmTime': controller
                                           .alarmRecord.value.alarmTime,
                                       'alarmLabel':
@@ -312,11 +305,8 @@ class ShareDialog extends StatelessWidget {
 
                                     SharedAlarmLogger.notificationSent(
                                       alarmId: controller
-                                              .alarmRecord
-                                              .value
-                                              .firestoreId ??
-                                          controller
-                                              .alarmRecord.value.alarmID,
+                                              .alarmRecord.value.firestoreId ??
+                                          controller.alarmRecord.value.alarmID,
                                       alarmTime: controller
                                           .alarmRecord.value.alarmTime,
                                       recipientCount: sharedUserIds.length,

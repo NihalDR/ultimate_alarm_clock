@@ -1,13 +1,15 @@
+import 'dart:developer' as developer;
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:numberpicker/numberpicker.dart';
-import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/controllers/add_or_update_alarm_controller.dart';
-import 'package:ultimate_alarm_clock/app/modules/settings/controllers/theme_controller.dart';
-import 'package:ultimate_alarm_clock/app/utils/constants.dart';
-import 'package:ultimate_alarm_clock/app/utils/utils.dart';
+import '../controllers/add_or_update_alarm_controller.dart';
+import '../../settings/controllers/theme_controller.dart';
+import '../../../utils/constants.dart';
+import '../../../utils/utils.dart';
 
 class MaxSnoozeCountTile extends StatelessWidget {
-  MaxSnoozeCountTile({
+  const MaxSnoozeCountTile({
     super.key,
     required this.controller,
     required this.themeController,
@@ -15,15 +17,13 @@ class MaxSnoozeCountTile extends StatelessWidget {
 
   final AddOrUpdateAlarmController controller;
   final ThemeController themeController;
-  int initialCount = 0;
-
   @override
   Widget build(BuildContext context) {
     return Obx(
       () => ListTile(
         onTap: () {
           Utils.hapticFeedback();
-          initialCount = controller.maxSnoozeCount.value;
+          final initialCount = controller.maxSnoozeCount.value;
           Get.defaultDialog(
             onWillPop: () async {
               Get.back();
@@ -58,19 +58,22 @@ class MaxSnoozeCountTile extends StatelessWidget {
                               onChanged: (value) {
                                 Utils.hapticFeedback();
                                 controller.maxSnoozeCount.value = value;
-                                debugPrint('🔔 Max snooze count updated to: $value');
+                                developer.log(
+                                  '🔔 Max snooze count updated to: $value',
+                                );
                               },
-                              itemWidth: Utils
-                                  .getResponsiveNumberPickerItemWidth(
+                              itemWidth:
+                                  Utils.getResponsiveNumberPickerItemWidth(
                                 context,
                                 screenWidth: MediaQuery.of(context).size.width,
                                 baseWidthFactor: 0.2,
                               ),
-                              textStyle: Utils
-                                  .getResponsiveNumberPickerTextStyle(
+                              textStyle:
+                                  Utils.getResponsiveNumberPickerTextStyle(
                                 context,
                                 baseFontSize: 16,
-                                color: themeController.primaryDisabledTextColor.value,
+                                color: themeController
+                                    .primaryDisabledTextColor.value,
                               ),
                               selectedTextStyle: Utils
                                   .getResponsiveNumberPickerSelectedTextStyle(
@@ -107,8 +110,7 @@ class MaxSnoozeCountTile extends StatelessWidget {
                               .textTheme
                               .displaySmall!
                               .copyWith(
-                                color:
-                                    themeController.secondaryTextColor.value,
+                                color: themeController.secondaryTextColor.value,
                               ),
                         ),
                       ),
@@ -133,12 +135,16 @@ class MaxSnoozeCountTile extends StatelessWidget {
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             Obx(
-              () => Text(
-                '${controller.maxSnoozeCount.value} ${controller.maxSnoozeCount.value > 1 ? 'times'.tr : 'time'.tr}',
-                style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                      color: themeController.primaryTextColor.value,
-                    ),
-              ),
+              () {
+                final count = controller.maxSnoozeCount.value;
+                final unit = count > 1 ? 'times'.tr : 'time'.tr;
+                return Text(
+                  '$count $unit',
+                  style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                        color: themeController.primaryTextColor.value,
+                      ),
+                );
+              },
             ),
             Icon(
               Icons.chevron_right,
@@ -149,4 +155,4 @@ class MaxSnoozeCountTile extends StatelessWidget {
       ),
     );
   }
-} 
+}

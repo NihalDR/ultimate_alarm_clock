@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:numberpicker/numberpicker.dart';
-import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/controllers/add_or_update_alarm_controller.dart';
-import 'package:ultimate_alarm_clock/app/modules/settings/controllers/theme_controller.dart';
-import 'package:ultimate_alarm_clock/app/utils/constants.dart';
-import 'package:ultimate_alarm_clock/app/utils/utils.dart';
+import '../controllers/add_or_update_alarm_controller.dart';
+import '../../settings/controllers/theme_controller.dart';
+import '../../../utils/constants.dart';
+import '../../../utils/utils.dart';
 
 class AlarmOffset extends StatelessWidget {
   const AlarmOffset({
@@ -30,11 +30,13 @@ class AlarmOffset extends StatelessWidget {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
                   color: controller.offsetDuration.value > 0
-                      ? themeController.secondaryBackgroundColor.value.withOpacity(0.3)
+                      ? themeController.secondaryBackgroundColor.value
+                          .withOpacity(0.3)
                       : Colors.transparent,
                 ),
                 child: ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                   leading: Icon(
                     controller.isOffsetBefore.value
                         ? Icons.arrow_back_rounded
@@ -56,7 +58,8 @@ class AlarmOffset extends StatelessWidget {
                       ? Text(
                           _getOffsetDescription(),
                           style: TextStyle(
-                            color: themeController.primaryTextColor.value.withOpacity(0.7),
+                            color: themeController.primaryTextColor.value
+                                .withOpacity(0.7),
                             fontSize: 12,
                           ),
                         )
@@ -65,19 +68,27 @@ class AlarmOffset extends StatelessWidget {
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       Obx(
-                        () => Text(
-                          controller.offsetDuration.value > 0
-                              ? '${controller.offsetDuration.value} ${controller.offsetDuration.value > 1 ? 'mins'.tr : 'min'.tr}'
-                              : 'Off'.tr,
-                          style: TextStyle(
-                            fontWeight: controller.offsetDuration.value > 0
-                                ? FontWeight.w600
-                                : FontWeight.normal,
-                            color: (controller.offsetDuration.value > 0)
-                                ? kprimaryColor
-                                : themeController.primaryDisabledTextColor.value,
-                          ),
-                        ),
+                        () {
+                          final offsetValue = controller.offsetDuration.value;
+                          final offsetUnit =
+                              offsetValue > 1 ? 'mins'.tr : 'min'.tr;
+                          final offsetLabel = offsetValue > 0
+                              ? '$offsetValue $offsetUnit'
+                              : 'Off'.tr;
+
+                          return Text(
+                            offsetLabel,
+                            style: TextStyle(
+                              fontWeight: offsetValue > 0
+                                  ? FontWeight.w600
+                                  : FontWeight.normal,
+                              color: offsetValue > 0
+                                  ? kprimaryColor
+                                  : themeController
+                                      .primaryDisabledTextColor.value,
+                            ),
+                          );
+                        },
                       ),
                       const SizedBox(width: 4),
                       Icon(
@@ -94,30 +105,27 @@ class AlarmOffset extends StatelessWidget {
   }
 
   String _getOffsetDescription() {
-    final String direction = controller.isOffsetBefore.value
-        ? 'before'.tr
-        : 'after'.tr;
-    
-    final String mainTime = Utils.timeOfDayToString(
-      TimeOfDay.fromDateTime(controller.selectedTime.value)
-    );
-    
+    final String direction =
+        controller.isOffsetBefore.value ? 'before'.tr : 'after'.tr;
+
     final DateTime offsetTime = Utils.calculateOffsetAlarmTime(
       controller.selectedTime.value,
       controller.isOffsetBefore.value,
       controller.offsetDuration.value,
     );
-    
-    final String offsetTimeStr = Utils.timeOfDayToString(
-      TimeOfDay.fromDateTime(offsetTime)
-    );
-    
-    return '${'Your alarm will ring'.tr} $direction ${'main alarm at'.tr} $offsetTimeStr';
+
+    final String offsetTimeStr =
+        Utils.timeOfDayToString(TimeOfDay.fromDateTime(offsetTime));
+
+    final prefix = 'Your alarm will ring'.tr;
+    final mainAlarmAt = 'main alarm at'.tr;
+
+    return '$prefix $direction $mainAlarmAt $offsetTimeStr';
   }
 
   void _showOffsetPicker(BuildContext context) {
     final double width = MediaQuery.of(context).size.width;
-    
+
     Get.bottomSheet(
       Container(
         padding: const EdgeInsets.all(20),
@@ -131,13 +139,15 @@ class AlarmOffset extends StatelessWidget {
             Text(
               'Set alarm offset'.tr,
               style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                fontWeight: FontWeight.bold,
-                color: themeController.primaryTextColor.value,
-              ),
+                    fontWeight: FontWeight.bold,
+                    color: themeController.primaryTextColor.value,
+                  ),
             ),
             const SizedBox(height: 8),
             Text(
-              'Choose when your alarm should ring relative to the main alarm time'.tr,
+              ('Choose when your alarm should ring relative to '
+                      'the main alarm time')
+                  .tr,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,
@@ -157,7 +167,8 @@ class AlarmOffset extends StatelessWidget {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: (controller.isOffsetBefore.value)
                           ? kprimaryColor
-                          : themeController.primaryTextColor.value.withOpacity(0.10),
+                          : themeController.primaryTextColor.value
+                              .withOpacity(0.10),
                       foregroundColor: (controller.isOffsetBefore.value)
                           ? themeController.secondaryTextColor.value
                           : themeController.primaryTextColor.value,
@@ -174,14 +185,14 @@ class AlarmOffset extends StatelessWidget {
                     ),
                     child: Row(
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.arrow_back_rounded,
                           size: 18,
                         ),
                         const SizedBox(width: 8),
                         Text(
                           'Before'.tr,
-                          style: TextStyle(fontSize: 14),
+                          style: const TextStyle(fontSize: 14),
                         ),
                       ],
                     ),
@@ -196,7 +207,8 @@ class AlarmOffset extends StatelessWidget {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: (!controller.isOffsetBefore.value)
                           ? kprimaryColor
-                          : themeController.primaryTextColor.value.withOpacity(0.10),
+                          : themeController.primaryTextColor.value
+                              .withOpacity(0.10),
                       foregroundColor: (!controller.isOffsetBefore.value)
                           ? themeController.secondaryTextColor.value
                           : themeController.primaryTextColor.value,
@@ -215,10 +227,10 @@ class AlarmOffset extends StatelessWidget {
                       children: [
                         Text(
                           'After'.tr,
-                          style: TextStyle(fontSize: 14),
+                          style: const TextStyle(fontSize: 14),
                         ),
                         const SizedBox(width: 8),
-                        Icon(
+                        const Icon(
                           Icons.arrow_forward_rounded,
                           size: 18,
                         ),
@@ -232,7 +244,8 @@ class AlarmOffset extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(vertical: 10),
               decoration: BoxDecoration(
-                color: themeController.primaryBackgroundColor.value.withOpacity(0.3),
+                color: themeController.primaryBackgroundColor.value
+                    .withOpacity(0.3),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Column(
@@ -240,7 +253,8 @@ class AlarmOffset extends StatelessWidget {
                   Text(
                     'Minutes'.tr,
                     style: TextStyle(
-                      color: themeController.primaryTextColor.value.withOpacity(0.7),
+                      color: themeController.primaryTextColor.value
+                          .withOpacity(0.7),
                     ),
                   ),
                   Obx(
@@ -253,24 +267,23 @@ class AlarmOffset extends StatelessWidget {
                         Utils.hapticFeedback();
                         controller.offsetDuration.value = value;
                       },
-                      itemWidth: Utils
-                          .getResponsiveNumberPickerItemWidth(
+                      itemWidth: Utils.getResponsiveNumberPickerItemWidth(
                         context,
                         screenWidth: MediaQuery.of(context).size.width,
                         baseWidthFactor: 0.25,
                       ),
-                      selectedTextStyle: Utils
-                          .getResponsiveNumberPickerSelectedTextStyle(
+                      selectedTextStyle:
+                          Utils.getResponsiveNumberPickerSelectedTextStyle(
                         context,
                         baseFontSize: 22,
                         color: kprimaryColor,
                         fontWeight: FontWeight.bold,
                       ),
-                      textStyle: Utils
-                          .getResponsiveNumberPickerTextStyle(
+                      textStyle: Utils.getResponsiveNumberPickerTextStyle(
                         context,
                         baseFontSize: 16,
-                        color: themeController.primaryTextColor.value.withOpacity(0.5),
+                        color: themeController.primaryTextColor.value
+                            .withOpacity(0.5),
                       ),
                       decoration: BoxDecoration(
                         border: Border(
@@ -304,7 +317,7 @@ class AlarmOffset extends StatelessWidget {
                       ),
                       child: Row(
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.access_time,
                             size: 18,
                             color: kprimaryColor,

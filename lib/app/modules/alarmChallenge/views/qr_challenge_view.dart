@@ -1,5 +1,3 @@
-// ignore_for_file: lines_longer_than_80_chars, must_be_immutable
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -10,17 +8,14 @@ import 'package:ultimate_alarm_clock/app/utils/utils.dart';
 import '../controllers/alarm_challenge_controller.dart';
 
 class QRChallengeView extends GetView<AlarmChallengeController> {
-  QRChallengeView({Key? key}) : super(key: key);
+  QRChallengeView({super.key});
 
-  ThemeController themeController = Get.find<ThemeController>();
+  final ThemeController themeController = Get.find<ThemeController>();
 
   @override
   Widget build(BuildContext context) {
-    // ignore: unused_local_variable
     // var width = Get.width;
     // var height = Get.height;
-    // ignore: unused_local_variable
-    final double width = MediaQuery.of(context).size.width;
     final double height = MediaQuery.of(context).size.height;
 
     return Scaffold(
@@ -52,16 +47,18 @@ class QRChallengeView extends GetView<AlarmChallengeController> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                        Obx(
-                          () => Text(
-                            'Scan your QR/Bar Code!'.tr,
-                            style: Theme.of(context)
-                                .textTheme
-                                .displayMedium!
-                                .copyWith(
-                                  fontWeight: FontWeight.w500,
-                                  color: themeController.primaryTextColor.value.withOpacity(0.7),
-                                ),
+                          Obx(
+                            () => Text(
+                              'Scan your QR/Bar Code!'.tr,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .displayMedium!
+                                  .copyWith(
+                                    fontWeight: FontWeight.w500,
+                                    color: themeController
+                                        .primaryTextColor.value
+                                        .withOpacity(0.7),
+                                  ),
                             ),
                           ),
                           SizedBox(
@@ -108,8 +105,9 @@ class QRChallengeView extends GetView<AlarmChallengeController> {
                                               ? Icon(
                                                   Icons.done,
                                                   size: height * 0.2,
-                                                  color: themeController.primaryTextColor.value
-                                                          .withOpacity(0.7),
+                                                  color: themeController
+                                                      .primaryTextColor.value
+                                                      .withOpacity(0.7),
                                                 )
                                               : Column(
                                                   mainAxisAlignment:
@@ -119,10 +117,10 @@ class QRChallengeView extends GetView<AlarmChallengeController> {
                                                     Icon(
                                                       Icons.close,
                                                       size: height * 0.2,
-                                                      color: themeController.primaryTextColor.value
-                                                              .withOpacity(
-                                                              0.7,
-                                                            ),
+                                                      color: themeController
+                                                          .primaryTextColor
+                                                          .value
+                                                          .withOpacity(0.7),
                                                     ),
                                                     Text(
                                                       'Wrong Code Scanned!'.tr,
@@ -134,17 +132,21 @@ class QRChallengeView extends GetView<AlarmChallengeController> {
                                                           .copyWith(
                                                             fontWeight:
                                                                 FontWeight.w500,
-                                                            color: themeController.primaryTextColor.value
-                                                                    .withOpacity(
-                                                                    0.7,
-                                                                  ),
+                                                            // ignore: lines_longer_than_80_chars
+                                                            color: themeController
+                                                                // ignore: lines_longer_than_80_chars
+                                                                .primaryTextColor
+                                                                .value
+                                                                .withOpacity(
+                                                              0.7,
+                                                            ),
                                                           ),
                                                     ),
                                                     TextButton(
-                                                      style: ButtonStyle(
+                                                      style: const ButtonStyle(
                                                         backgroundColor:
-                                                            MaterialStateProperty
-                                                                .all(
+                                                            // ignore: lines_longer_than_80_chars
+                                                            WidgetStatePropertyAll(
                                                           kprimaryColor,
                                                         ),
                                                       ),
@@ -156,7 +158,11 @@ class QRChallengeView extends GetView<AlarmChallengeController> {
                                                             .textTheme
                                                             .displaySmall!
                                                             .copyWith(
-                                                              color: themeController.secondaryTextColor.value,
+                                                              // ignore: lines_longer_than_80_chars
+                                                              color: themeController
+                                                                  // ignore: lines_longer_than_80_chars
+                                                                  .secondaryTextColor
+                                                                  .value,
                                                             ),
                                                       ),
                                                       onPressed: () async {
@@ -164,6 +170,7 @@ class QRChallengeView extends GetView<AlarmChallengeController> {
                                                         controller.qrController!
                                                             .dispose();
                                                         controller
+                                                            // ignore: lines_longer_than_80_chars
                                                             .restartQRCodeController();
                                                         controller.isQrOngoing
                                                                 .value =

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/controllers/add_or_update_alarm_controller.dart';
-import 'package:ultimate_alarm_clock/app/modules/settings/controllers/theme_controller.dart';
-import 'package:ultimate_alarm_clock/app/utils/constants.dart';
-import 'package:ultimate_alarm_clock/app/utils/utils.dart';
+import '../controllers/add_or_update_alarm_controller.dart';
+import '../../settings/controllers/theme_controller.dart';
+import '../../../utils/constants.dart';
+import '../../../utils/utils.dart';
 
 class QrBarCode extends StatelessWidget {
   const QrBarCode({
@@ -24,14 +24,16 @@ class QrBarCode extends StatelessWidget {
           Utils.hapticFeedback();
           // storing initial state
           isQrEnabled = controller.isQrEnabled.value;
-          
+
           _showQrSettingsBottomSheet(context, isQrEnabled);
         },
         child: ListTile(
           leading: Icon(
-            controller.isQrEnabled.value ? Icons.qr_code_scanner : Icons.qr_code_scanner_outlined,
-            color: controller.isQrEnabled.value 
-                ? kprimaryColor 
+            controller.isQrEnabled.value
+                ? Icons.qr_code_scanner
+                : Icons.qr_code_scanner_outlined,
+            color: controller.isQrEnabled.value
+                ? kprimaryColor
                 : themeController.primaryDisabledTextColor.value,
           ),
           title: Text(
@@ -57,7 +59,10 @@ class QrBarCode extends StatelessWidget {
     );
   }
 
-  void _showQrSettingsBottomSheet(BuildContext context, bool initialIsQrEnabled) {
+  void _showQrSettingsBottomSheet(
+    BuildContext context,
+    bool initialIsQrEnabled,
+  ) {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -92,17 +97,18 @@ class QrBarCode extends StatelessWidget {
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: themeController.primaryDisabledTextColor.value.withOpacity(0.3),
+                      color: themeController.primaryDisabledTextColor.value
+                          .withOpacity(0.3),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
-                  
+
                   // Header
                   Padding(
                     padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
                     child: Row(
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.qr_code_scanner,
                           color: kprimaryColor,
                           size: 28,
@@ -111,16 +117,19 @@ class QrBarCode extends StatelessWidget {
                         Expanded(
                           child: Text(
                             'QR/Bar Code Challenge'.tr,
-                            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                              color: themeController.primaryTextColor.value,
-                              fontWeight: FontWeight.w600,
-                            ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .headlineSmall
+                                ?.copyWith(
+                                  color: themeController.primaryTextColor.value,
+                                  fontWeight: FontWeight.w600,
+                                ),
                           ),
                         ),
                       ],
                     ),
                   ),
-                  
+
                   // Content
                   Expanded(
                     child: SingleChildScrollView(
@@ -131,79 +140,103 @@ class QrBarCode extends StatelessWidget {
                           // Enable/Disable Switch
                           _buildSection(
                             title: 'Enable QR Challenge'.tr,
-                            subtitle: 'Require QR code scan to dismiss alarm'.tr,
-                            child: Obx(() => Switch.adaptive(
-                              value: controller.isQrEnabled.value,
-                              onChanged: (value) async {
-                                Utils.hapticFeedback();
-                                if (value) {
-                                  await controller.requestQrPermission(context);
-                                } else {
-                                  controller.isQrEnabled.value = false;
-                                }
-                              },
-                              activeColor: kprimaryColor,
-                            )),
+                            subtitle:
+                                'Require QR code scan to dismiss alarm'.tr,
+                            child: Obx(
+                              () => Switch.adaptive(
+                                value: controller.isQrEnabled.value,
+                                onChanged: (value) async {
+                                  Utils.hapticFeedback();
+                                  if (value) {
+                                    await controller
+                                        .requestQrPermission(context);
+                                  } else {
+                                    controller.isQrEnabled.value = false;
+                                  }
+                                },
+                                activeColor: kprimaryColor,
+                              ),
+                            ),
                           ),
-                          
+
                           const SizedBox(height: 20),
-                          
+
                           // QR Code Info (when enabled)
-                          Obx(() => controller.isQrEnabled.value
-                              ? _buildSection(
-                                  title: 'How it works'.tr,
-                                  subtitle: 'Scan instructions and tips'.tr,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(16),
-                                    decoration: BoxDecoration(
-                                      color: Colors.blue.withOpacity(0.1),
-                                      borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(
-                                        color: Colors.blue.withOpacity(0.3),
+                          Obx(
+                            () => controller.isQrEnabled.value
+                                ? _buildSection(
+                                    title: 'How it works'.tr,
+                                    subtitle: 'Scan instructions and tips'.tr,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(16),
+                                      decoration: BoxDecoration(
+                                        color: Colors.blue.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                          color: Colors.blue.withOpacity(0.3),
+                                        ),
                                       ),
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Icon(
-                                              Icons.info_outline,
-                                              color: Colors.blue,
-                                              size: 20,
-                                            ),
-                                            const SizedBox(width: 12),
-                                            Expanded(
-                                              child: Text(
-                                                'Setup Instructions'.tr,
-                                                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                                  color: themeController.primaryTextColor.value,
-                                                  fontWeight: FontWeight.w600,
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              const Icon(
+                                                Icons.info_outline,
+                                                color: Colors.blue,
+                                                size: 20,
+                                              ),
+                                              const SizedBox(width: 12),
+                                              Expanded(
+                                                child: Text(
+                                                  'Setup Instructions'.tr,
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .titleSmall
+                                                      ?.copyWith(
+                                                        color: themeController
+                                                            .primaryTextColor
+                                                            .value,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                      ),
                                                 ),
                                               ),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 12),
-                                        Text(
-                                          '1. Scan a QR code on any object (book, poster, etc.)\n2. Move that object to another room\n3. When alarm rings, find and scan the same QR code'.tr,
-                                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                            color: themeController.primaryTextColor.value,
-                                            height: 1.4,
+                                            ],
                                           ),
-                                        ),
-                                      ],
+                                          const SizedBox(height: 12),
+                                          Text(
+                                            ('1. Scan a QR code on any object '
+                                                    '(book, poster, etc.)\n'
+                                                    // ignore: lines_longer_than_80_chars
+                                                    '2. Move that object to another room\n'
+                                                    // ignore: lines_longer_than_80_chars
+                                                    '3. When alarm rings, find and scan '
+                                                    'the same QR code')
+                                                .tr,
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodyMedium
+                                                ?.copyWith(
+                                                  color: themeController
+                                                      .primaryTextColor.value,
+                                                  height: 1.4,
+                                                ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                )
-                              : Container()),
-                          
+                                  )
+                                : const SizedBox.shrink(),
+                          ),
+
                           const SizedBox(height: 32),
                         ],
                       ),
                     ),
                   ),
-                  
+
                   // Action buttons
                   Container(
                     padding: const EdgeInsets.all(20),
@@ -211,7 +244,8 @@ class QrBarCode extends StatelessWidget {
                       color: themeController.secondaryBackgroundColor.value,
                       border: Border(
                         top: BorderSide(
-                          color: themeController.primaryDisabledTextColor.value.withOpacity(0.1),
+                          color: themeController.primaryDisabledTextColor.value
+                              .withOpacity(0.1),
                         ),
                       ),
                     ),
@@ -231,15 +265,21 @@ class QrBarCode extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               side: BorderSide(
-                                color: themeController.primaryDisabledTextColor.value.withOpacity(0.3),
+                                color: themeController
+                                    .primaryDisabledTextColor.value
+                                    .withOpacity(0.3),
                               ),
                             ),
                             child: Text(
                               'Cancel'.tr,
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                color: themeController.primaryTextColor.value,
-                                fontWeight: FontWeight.w600,
-                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium
+                                  ?.copyWith(
+                                    color:
+                                        themeController.primaryTextColor.value,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                             ),
                           ),
                         ),
@@ -261,10 +301,13 @@ class QrBarCode extends StatelessWidget {
                             ),
                             child: Text(
                               'Done'.tr,
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium
+                                  ?.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                             ),
                           ),
                         ),
@@ -291,7 +334,8 @@ class QrBarCode extends StatelessWidget {
         color: themeController.primaryBackgroundColor.value,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: themeController.primaryDisabledTextColor.value.withOpacity(0.1),
+          color:
+              themeController.primaryDisabledTextColor.value.withOpacity(0.1),
         ),
       ),
       child: Column(

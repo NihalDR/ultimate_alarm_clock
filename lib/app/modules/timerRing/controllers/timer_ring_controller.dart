@@ -13,10 +13,11 @@ class TimerRingController extends GetxController {
   MethodChannel timerChannel = const MethodChannel('timer');
   Timer? vibrationTimer;
   late StreamSubscription<FGBGType> _subscription;
-   getFakeTimerModel()async {
-   TimerModel fakeTimer = await Utils.genFakeTimerModel();
-   return fakeTimer;
+  getFakeTimerModel() async {
+    TimerModel fakeTimer = await Utils.genFakeTimerModel();
+    return fakeTimer;
   }
+
   @override
   void onInit() async {
     super.onInit();
@@ -40,20 +41,20 @@ class TimerRingController extends GetxController {
   onClose() async {
     // Cancel vibration
     Vibration.cancel();
-    
+
     // Cancel vibration timer
     vibrationTimer?.cancel();
-    
+
     // Stop audio
     AudioUtils.stopTimer(
       ringtoneName: (await getFakeTimerModel()).ringtoneName,
     );
-    
+
     // Cancel background/foreground subscription
     _subscription.cancel();
-    
+
     super.onClose();
-    
+
     debugPrint('🧹 TimerRingController disposed - all resources cleaned up');
   }
 }

@@ -7,7 +7,7 @@ import '../../../utils/constants.dart';
 import '../controllers/notifications_controller.dart';
 
 class NotificationsView extends GetView<NotificationsController> {
-  const NotificationsView({Key? key}) : super(key: key);
+  const NotificationsView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +24,7 @@ class NotificationsView extends GetView<NotificationsController> {
                 color: kprimaryColor.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.notifications_active,
                 color: kprimaryColor,
                 size: 24,
@@ -104,7 +104,9 @@ class NotificationsView extends GetView<NotificationsController> {
             }
 
             debugPrint(
-                '   - Showing notifications list with ${controller.notifications.length} items');
+              '   - Showing notifications list with '
+              '${controller.notifications.length} items',
+            );
             return RefreshIndicator(
               color: kprimaryColor,
               backgroundColor: ksecondaryBackgroundColor,
@@ -119,7 +121,8 @@ class NotificationsView extends GetView<NotificationsController> {
                   final notificationItem = controller.notifications[index];
                   if (notificationItem is! Map) {
                     debugPrint(
-                        'Skipping invalid notification item: $notificationItem');
+                      'Skipping invalid notification item: $notificationItem',
+                    );
                     return const SizedBox.shrink();
                   }
                   final notification =
@@ -205,7 +208,7 @@ class NotificationsView extends GetView<NotificationsController> {
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: isAlarm
-                      ? Icon(
+                      ? const Icon(
                           Icons.alarm,
                           color: kprimaryColor,
                           size: 28,
@@ -265,7 +268,7 @@ class NotificationsView extends GetView<NotificationsController> {
                     color: kprimaryColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: Text(
+                  child: const Text(
                     'Tap to accept',
                     style: TextStyle(
                       fontSize: 12,
@@ -284,6 +287,8 @@ class NotificationsView extends GetView<NotificationsController> {
 
   void _showAcceptDialog(Map notification, int index) {
     final isAlarm = notification['type'] != 'profile';
+    final alarmLabel = NotificationsController.getAlarmLabel(notification);
+    final alarmRepeat = NotificationsController.getAlarmRepeat(notification);
 
     Get.dialog(
       Dialog(
@@ -309,7 +314,7 @@ class NotificationsView extends GetView<NotificationsController> {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: isAlarm
-                    ? Icon(
+                    ? const Icon(
                         Icons.alarm,
                         color: kprimaryColor,
                         size: 32,
@@ -351,7 +356,7 @@ class NotificationsView extends GetView<NotificationsController> {
                     const TextSpan(text: 'From '),
                     TextSpan(
                       text: notification['owner'],
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontWeight: FontWeight.w600,
                         color: kprimaryColor,
                       ),
@@ -375,7 +380,7 @@ class NotificationsView extends GetView<NotificationsController> {
                       isAlarm
                           ? NotificationsController.getAlarmTime(notification)
                           : notification['profileName'],
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.w800,
                         color: kprimaryColor,
@@ -392,10 +397,7 @@ class NotificationsView extends GetView<NotificationsController> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        NotificationsController.getAlarmLabel(notification)
-                                .isEmpty
-                            ? 'Label: -'
-                            : 'Label: ${NotificationsController.getAlarmLabel(notification)}',
+                        alarmLabel.isEmpty ? 'Label: -' : 'Label: $alarmLabel',
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.white.withOpacity(0.6),
@@ -403,7 +405,7 @@ class NotificationsView extends GetView<NotificationsController> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Repeat: ${NotificationsController.getAlarmRepeat(notification)}',
+                        'Repeat: $alarmRepeat',
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.white.withOpacity(0.6),
@@ -435,11 +437,15 @@ class NotificationsView extends GetView<NotificationsController> {
                     shrinkWrap: true,
                     itemCount: controller.allProfiles.length,
                     itemBuilder: (context, profileIndex) {
-                      return Obx(() => Container(
+                      return Obx(
+                        () {
+                          final isSelectedProfile =
+                              controller.selectedProfile.value ==
+                                  controller.allProfiles[profileIndex];
+                          return Container(
                             margin: const EdgeInsets.only(bottom: 8),
                             child: Material(
-                              color: controller.selectedProfile.value ==
-                                      controller.allProfiles[profileIndex]
+                              color: isSelectedProfile
                                   ? kprimaryColor
                                   : kprimaryBackgroundColor.withOpacity(0.3),
                               borderRadius: BorderRadius.circular(12),
@@ -454,15 +460,10 @@ class NotificationsView extends GetView<NotificationsController> {
                                   child: Row(
                                     children: [
                                       Icon(
-                                        controller.selectedProfile.value ==
-                                                controller
-                                                    .allProfiles[profileIndex]
+                                        isSelectedProfile
                                             ? Icons.radio_button_checked
                                             : Icons.radio_button_unchecked,
-                                        color: controller
-                                                    .selectedProfile.value ==
-                                                controller
-                                                    .allProfiles[profileIndex]
+                                        color: isSelectedProfile
                                             ? Colors.white
                                             : Colors.white.withOpacity(0.5),
                                       ),
@@ -470,10 +471,7 @@ class NotificationsView extends GetView<NotificationsController> {
                                       Text(
                                         controller.allProfiles[profileIndex],
                                         style: TextStyle(
-                                          color: controller
-                                                      .selectedProfile.value ==
-                                                  controller
-                                                      .allProfiles[profileIndex]
+                                          color: isSelectedProfile
                                               ? Colors.white
                                               : Colors.white.withOpacity(0.8),
                                           fontSize: 16,
@@ -485,7 +483,9 @@ class NotificationsView extends GetView<NotificationsController> {
                                 ),
                               ),
                             ),
-                          ));
+                          );
+                        },
+                      );
                     },
                   ),
                 ),
@@ -539,7 +539,8 @@ class NotificationsView extends GetView<NotificationsController> {
                           Get.dialog(
                             const Center(
                               child: CircularProgressIndicator(
-                                  color: kprimaryColor),
+                                color: kprimaryColor,
+                              ),
                             ),
                             barrierDismissible: false,
                           );
@@ -564,6 +565,7 @@ class NotificationsView extends GetView<NotificationsController> {
                           await FirestoreDb.removeItem(notification);
                           debugPrint('✅ Notification item removed');
 
+                          // ignore: lines_longer_than_80_chars
                           // Close all dialogs and navigate back to notifications
                           debugPrint('❌ Closing all dialogs');
                           Get.until((route) => !Get.isDialogOpen!);
@@ -571,7 +573,8 @@ class NotificationsView extends GetView<NotificationsController> {
                           debugPrint('🎉 Showing success snackbar');
                           Get.snackbar(
                             'Success!',
-                            'Shared ${isAlarm ? 'alarm' : 'profile'} added successfully',
+                            'Shared ${isAlarm ? 'alarm' : 'profile'} '
+                                'added successfully',
                             backgroundColor: kprimaryColor.withOpacity(0.1),
                             colorText: kprimaryColor,
                             snackPosition: SnackPosition.TOP,
@@ -590,7 +593,9 @@ class NotificationsView extends GetView<NotificationsController> {
 
                           Get.snackbar(
                             'Error',
-                            'Failed to add shared ${isAlarm ? 'alarm' : 'profile'}: ${e.toString()}',
+                            'Failed to add shared '
+                                '${isAlarm ? 'alarm' : 'profile'}: '
+                                '${e.toString()}',
                             backgroundColor: Colors.red.withOpacity(0.1),
                             colorText: Colors.red,
                             snackPosition: SnackPosition.TOP,

@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:android_intent_plus/android_intent.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -8,15 +10,14 @@ import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 import 'dart:math';
 
-import 'package:ultimate_alarm_clock/app/data/models/alarm_model.dart';
-import 'package:ultimate_alarm_clock/app/data/models/quote_model.dart';
-import 'package:ultimate_alarm_clock/app/data/models/timer_model.dart';
-import 'package:ultimate_alarm_clock/app/data/providers/secure_storage_provider.dart';
-import 'package:ultimate_alarm_clock/app/utils/quote_list.dart';
-
+import '../data/models/alarm_model.dart';
 import '../data/models/profile_model.dart';
+import '../data/models/quote_model.dart';
+import '../data/models/timer_model.dart';
 import '../data/providers/get_storage_provider.dart';
+import '../data/providers/secure_storage_provider.dart';
 import 'constants.dart';
+import 'quote_list.dart';
 
 // Cache class for time until alarm calculations
 class _TimeUntilAlarmCache {
@@ -67,11 +68,11 @@ class Utils {
     weatherTypes: [],
     isWeatherEnabled: false,
     weatherConditionType: 0,
-    activityConditionType: 0, 
+    activityConditionType: 0,
     isEnabled: false,
     isActivityEnabled: false,
     isLocationEnabled: false,
-    locationConditionType: 0, 
+    locationConditionType: 0,
     isSharedAlarmEnabled: false,
     intervalToAlarm: 0,
     location: '0.0,0.0',
@@ -119,12 +120,12 @@ class Utils {
     return TimeOfDay(hour: hour, minute: minute);
   }
 
-  static DateTime stringToDate(String date){
+  static DateTime stringToDate(String date) {
     final parts = date.split('-');
     final day = int.parse(parts[2]);
     final month = int.parse(parts[1]);
     final year = int.parse(parts[0]);
-    return DateTime(year,month,day);
+    return DateTime(year, month, day);
   }
 
   static DateTime? stringToDateTime(String timeString) {
@@ -199,19 +200,20 @@ class Utils {
     final int minutes = duration.inMinutes;
     final int hours = duration.inHours;
 
-    if (seconds < 10) {
+    if (seconds < 60) {
       return '$seconds';
-    } else if (seconds < 60) {
-      return '$seconds';
-    } else if (minutes < 10) {
-      return "$minutes:${seconds % 60 < 10 ? '0' : ''}${seconds % 60}";
-    } else if (minutes < 60) {
-      return "$minutes:${seconds % 60 < 10 ? '0' : ''}${seconds % 60}";
-    } else if (hours < 10) {
-      return "$hours:${minutes % 60 < 10 ? '0' : ''}${minutes % 60}:${seconds % 60 < 10 ? '0' : ''}${seconds % 60}";
-    } else {
-      return "$hours:${minutes % 60 < 10 ? '0' : ''}${minutes % 60}:${seconds % 60 < 10 ? '0' : ''}${seconds % 60}";
     }
+
+    final minutesValue = minutes % 60;
+    final secondsValue = seconds % 60;
+    final minutesStr = _twoDigits(minutesValue);
+    final secondsStr = _twoDigits(secondsValue);
+
+    if (minutes < 60) {
+      return '$minutes:$secondsStr';
+    }
+
+    return '$hours:$minutesStr:$secondsStr';
   }
 
   static List<String> convertTo12HourFormat(String time) {
@@ -238,8 +240,7 @@ class Utils {
     String daySuffix = '';
     if (day >= 11 && day <= 13) {
       daySuffix = 'th';
-    }
-    else{
+    } else {
       switch (day % 10) {
         case 1:
           daySuffix = 'st';
@@ -301,21 +302,26 @@ class Utils {
   }
 
   // Cache for timeUntilAlarm calculations
-  static Map<String, _TimeUntilAlarmCache> _timeUntilAlarmCache = {};
+  static final Map<String, _TimeUntilAlarmCache> _timeUntilAlarmCache = {};
 
   // Method to clear the time calculation cache
   static void clearTimeUntilAlarmCache() {
     _timeUntilAlarmCache.clear();
   }
 
-  static String timeUntilAlarm(TimeOfDay alarmTime, List<bool> days, DateTime alarmDate) {
+  static String timeUntilAlarm(
+    TimeOfDay alarmTime,
+    List<bool> days,
+    DateTime alarmDate,
+  ) {
     final now = DateTime.now();
-    
+
     // Create cache key based on alarm parameters
-    final cacheKey =
-        '${alarmTime.hour}:${alarmTime.minute}_${days.join('')}_${alarmDate.year}-${alarmDate.month}-${alarmDate.day}';
-    
-    // Check if we have cached data and if it's still valid (less than 1 minute old)
+    final cacheKey = '${alarmTime.hour}:${alarmTime.minute}_${days.join('')}_'
+        '${alarmDate.year}-${alarmDate.month}-${alarmDate.day}';
+
+    // Check if we have cached data and if it's still valid (less than 1
+    // minute old)
     if (_timeUntilAlarmCache.containsKey(cacheKey)) {
       final cachedData = _timeUntilAlarmCache[cacheKey]!;
       if (now.difference(cachedData.timestamp).inSeconds < 60) {
@@ -324,7 +330,7 @@ class Utils {
         return _formatDuration(duration);
       }
     }
-    
+
     final todayAlarm = DateTime(
       now.year,
       now.month,
@@ -409,24 +415,24 @@ class Utils {
     } else if (duration.inHours < 24) {
       final hours = duration.inHours;
       final minutes = duration.inMinutes % 60;
-      
+
       if (minutes == 0) {
         return hours == 1 ? '$hours hour' : '$hours hours';
       } else {
         if (hours == 1) {
-        return minutes == 1
-            ? '$hours hour $minutes minute'
-            : '$hours hour $minutes minutes';
-      } else {
+          return minutes == 1
+              ? '$hours hour $minutes minute'
+              : '$hours hour $minutes minutes';
+        } else {
           return minutes == 1
               ? '$hours hours $minutes minute'
               : '$hours hours $minutes minutes';
-      }
+        }
       }
     } else {
       final days = duration.inDays;
       final hours = duration.inHours % 24;
-      
+
       if (hours == 0) {
         return days == 1 ? '$days day' : '$days days';
       } else {
@@ -648,8 +654,6 @@ class Utils {
         return 'Medium';
       case Difficulty.Hard:
         return 'Hard';
-      default:
-        return '';
     }
   }
 
@@ -803,7 +807,7 @@ class Utils {
                   width: MediaQuery.of(context).size.width,
                   child: TextButton(
                     style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all(
+                      backgroundColor: const WidgetStatePropertyAll(
                         kprimaryColor,
                       ),
                     ),
@@ -876,8 +880,8 @@ class Utils {
 
   static String formatDateTimeToStandard(DateTime dateTime) {
     dateTime = dateTime.toLocal();
-    final formattedDate =
-        '${dateTime.year}-${_twoDigits(dateTime.month)}-${_twoDigits(dateTime.day)}';
+    final formattedDate = '${dateTime.year}-${_twoDigits(dateTime.month)}-'
+        '${_twoDigits(dateTime.day)}';
     final formattedTime =
         '${_twoDigits(dateTime.hour)}:${_twoDigits(dateTime.minute)}';
     return '$formattedDate ($formattedTime)';
@@ -954,6 +958,7 @@ class Utils {
       return parts[0].substring(0, 2);
     }
   }
+
   static double getFontSize(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     return width < 360 ? 14 : 30;
@@ -966,14 +971,14 @@ class Utils {
     required double baseSize,
     double? appScalingFactor,
   }) {
-    final systemScaleFactor = MediaQuery.textScaleFactorOf(context);
+    final systemScaleFactor = MediaQuery.textScalerOf(context).scale(1.0);
     final effectiveAppScalingFactor = appScalingFactor ?? 1.0;
-    
+
     // Combine app scaling with system accessibility scaling
     // Apply a reasonable limit to prevent excessive scaling
-    final combinedScaleFactor = (effectiveAppScalingFactor * systemScaleFactor)
-        .clamp(0.5, 2.5);
-    
+    final combinedScaleFactor =
+        (effectiveAppScalingFactor * systemScaleFactor).clamp(0.5, 2.5);
+
     return baseSize * combinedScaleFactor;
   }
 
@@ -1023,13 +1028,13 @@ class Utils {
     required double baseWidthFactor,
     double? appScalingFactor,
   }) {
-    final systemScaleFactor = MediaQuery.textScaleFactorOf(context);
+    final systemScaleFactor = MediaQuery.textScalerOf(context).scale(1.0);
     final effectiveAppScalingFactor = appScalingFactor ?? 1.0;
-    
+
     // Scale item width proportionally with font scaling
-    final combinedScaleFactor = (effectiveAppScalingFactor * systemScaleFactor)
-        .clamp(0.8, 2.0);
-    
+    final combinedScaleFactor =
+        (effectiveAppScalingFactor * systemScaleFactor).clamp(0.8, 2.0);
+
     return screenWidth * baseWidthFactor * combinedScaleFactor;
   }
 
@@ -1040,16 +1045,16 @@ class Utils {
     required double baseFontSize,
     double? appScalingFactor,
   }) {
-    final systemScaleFactor = MediaQuery.textScaleFactorOf(context);
+    final systemScaleFactor = MediaQuery.textScalerOf(context).scale(1.0);
     final effectiveAppScalingFactor = appScalingFactor ?? 1.0;
-    
+
     // Scale item height proportionally with font scaling
-    final combinedScaleFactor = (effectiveAppScalingFactor * systemScaleFactor)
-        .clamp(0.5, 2.5);
-    
+    final combinedScaleFactor =
+        (effectiveAppScalingFactor * systemScaleFactor).clamp(0.5, 2.5);
+
     // Calculate height based on font size with padding
     final scaledFontSize = baseFontSize * combinedScaleFactor;
-    
+
     // Add padding around the text (1.8x font size gives good spacing)
     return scaledFontSize * 1.8;
   }

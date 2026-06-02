@@ -209,6 +209,7 @@ class AlarmChallengeController extends GetxController {
     final int currentSessionId = _timerSessionId;
 
     for (var i = totalIterations; i > 0; i--) {
+      // ignore: lines_longer_than_80_chars
       // If the global session ID has changed, kill this orphaned loop immediately
       if (currentSessionId != _timerSessionId) {
         break;

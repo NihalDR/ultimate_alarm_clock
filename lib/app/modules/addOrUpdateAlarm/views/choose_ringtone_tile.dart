@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/controllers/add_or_update_alarm_controller.dart';
+import '../controllers/add_or_update_alarm_controller.dart';
 import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/views/ringtone_selection_page.dart';
 import 'package:ultimate_alarm_clock/app/modules/settings/controllers/theme_controller.dart';
 import 'package:ultimate_alarm_clock/app/utils/audio_utils.dart';
-import 'package:ultimate_alarm_clock/app/utils/constants.dart';
 import 'package:ultimate_alarm_clock/app/utils/utils.dart';
 import 'package:ultimate_alarm_clock/app/utils/system_ringtone_service.dart';
 
@@ -34,7 +33,7 @@ class ChooseRingtoneTile extends StatelessWidget {
         ),
         onTap: () async {
           Utils.hapticFeedback();
-          
+
           // Stop any currently playing audio including system ringtones
           await AudioUtils.stopPreviewCustomSound();
           await SystemRingtoneService.stopSystemRingtone();

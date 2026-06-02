@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/controllers/add_or_update_alarm_controller.dart';
-import 'package:ultimate_alarm_clock/app/modules/settings/controllers/theme_controller.dart';
-import 'package:ultimate_alarm_clock/app/utils/share_dialog.dart';
-import 'package:ultimate_alarm_clock/app/utils/utils.dart';
-import 'package:ultimate_alarm_clock/app/utils/constants.dart';
+import '../../settings/controllers/theme_controller.dart';
+import '../../../utils/share_dialog.dart';
+import '../../../utils/utils.dart';
+import '../../../utils/constants.dart';
 
 class ShareAlarm extends StatelessWidget {
   const ShareAlarm({
@@ -31,17 +31,21 @@ class ShareAlarm extends StatelessWidget {
           margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
-            color: themeController.secondaryBackgroundColor.value.withOpacity(0.3),
+            color:
+                themeController.secondaryBackgroundColor.value.withOpacity(0.3),
           ),
           child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 4,
+            ),
             leading: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: kprimaryColor.withOpacity(0.2),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.share_rounded,
                 color: kprimaryColor,
                 size: 20,

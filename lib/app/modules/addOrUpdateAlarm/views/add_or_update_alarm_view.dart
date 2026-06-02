@@ -1,44 +1,45 @@
+import 'dart:developer' as developer;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:numberpicker/numberpicker.dart';
-import 'package:ultimate_alarm_clock/app/data/models/alarm_model.dart';
-import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/views/share_alarm_tile.dart';
-import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/views/alarm_offset_tile.dart';
-import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/views/ascending_volume.dart';
-import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/views/choose_ringtone_tile.dart';
-import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/views/delete_tile.dart';
-import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/views/label_tile.dart';
-import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/views/location_activity_tile.dart';
-import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/views/maths_challenge_tile.dart';
-import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/views/note.dart';
-import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/views/pedometer_challenge_tile.dart';
-import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/views/qr_bar_code_tile.dart';
-import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/views/quote_tile.dart';
-import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/views/repeat_once_tile.dart';
-import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/views/repeat_tile.dart';
-import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/views/screen_activity_tile.dart';
-import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/views/setting_selector.dart';
-import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/views/smart_control_combination_tile.dart';
-import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/views/shake_to_dismiss_tile.dart';
-import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/views/shared_alarm_tile.dart';
-import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/views/shared_users_tile.dart';
-import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/views/snooze_settings_tile.dart';
-import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/views/sunrise_alarm_tile.dart';
-import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/views/task_list_tile.dart';
-import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/views/timezone_tile.dart';
-import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/views/weather_tile.dart';
-import 'package:ultimate_alarm_clock/app/modules/settings/controllers/settings_controller.dart';
-import 'package:ultimate_alarm_clock/app/modules/settings/controllers/theme_controller.dart';
-import 'package:ultimate_alarm_clock/app/utils/constants.dart';
-import 'package:ultimate_alarm_clock/app/utils/utils.dart';
-import '../controllers/add_or_update_alarm_controller.dart';
+
+import '../../../data/models/alarm_model.dart';
+import '../../settings/controllers/settings_controller.dart';
+import '../../settings/controllers/theme_controller.dart';
+import '../../../utils/constants.dart';
+import '../../../utils/utils.dart';
+import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/controllers/add_or_update_alarm_controller.dart';
 import 'alarm_date_tile.dart';
-import 'guardian_angel.dart';
+import 'alarm_offset_tile.dart';
+import 'ascending_volume.dart';
+import 'choose_ringtone_tile.dart';
 import 'custom_time_picker.dart';
+import 'delete_tile.dart';
+import 'guardian_angel.dart';
+import 'label_tile.dart';
+import 'location_activity_tile.dart';
+import 'maths_challenge_tile.dart';
+import 'note.dart';
+import 'pedometer_challenge_tile.dart';
+import 'qr_bar_code_tile.dart';
+import 'quote_tile.dart';
+import 'repeat_once_tile.dart';
+import 'repeat_tile.dart';
+import 'screen_activity_tile.dart';
+import 'setting_selector.dart';
+import 'shake_to_dismiss_tile.dart';
+import 'share_alarm_tile.dart';
+import 'shared_alarm_tile.dart';
+import 'shared_users_tile.dart';
+import 'smart_control_combination_tile.dart';
+import 'snooze_settings_tile.dart';
+import 'sunrise_alarm_tile.dart';
+import 'task_list_tile.dart';
+import 'timezone_tile.dart';
+import 'weather_tile.dart';
 
 class AddOrUpdateAlarmView extends GetView<AddOrUpdateAlarmController> {
   AddOrUpdateAlarmView({super.key});
@@ -61,8 +62,6 @@ class AddOrUpdateAlarmView extends GetView<AddOrUpdateAlarmController> {
         controller.checkUnsavedChangesAndNavigate(context);
       },
       child: Scaffold(
-        // floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-
         appBar: PreferredSize(
           preferredSize: Size.fromHeight(height * 0.08),
           child: Obx(
@@ -135,9 +134,9 @@ class AddOrUpdateAlarmView extends GetView<AddOrUpdateAlarmController> {
                               ),
                             ),
                             TextButton(
-                              style: ButtonStyle(
+                              style: const ButtonStyle(
                                 backgroundColor:
-                                    MaterialStateProperty.all(kprimaryColor),
+                                    WidgetStatePropertyAll(kprimaryColor),
                               ),
                               child: Obx(
                                 () => Text(
@@ -184,490 +183,13 @@ class AddOrUpdateAlarmView extends GetView<AddOrUpdateAlarmController> {
                                               Utils.hapticFeedback();
                                               controller.changeDatePicker();
                                             },
-                                            child: controller
-                                                    .isTimePicker.value
-                                                ? Obx(
-                                                    () {
-                                                      // Check if font scaling is too high for NumberPicker
-                                                      final systemScale = MediaQuery.textScaleFactorOf(context);
-                                                      final appScale = controller.homeController.scalingFactor.value;
-                                                      final combinedScale = systemScale * appScale;
-                                                      final useCustomPicker = combinedScale > 1.3;
-
-                                                      if (useCustomPicker) {
-                                                        // Use custom time picker for better scaling
-                                                        return CustomTimePicker(
-                                                          hours: controller.hours.value,
-                                                          minutes: controller.minutes.value,
-                                                          meridiemIndex: controller.meridiemIndex.value,
-                                                          is24Hour: settingsController.is24HrsEnabled.value,
-                                                          onHoursChanged: (value) {
-                                                            Utils.hapticFeedback();
-                                                            controller.hours.value = value;
-
-                                                            // Update the selected time with proper format handling
-                                                            int hourValue;
-                                                            if (settingsController.is24HrsEnabled.value) {
-                                                              // In 24-hour mode, use the value directly
-                                                              hourValue = value;
-                                                            } else {
-                                                              // In 12-hour mode, convert based on AM/PM
-                                                              hourValue = controller.convert24(
-                                                                value,
-                                                                controller.meridiemIndex.value,
-                                                              );
-                                                            }
-
-                                                            controller.selectedTime.value = DateTime(
-                                                              controller.selectedTime.value.year,
-                                                              controller.selectedTime.value.month,
-                                                              controller.selectedTime.value.day,
-                                                              hourValue,
-                                                              controller.selectedTime.value.minute,
-                                                            );
-
-                                                            // Update text controllers to reflect current format
-                                                            controller.inputHrsController.text = controller.hours.value.toString();
-                                                            controller.inputMinutesController.text = controller.minutes.value.toString();
-
-                                                            // Only update period for 12-hour format
-                                                            if (!settingsController.is24HrsEnabled.value) {
-                                                              controller.changePeriod(
-                                                                controller.meridiemIndex.value == 0 ? 'AM' : 'PM',
-                                                              );
-                                                            }
-
-                                                            controller.setTime();
-                                                          },
-                                                          onMinutesChanged: (value) {
-                                                            Utils.hapticFeedback();
-                                                            controller.minutes.value = value;
-                                                            controller.selectedTime.value = DateTime(
-                                                              controller.selectedTime.value.year,
-                                                              controller.selectedTime.value.month,
-                                                              controller.selectedTime.value.day,
-                                                              controller.selectedTime.value.hour,
-                                                              controller.minutes.value,
-                                                            );
-                                                            controller.inputHrsController.text = controller.hours.value.toString();
-                                                            controller.inputMinutesController.text = controller.minutes.value.toString();
-                                                            controller.changePeriod(
-                                                              controller.meridiemIndex.value == 0 ? 'AM' : 'PM',
-                                                            );
-                                                            controller.setTime();
-                                                          },
-                                                          onMeridiemChanged: (value) {
-                                                            Utils.hapticFeedback();
-                                                            controller.meridiemIndex.value = value;
-                                                            controller.selectedTime.value = DateTime(
-                                                              controller.selectedTime.value.year,
-                                                              controller.selectedTime.value.month,
-                                                              controller.selectedTime.value.day,
-                                                              controller.convert24(
-                                                                controller.hours.value,
-                                                                controller.meridiemIndex.value,
-                                                              ),
-                                                              controller.minutes.value,
-                                                            );
-                                                            controller.inputHrsController.text = controller.hours.value.toString();
-                                                            controller.inputMinutesController.text = controller.minutes.value.toString();
-                                                            controller.changePeriod(
-                                                              controller.meridiemIndex.value == 0 ? 'AM' : 'PM',
-                                                            );
-                                                            controller.setTime();
-                                                          },
-                                                          primaryColor: kprimaryColor,
-                                                          textColor: themeController.primaryTextColor.value,
-                                                          disabledTextColor: themeController.primaryDisabledTextColor.value,
-                                                          scalingFactor: controller.homeController.scalingFactor.value,
-                                                        );
-                                                      } else {
-                                                        // Use standard NumberPicker for normal scaling
-                                                        return Row(
-                                                          mainAxisAlignment: MainAxisAlignment.center,
-                                                          crossAxisAlignment: CrossAxisAlignment.center,
-                                                          children: [
-                                                            NumberPicker(
-                                                              minValue: settingsController.is24HrsEnabled.value ? 0 : 1,
-                                                              maxValue: settingsController.is24HrsEnabled.value ? 23 : 12,
-                                                              value: controller.hours.value,
-                                                              onChanged: (value) {
-                                                                Utils.hapticFeedback();
-                                                                controller.hours.value = value;
-
-                                                                // Update the selected time with proper format handling
-                                                                int hourValue;
-                                                                if (settingsController.is24HrsEnabled.value) {
-                                                                  // In 24-hour mode, use the value directly
-                                                                  hourValue = value;
-                                                                } else {
-                                                                  // In 12-hour mode, convert based on AM/PM
-                                                                  hourValue = controller.convert24(
-                                                                    value,
-                                                                    controller.meridiemIndex.value,
-                                                                  );
-                                                                }
-
-                                                                controller.selectedTime.value = DateTime(
-                                                                  controller.selectedTime.value.year,
-                                                                  controller.selectedTime.value.month,
-                                                                  controller.selectedTime.value.day,
-                                                                  hourValue,
-                                                                  controller.selectedTime.value.minute,
-                                                                );
-
-                                                                // Update text controllers to reflect current format
-                                                                controller.inputHrsController.text = controller.hours.value.toString();
-                                                                controller.inputMinutesController.text = controller.minutes.value.toString();
-
-                                                                // Only update period for 12-hour format
-                                                                if (!settingsController.is24HrsEnabled.value) {
-                                                                  controller.changePeriod(
-                                                                    controller.meridiemIndex.value == 0 ? 'AM' : 'PM',
-                                                                  );
-                                                                }
-
-                                                                controller.setTime();
-                                                              },
-                                                              infiniteLoop: true,
-                                                              itemWidth: Utils.getResponsiveNumberPickerItemWidth(
-                                                                context,
-                                                                screenWidth: width,
-                                                                baseWidthFactor: 0.17,
-                                                                appScalingFactor: controller.homeController.scalingFactor.value,
-                                                              ),
-                                                              itemHeight: Utils.getResponsiveNumberPickerItemHeight(
-                                                                context,
-                                                                baseFontSize: 40,
-                                                                appScalingFactor: controller.homeController.scalingFactor.value,
-                                                              ),
-                                                              zeroPad: true,
-                                                              selectedTextStyle: Utils.getResponsiveNumberPickerSelectedTextStyle(
-                                                                context,
-                                                                baseFontSize: 40,
-                                                                color: kprimaryColor,
-                                                                appScalingFactor: controller.homeController.scalingFactor.value,
-                                                              ),
-                                                              textStyle: Utils.getResponsiveNumberPickerTextStyle(
-                                                                context,
-                                                                baseFontSize: 20,
-                                                                color: themeController.primaryDisabledTextColor.value,
-                                                                appScalingFactor: controller.homeController.scalingFactor.value,
-                                                              ),
-                                                            ),
-                                                            Padding(
-                                                              padding: EdgeInsets.symmetric(horizontal: width * 0.02),
-                                                              child: Text(
-                                                                ':',
-                                                                style: Theme.of(context).textTheme.displayLarge!.copyWith(
-                                                                  fontWeight: FontWeight.bold,
-                                                                  color: themeController.primaryDisabledTextColor.value,
-                                                                ),
-                                                              ),
-                                                            ),
-                                                            NumberPicker(
-                                                              minValue: 0,
-                                                              maxValue: 59,
-                                                              value: controller.minutes.value,
-                                                              onChanged: (value) {
-                                                                Utils.hapticFeedback();
-                                                                controller.minutes.value = value;
-                                                                controller.selectedTime.value = DateTime(
-                                                                  controller.selectedTime.value.year,
-                                                                  controller.selectedTime.value.month,
-                                                                  controller.selectedTime.value.day,
-                                                                  controller.selectedTime.value.hour,
-                                                                  controller.minutes.value,
-                                                                );
-                                                                controller.inputHrsController.text = controller.hours.value.toString();
-                                                                controller.inputMinutesController.text = controller.minutes.value.toString();
-                                                                controller.changePeriod(
-                                                                  controller.meridiemIndex.value == 0 ? 'AM' : 'PM',
-                                                                );
-                                                              },
-                                                              infiniteLoop: true,
-                                                              itemWidth: Utils.getResponsiveNumberPickerItemWidth(
-                                                                context,
-                                                                screenWidth: width,
-                                                                baseWidthFactor: 0.17,
-                                                                appScalingFactor: controller.homeController.scalingFactor.value,
-                                                              ),
-                                                              itemHeight: Utils.getResponsiveNumberPickerItemHeight(
-                                                                context,
-                                                                baseFontSize: 40,
-                                                                appScalingFactor: controller.homeController.scalingFactor.value,
-                                                              ),
-                                                              zeroPad: true,
-                                                              selectedTextStyle: Utils.getResponsiveNumberPickerSelectedTextStyle(
-                                                                context,
-                                                                baseFontSize: 40,
-                                                                color: kprimaryColor,
-                                                                appScalingFactor: controller.homeController.scalingFactor.value,
-                                                              ),
-                                                              textStyle: Utils.getResponsiveNumberPickerTextStyle(
-                                                                context,
-                                                                baseFontSize: 20,
-                                                                color: themeController.primaryDisabledTextColor.value,
-                                                                appScalingFactor: controller.homeController.scalingFactor.value,
-                                                              ),
-                                                            ),
-                                                            Visibility(
-                                                              visible: settingsController.is24HrsEnabled.value ? false : true,
-                                                              child: Padding(
-                                                                padding: EdgeInsets.symmetric(horizontal: width * 0.02),
-                                                                child: Text(
-                                                                  ':',
-                                                                  style: Theme.of(context).textTheme.displayLarge!.copyWith(
-                                                                    fontWeight: FontWeight.bold,
-                                                                    color: themeController.primaryDisabledTextColor.value,
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            ),
-                                                            Visibility(
-                                                              visible: settingsController.is24HrsEnabled.value ? false : true,
-                                                              child: NumberPicker(
-                                                                minValue: 0,
-                                                                maxValue: 1,
-                                                                value: controller.meridiemIndex.value,
-                                                                onChanged: (value) {
-                                                                  Utils.hapticFeedback();
-                                                                  value == 0
-                                                                      ? controller.meridiemIndex.value = 0
-                                                                      : controller.meridiemIndex.value = 1;
-                                                                  controller.selectedTime.value = DateTime(
-                                                                    controller.selectedTime.value.year,
-                                                                    controller.selectedTime.value.month,
-                                                                    controller.selectedTime.value.day,
-                                                                    controller.convert24(
-                                                                      controller.hours.value,
-                                                                      controller.meridiemIndex.value,
-                                                                    ),
-                                                                    controller.minutes.value,
-                                                                  );
-                                                                  controller.inputHrsController.text = controller.hours.value.toString();
-                                                                  controller.inputMinutesController.text = controller.minutes.value.toString();
-                                                                  controller.changePeriod(
-                                                                    controller.meridiemIndex.value == 0 ? 'AM' : 'PM',
-                                                                  );
-                                                                },
-                                                                textMapper: (numberText) {
-                                                                  return controller.meridiem[int.parse(numberText)].value;
-                                                                },
-                                                                itemWidth: Utils.getResponsiveNumberPickerItemWidth(
-                                                                  context,
-                                                                  screenWidth: width,
-                                                                  baseWidthFactor: 0.2,
-                                                                  appScalingFactor: controller.homeController.scalingFactor.value,
-                                                                ),
-                                                                itemHeight: Utils.getResponsiveNumberPickerItemHeight(
-                                                                  context,
-                                                                  baseFontSize: 30,
-                                                                  appScalingFactor: controller.homeController.scalingFactor.value,
-                                                                ),
-                                                                selectedTextStyle: Utils.getResponsiveNumberPickerSelectedTextStyle(
-                                                                  context,
-                                                                  baseFontSize: 30,
-                                                                  color: kprimaryColor,
-                                                                  appScalingFactor: controller.homeController.scalingFactor.value,
-                                                                ),
-                                                                textStyle: Utils.getResponsiveNumberPickerTextStyle(
-                                                                  context,
-                                                                  baseFontSize: 20,
-                                                                  color: themeController.primaryDisabledTextColor.value,
-                                                                  appScalingFactor: controller.homeController.scalingFactor.value,
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        );
-                                                      }
-                                                    },
+                                            child: controller.isTimePicker.value
+                                                ? _buildTimePicker(
+                                                    context,
+                                                    width,
                                                   )
-                                                : Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .center,
-                                                    children: [
-                                                      SizedBox(
-                                                        width: 80,
-                                                        child: TextField(
-                                                          onChanged: (_) {
-                                                            if (int.parse(controller
-                                                                        .inputHrsController
-                                                                        .text) ==
-                                                                    12 &&
-                                                                int.parse(controller
-                                                                        .inputMinutesController
-                                                                        .text) ==
-                                                                    0) {
-                                                              controller
-                                                                  .isAM
-                                                                  .toggle();
-                                                            }
-                                                            controller
-                                                                .setTime();
-                                                          },
-                                                          decoration:
-                                                              const InputDecoration(
-                                                            hintText: 'HH',
-                                                            border: InputBorder
-                                                                .none,
-                                                          ),
-                                                          textAlign:
-                                                              TextAlign.center,
-                                                          controller:
-                                                              controller
-                                                                  .inputHrsController,
-                                                          keyboardType:
-                                                              TextInputType
-                                                                  .number,
-                                                          inputFormatters: [
-                                                            FilteringTextInputFormatter
-                                                                .allow(RegExp(
-                                                                    '[0-9]')),
-                                                            LengthLimitingTextInputFormatter(
-                                                                2),
-                                                            LimitRange(
-                                                              settingsController.is24HrsEnabled.value ? 0 : 1,
-                                                              settingsController.is24HrsEnabled.value ? 23 : 12,
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                      SizedBox(
-                                                        width: 16,
-                                                        child: Text(
-                                                          ':',
-                                                          textAlign:
-                                                              TextAlign.center,
-                                                          style:
-                                                              Theme.of(context)
-                                                                  .textTheme
-                                                                  .titleMedium,
-                                                        ),
-                                                      ),
-                                                      SizedBox(
-                                                        width: 80,
-                                                        child: TextField(
-                                                          onChanged: (_) {
-                                                            controller
-                                                                .setTime();
-                                                          },
-                                                          decoration:
-                                                              const InputDecoration(
-                                                            hintText: 'MM',
-                                                            border: InputBorder
-                                                                .none,
-                                                          ),
-                                                          textAlign:
-                                                              TextAlign.center,
-                                                          controller:
-                                                              controller
-                                                                  .inputMinutesController,
-                                                          keyboardType:
-                                                              TextInputType
-                                                                  .number,
-                                                          inputFormatters: [
-                                                            FilteringTextInputFormatter
-                                                                .allow(
-                                                              RegExp(
-                                                                '[1,2,3,4,5,6,7,8,9,0]',
-                                                              ),
-                                                            ),
-                                                            LengthLimitingTextInputFormatter(
-                                                              2,
-                                                            ),
-                                                            LimitRange(00, 59),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                      const SizedBox(
-                                                        width: 16,
-                                                      ),
-                                                      Visibility(
-                                                        visible:
-                                                            !settingsController
-                                                                .is24HrsEnabled
-                                                                .value,
-                                                        child: DropdownButton(
-                                                          underline:
-                                                              Container(),
-                                                          value:
-                                                              controller
-                                                                      .isAM
-                                                                      .value
-                                                                  ? 'AM'
-                                                                  : 'PM',
-                                                          dropdownColor:
-                                                              themeController
-                                                                  .primaryBackgroundColor
-                                                                  .value,
-                                                          items: [
-                                                            'AM',
-                                                            'PM'
-                                                          ].map(
-                                                              (String period) {
-                                                            return DropdownMenuItem<
-                                                                String>(
-                                                              value: period,
-                                                              child:
-                                                                  Text(period),
-                                                            );
-                                                          }).toList(),
-                                                          onChanged:
-                                                              (getPeriod) {
-                                                            controller
-                                                                .changePeriod(
-                                                                    getPeriod!);
-
-                                                            controller
-                                                                .setTime();
-                                                          },
-                                                        ),
-                                                      ),
-                                                      const SizedBox(
-                                                        width: 12,
-                                                      ),
-                                                      Visibility(
-                                                        visible:
-                                                            controller
-                                                                .isTimePicker
-                                                                .isFalse,
-                                                        child: InkWell(
-                                                          onTap: () {
-                                                            Utils
-                                                                .hapticFeedback();
-                                                            controller
-                                                                .confirmTimeInput();
-                                                          },
-                                                          child: Container(
-                                                            decoration:
-                                                                BoxDecoration(
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                50.0,
-                                                              ),
-                                                              border:
-                                                                  Border.all(
-                                                                color:
-                                                                    kprimaryColor,
-                                                                width: 1.0,
-                                                              ),
-                                                            ),
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .all(5.0),
-                                                            child: const Icon(
-                                                              Icons.done,
-                                                              color:
-                                                                  kprimaryColor,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ],
+                                                : _buildManualTimeInput(
+                                                    context,
                                                   ),
                                           );
                                         },
@@ -720,24 +242,34 @@ class AddOrUpdateAlarmView extends GetView<AddOrUpdateAlarmController> {
                                             .primaryDisabledTextColor.value,
                                       ),
                                       Obx(
-                                        () => (!controller.repeatDays.every(
-                                                (element) => element == false))
-                                            ? RepeatOnceTile(
-                                                controller: controller,
-                                                themeController:
-                                                    themeController,
-                                              )
-                                            : const SizedBox(),
+                                        () {
+                                          final hasRepeatDays = controller
+                                              .repeatDays
+                                              .any((element) => element);
+
+                                          return hasRepeatDays
+                                              ? RepeatOnceTile(
+                                                  controller: controller,
+                                                  themeController:
+                                                      themeController,
+                                                )
+                                              : const SizedBox();
+                                        },
                                       ),
                                       Obx(
-                                        () => (!controller.repeatDays.every(
-                                                (element) => element == false))
-                                            ? Divider(
-                                                color: themeController
-                                                    .primaryDisabledTextColor
-                                                    .value,
-                                              )
-                                            : const SizedBox(),
+                                        () {
+                                          final hasRepeatDays = controller
+                                              .repeatDays
+                                              .any((element) => element);
+
+                                          return hasRepeatDays
+                                              ? Divider(
+                                                  color: themeController
+                                                      .primaryDisabledTextColor
+                                                      .value,
+                                                )
+                                              : const SizedBox();
+                                        },
                                       ),
                                       SnoozeSettingsTile(
                                         controller: controller,
@@ -748,8 +280,9 @@ class AddOrUpdateAlarmView extends GetView<AddOrUpdateAlarmController> {
                                             .primaryDisabledTextColor.value,
                                       ),
                                       Obx(
-                                        () => (controller.repeatDays.every(
-                                                (element) => element == false))
+                                        () => controller.repeatDays.every(
+                                          (element) => element == false,
+                                        )
                                             ? DeleteAfterGoesOff(
                                                 controller: controller,
                                                 themeController:
@@ -915,26 +448,31 @@ class AddOrUpdateAlarmView extends GetView<AddOrUpdateAlarmController> {
                                         themeController: themeController,
                                       ),
                                       Obx(
-                                        () => (controller.isSharedAlarmEnabled.value)
+                                        () => (controller
+                                                .isSharedAlarmEnabled.value)
                                             ? Column(
                                                 children: [
                                                   Divider(
-                                                  color: themeController
-                                                      .primaryDisabledTextColor
-                                                      .value,
-                                      ),
-                                      AlarmOffset(
-                                        controller: controller,
-                                        themeController: themeController,
-                                      ),
+                                                    color: themeController
+                                                        // ignore: lines_longer_than_80_chars
+                                                        .primaryDisabledTextColor
+                                                        .value,
+                                                  ),
+                                                  AlarmOffset(
+                                                    controller: controller,
+                                                    themeController:
+                                                        themeController,
+                                                  ),
                                                   Divider(
-                                                  color: themeController
-                                                      .primaryDisabledTextColor
-                                                      .value,
-                                      ),
-                                      SharedUsers(
-                                        controller: controller,
-                                        themeController: themeController,
+                                                    color: themeController
+                                                        // ignore: lines_longer_than_80_chars
+                                                        .primaryDisabledTextColor
+                                                        .value,
+                                                  ),
+                                                  SharedUsers(
+                                                    controller: controller,
+                                                    themeController:
+                                                        themeController,
                                                   ),
                                                 ],
                                               )
@@ -962,9 +500,9 @@ class AddOrUpdateAlarmView extends GetView<AddOrUpdateAlarmController> {
                       height: height * 0.06,
                       width: width * 0.8,
                       child: TextButton(
-                        style: ButtonStyle(
+                        style: const ButtonStyle(
                           backgroundColor:
-                              MaterialStateProperty.all(kprimaryColor),
+                              WidgetStatePropertyAll(kprimaryColor),
                         ),
                         child: Text(
                           (controller.alarmRecord.value.alarmID == '')
@@ -1052,8 +590,8 @@ class AddOrUpdateAlarmView extends GetView<AddOrUpdateAlarmController> {
                                 ),
                                 isLocationEnabled:
                                     controller.isLocationEnabled.value,
-                                locationConditionType:
-                                    controller.locationConditionType.value.index,
+                                locationConditionType: controller
+                                    .locationConditionType.value.index,
                                 weatherTypes: Utils.getIntFromWeatherTypes(
                                   controller.selectedWeather.toList(),
                                 ),
@@ -1061,8 +599,8 @@ class AddOrUpdateAlarmView extends GetView<AddOrUpdateAlarmController> {
                                     controller.isWeatherEnabled.value,
                                 weatherConditionType:
                                     controller.weatherConditionType.value.index,
-                                activityConditionType:
-                                    controller.activityConditionType.value.index,
+                                activityConditionType: controller
+                                    .activityConditionType.value.index,
                                 location: Utils.geoPointToString(
                                   Utils.latLngToGeoPoint(
                                     controller.selectedPoint.value,
@@ -1096,28 +634,42 @@ class AddOrUpdateAlarmView extends GetView<AddOrUpdateAlarmController> {
                                 guardian: controller.guardian.value,
                                 isCall: controller.isCall.value,
                                 ringOn: controller.isFutureDate.value,
-                                isSunriseEnabled: controller.isSunriseEnabled.value,
-                                sunriseDuration: controller.sunriseDuration.value,
-                                sunriseIntensity: controller.sunriseIntensity.value,
-                                sunriseColorScheme: controller.sunriseColorScheme.value,
+                                isSunriseEnabled:
+                                    controller.isSunriseEnabled.value,
+                                sunriseDuration:
+                                    controller.sunriseDuration.value,
+                                sunriseIntensity:
+                                    controller.sunriseIntensity.value,
+                                sunriseColorScheme:
+                                    controller.sunriseColorScheme.value,
                               );
 
                               // Adding offset details to the database if
                               // its a shared alarm
                               if (controller.isSharedAlarmEnabled.value) {
+                                final userOffset =
+                                    controller.offsetDetails.firstWhereOrNull(
+                                  (entry) =>
+                                      entry['userId'] ==
+                                      controller.userId.value,
+                                );
 
-                              final userOffset = controller.offsetDetails
-                              .firstWhereOrNull((entry) => entry['userId'] == controller.userId.value);
+                                if (userOffset != null) {
+                                  controller.offsetDetails.removeWhere(
+                                    (ele) =>
+                                        ele['userId'] ==
+                                        controller.userId.value,
+                                  );
+                                }
 
-                              if(userOffset != null)
-                              {
-                                controller.offsetDetails.value.removeWhere((ele) => ele['userId'] == controller.userId.value);
-                              }
+                                controller.offsetDetails.add(
+                                  Map<String, dynamic>.from(
+                                    controller.userOffsetDetails,
+                                  ),
+                                );
 
-                              controller.offsetDetails.add(Map<String, dynamic>.from(controller.userOffsetDetails.value));
-
-
-                              alarmRecord.offsetDetails = controller.offsetDetails;
+                                alarmRecord.offsetDetails =
+                                    controller.offsetDetails;
 
                                 alarmRecord.mainAlarmTime =
                                     Utils.timeOfDayToString(
@@ -1137,7 +689,7 @@ class AddOrUpdateAlarmView extends GetView<AddOrUpdateAlarmController> {
                                       .updateAlarm(updatedAlarmModel);
                                 }
                               } catch (e) {
-                                debugPrint(e.toString());
+                                developer.log(e.toString());
                               }
                             } else {
                               controller.createProfile();
@@ -1150,6 +702,205 @@ class AddOrUpdateAlarmView extends GetView<AddOrUpdateAlarmController> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildTimePicker(BuildContext context, double width) {
+    return Obx(() {
+      return CustomTimePicker(
+        hours: controller.hours.value,
+        minutes: controller.minutes.value,
+        meridiemIndex: controller.meridiemIndex.value,
+        is24Hour: controller.settingsController.is24HrsEnabled.value,
+        onHoursChanged: (int value) {
+          _updateTimeFromPicker(hours: value);
+        },
+        onMinutesChanged: (int value) {
+          _updateTimeFromPicker(minutes: value);
+        },
+        onMeridiemChanged: (int value) {
+          _updateTimeFromPicker(meridiemIndex: value);
+        },
+        primaryColor: kprimaryColor,
+        textColor: themeController.primaryTextColor.value,
+        disabledTextColor: themeController.primaryDisabledTextColor.value,
+        scalingFactor: (width * 0.003).clamp(0.8, 1.1),
+      );
+    });
+  }
+
+  Widget _buildManualTimeInput(BuildContext context) {
+    return Obx(() {
+      final is24Hour = controller.settingsController.is24HrsEnabled.value;
+      final hourMin = is24Hour ? 0 : 1;
+      final hourMax = is24Hour ? 23 : 12;
+
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _buildTimeInputField(
+                controller: controller.inputHrsController,
+                hintText: is24Hour ? '00' : '12',
+                minValue: hourMin,
+                maxValue: hourMax,
+                onChanged: (_) => controller.toggleIfAtBoundary(),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 6),
+                child: Text(
+                  ':',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        color: themeController.primaryTextColor.value,
+                      ),
+                ),
+              ),
+              _buildTimeInputField(
+                controller: controller.inputMinutesController,
+                hintText: '00',
+                minValue: 0,
+                maxValue: 59,
+              ),
+              if (!is24Hour) ...[
+                const SizedBox(width: 10),
+                _buildMeridiemToggle(context),
+              ],
+            ],
+          ),
+          const SizedBox(height: 12),
+          ElevatedButton(
+            onPressed: () {
+              Utils.hapticFeedback();
+              controller.confirmTimeInput();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: kprimaryColor,
+              foregroundColor: Colors.white,
+            ),
+            child: Text('Confirm'.tr),
+          ),
+        ],
+      );
+    });
+  }
+
+  Widget _buildTimeInputField({
+    required TextEditingController controller,
+    required String hintText,
+    required int minValue,
+    required int maxValue,
+    ValueChanged<String>? onChanged,
+  }) {
+    return SizedBox(
+      width: 64,
+      child: TextField(
+        controller: controller,
+        maxLength: 2,
+        keyboardType: TextInputType.number,
+        textAlign: TextAlign.center,
+        inputFormatters: [
+          FilteringTextInputFormatter.digitsOnly,
+          LimitRange(minValue, maxValue),
+        ],
+        decoration: InputDecoration(
+          counterText: '',
+          hintText: hintText,
+          filled: true,
+          fillColor: themeController.secondaryBackgroundColor.value,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+        ),
+        onChanged: onChanged,
+      ),
+    );
+  }
+
+  Widget _buildMeridiemToggle(BuildContext context) {
+    final isAM = controller.isAM.value;
+    return Row(
+      children: [
+        _buildMeridiemButton(
+          context,
+          label: 'AM',
+          isSelected: isAM,
+          onTap: () => controller.changePeriod('AM'),
+        ),
+        const SizedBox(width: 6),
+        _buildMeridiemButton(
+          context,
+          label: 'PM',
+          isSelected: !isAM,
+          onTap: () => controller.changePeriod('PM'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMeridiemButton(
+    BuildContext context, {
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: () {
+        Utils.hapticFeedback();
+        onTap();
+      },
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? kprimaryColor
+              : themeController.secondaryBackgroundColor.value,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Text(
+          label.tr,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: isSelected
+                    ? Colors.white
+                    : themeController.primaryTextColor.value,
+                fontWeight: FontWeight.w600,
+              ),
+        ),
+      ),
+    );
+  }
+
+  void _updateTimeFromPicker({
+    int? hours,
+    int? minutes,
+    int? meridiemIndex,
+  }) {
+    if (hours != null) {
+      controller.hours.value = hours;
+    }
+    if (minutes != null) {
+      controller.minutes.value = minutes;
+    }
+    if (meridiemIndex != null) {
+      controller.meridiemIndex.value = meridiemIndex;
+    }
+
+    final is24Hour = controller.settingsController.is24HrsEnabled.value;
+    int hour = controller.hours.value;
+    if (!is24Hour) {
+      hour = controller.convert24(hour, controller.meridiemIndex.value);
+    }
+    final minute = controller.minutes.value;
+    final current = controller.selectedTime.value;
+    controller.selectedTime.value = DateTime(
+      current.year,
+      current.month,
+      current.day,
+      hour,
+      minute,
     );
   }
 }

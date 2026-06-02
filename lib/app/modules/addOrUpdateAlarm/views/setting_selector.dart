@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ultimate_alarm_clock/app/data/providers/google_cloud_api_provider.dart';
-import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/controllers/add_or_update_alarm_controller.dart';
-import 'package:ultimate_alarm_clock/app/utils/share_dialog.dart';
+import '../controllers/add_or_update_alarm_controller.dart';
 
 import '../../../utils/constants.dart';
 
 class SettingSelector extends StatelessWidget {
   SettingSelector({super.key});
-  AddOrUpdateAlarmController controller =
+  final AddOrUpdateAlarmController controller =
       Get.find<AddOrUpdateAlarmController>();
 
   @override
@@ -20,16 +19,16 @@ class SettingSelector extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          Option(0, Icons.alarm, 'Alarm'),
-          Option(1, Icons.auto_awesome, 'Smart-Controls'),
-          Option(2, Icons.checklist_rounded, 'Challenges'),
-          Option(3, Icons.share, 'Share'),
+          optionButton(0, Icons.alarm, 'Alarm'),
+          optionButton(1, Icons.auto_awesome, 'Smart-Controls'),
+          optionButton(2, Icons.checklist_rounded, 'Challenges'),
+          optionButton(3, Icons.share, 'Share'),
         ],
       ),
     );
   }
 
-  Widget Option(int val, IconData icon, String name) {
+  Widget optionButton(int val, IconData icon, String name) {
     return Obx(
       () => Column(
         children: [
@@ -40,19 +39,16 @@ class SettingSelector extends StatelessWidget {
               onTap: () async {
                 if (name == 'Share') {
                   final isLoggedIn = await GoogleCloudProvider.isUserLoggedin();
-                  if(isLoggedIn)
-                    {
-                      // Get.dialog(ShareDialog(
-                      //   homeController: controller.homeController,
-                      //   controller: controller,
-                      //   themeController: controller.themeController,
-                      // ));
-                                        controller.alarmSettingType.value = val;
-                    }
-                  else{
+                  if (isLoggedIn) {
+                    // Get.dialog(ShareDialog(
+                    //   homeController: controller.homeController,
+                    //   controller: controller,
+                    //   themeController: controller.themeController,
+                    // ));
+                    controller.alarmSettingType.value = val;
+                  } else {
                     await GoogleCloudProvider.getInstance();
-
-                  };
+                  }
                 } else {
                   controller.alarmSettingType.value = val;
                 }
@@ -61,7 +57,8 @@ class SettingSelector extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: controller.alarmSettingType.value == val
                       ? kprimaryColor
-                      : controller.themeController.secondaryBackgroundColor.value,
+                      : controller
+                          .themeController.secondaryBackgroundColor.value,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Padding(
@@ -70,7 +67,8 @@ class SettingSelector extends StatelessWidget {
                     icon,
                     color: controller.alarmSettingType.value == val
                         ? kLightPrimaryTextColor
-                        : controller.themeController.primaryDisabledTextColor.value,
+                        : controller
+                            .themeController.primaryDisabledTextColor.value,
                   ),
                 ),
               ),

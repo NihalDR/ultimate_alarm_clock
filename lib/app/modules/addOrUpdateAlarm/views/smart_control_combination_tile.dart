@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/controllers/add_or_update_alarm_controller.dart';
+import '../controllers/add_or_update_alarm_controller.dart';
 import 'package:ultimate_alarm_clock/app/modules/settings/controllers/theme_controller.dart';
 import 'package:ultimate_alarm_clock/app/utils/constants.dart';
 import 'package:ultimate_alarm_clock/app/utils/utils.dart';
@@ -100,8 +100,9 @@ class SmartControlCombinationTile extends StatelessWidget {
     String description,
     IconData icon,
   ) {
-    final isSelected = controller.smartControlCombinationType.value == type.index;
-    
+    final isSelected =
+        controller.smartControlCombinationType.value == type.index;
+
     return GestureDetector(
       onTap: () {
         controller.setSmartControlCombinationType(type);
@@ -112,12 +113,12 @@ class SmartControlCombinationTile extends StatelessWidget {
         height: 95,
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected 
+          color: isSelected
               ? kprimaryColor.withOpacity(0.2)
               : themeController.secondaryBackgroundColor.value,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: isSelected 
+            color: isSelected
                 ? kprimaryColor
                 : themeController.primaryDisabledTextColor.value
                     .withOpacity(0.3),
@@ -131,7 +132,7 @@ class SmartControlCombinationTile extends StatelessWidget {
             Icon(
               icon,
               size: 18,
-              color: isSelected 
+              color: isSelected
                   ? kprimaryColor
                   : themeController.primaryDisabledTextColor.value,
             ),
@@ -139,7 +140,7 @@ class SmartControlCombinationTile extends StatelessWidget {
             Text(
               title,
               style: TextStyle(
-                color: isSelected 
+                color: isSelected
                     ? kprimaryColor
                     : themeController.primaryTextColor.value,
                 fontSize: 11,

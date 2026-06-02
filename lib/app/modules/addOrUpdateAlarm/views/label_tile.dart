@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/controllers/add_or_update_alarm_controller.dart';
+import '../controllers/add_or_update_alarm_controller.dart';
 import 'package:ultimate_alarm_clock/app/modules/settings/controllers/theme_controller.dart';
 import 'package:ultimate_alarm_clock/app/utils/constants.dart';
 import 'package:ultimate_alarm_clock/app/utils/utils.dart';
@@ -19,7 +19,6 @@ class LabelTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Obx(
       () => ListTile(
-
         title: FittedBox(
           alignment: Alignment.centerLeft,
           fit: BoxFit.scaleDown,
@@ -71,7 +70,7 @@ class LabelTile extends StatelessWidget {
   void _showLabelBottomSheet(BuildContext context) {
     // Store original value for cancellation
     String originalLabel = controller.labelController.text;
-    
+
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -102,19 +101,21 @@ class LabelTile extends StatelessWidget {
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
-                
+
                 // Header
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
                         'Add a label'.tr,
-                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          color: themeController.primaryTextColor.value,
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style:
+                            Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                  color: themeController.primaryTextColor.value,
+                                  fontWeight: FontWeight.w600,
+                                ),
                       ),
                       IconButton(
                         onPressed: () {
@@ -130,9 +131,9 @@ class LabelTile extends StatelessWidget {
                     ],
                   ),
                 ),
-                
+
                 const Divider(height: 1),
-                
+
                 // Content
                 Padding(
                   padding: const EdgeInsets.all(24),
@@ -145,15 +146,17 @@ class LabelTile extends StatelessWidget {
                         controller: controller.labelController,
                         maxLength: 50, // Reasonable limit for labels
                         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: themeController.primaryTextColor.value,
-                        ),
+                              color: themeController.primaryTextColor.value,
+                            ),
                         cursorColor: kprimaryColor,
                         decoration: InputDecoration(
                           filled: true,
-                          fillColor: themeController.primaryBackgroundColor.value,
+                          fillColor:
+                              themeController.primaryBackgroundColor.value,
                           enabledBorder: OutlineInputBorder(
                             borderSide: BorderSide(
-                              color: themeController.primaryDisabledTextColor.value
+                              color: themeController
+                                  .primaryDisabledTextColor.value
                                   .withOpacity(0.3),
                               width: 1,
                             ),
@@ -181,11 +184,14 @@ class LabelTile extends StatelessWidget {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           hintText: 'Enter a label'.tr,
-                          hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: themeController.primaryDisabledTextColor.value,
-                          ),
+                          hintStyle:
+                              Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                    color: themeController
+                                        .primaryDisabledTextColor.value,
+                                  ),
                           counterStyle: TextStyle(
-                            color: themeController.primaryDisabledTextColor.value,
+                            color:
+                                themeController.primaryDisabledTextColor.value,
                           ),
                           contentPadding: const EdgeInsets.all(16),
                         ),
@@ -195,25 +201,29 @@ class LabelTile extends StatelessWidget {
                           // Remove leading whitespace
                           if (text.isNotEmpty && text[0] == ' ') {
                             controller.labelController.text = text.trimLeft();
-                            controller.labelController.selection = TextSelection.fromPosition(
-                              TextPosition(offset: controller.labelController.text.length),
+                            controller.labelController.selection =
+                                TextSelection.fromPosition(
+                              TextPosition(
+                                offset: controller.labelController.text.length,
+                              ),
                             );
                           }
                         },
                       ),
-                      
+
                       const SizedBox(height: 8),
-                      
+
                       // Helper text
                       Text(
                         'Give your alarm a memorable name'.tr,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: themeController.primaryDisabledTextColor.value,
-                        ),
+                              color: themeController
+                                  .primaryDisabledTextColor.value,
+                            ),
                       ),
-                      
+
                       const SizedBox(height: 24),
-                      
+
                       // Action Buttons
                       Row(
                         children: [
@@ -227,9 +237,11 @@ class LabelTile extends StatelessWidget {
                                 Navigator.pop(context);
                               },
                               style: OutlinedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 16),
                                 side: BorderSide(
-                                  color: themeController.primaryDisabledTextColor.value
+                                  color: themeController
+                                      .primaryDisabledTextColor.value
                                       .withOpacity(0.3),
                                 ),
                                 shape: RoundedRectangleBorder(
@@ -245,9 +257,9 @@ class LabelTile extends StatelessWidget {
                               ),
                             ),
                           ),
-                          
+
                           const SizedBox(width: 12),
-                          
+
                           // Save Button
                           Expanded(
                             child: ElevatedButton(
@@ -257,7 +269,8 @@ class LabelTile extends StatelessWidget {
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: kprimaryColor,
-                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 16),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
@@ -266,7 +279,8 @@ class LabelTile extends StatelessWidget {
                               child: Text(
                                 'Save'.tr,
                                 style: TextStyle(
-                                  color: themeController.secondaryTextColor.value,
+                                  color:
+                                      themeController.secondaryTextColor.value,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -274,7 +288,7 @@ class LabelTile extends StatelessWidget {
                           ),
                         ],
                       ),
-                      
+
                       // Extra padding for keyboard
                       const SizedBox(height: 16),
                     ],

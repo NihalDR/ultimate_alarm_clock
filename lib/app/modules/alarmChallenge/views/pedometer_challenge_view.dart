@@ -1,5 +1,3 @@
-// ignore_for_file: must_be_immutable
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ultimate_alarm_clock/app/modules/alarmChallenge/controllers/alarm_challenge_controller.dart';
@@ -8,15 +6,13 @@ import 'package:ultimate_alarm_clock/app/utils/constants.dart';
 import 'package:ultimate_alarm_clock/app/utils/utils.dart';
 
 class PedometerChallengeView extends GetView<AlarmChallengeController> {
-  PedometerChallengeView({Key? key}) : super(key: key);
+  PedometerChallengeView({super.key});
 
-  ThemeController themeController = Get.find<ThemeController>();
+  final ThemeController themeController = Get.find<ThemeController>();
 
   @override
   Widget build(BuildContext context) {
     // var height = Get.height;
-    // ignore: unused_local_variable
-      final double width = MediaQuery.of(context).size.width;
     final double height = MediaQuery.of(context).size.height;
 
     return Scaffold(
@@ -56,7 +52,9 @@ class PedometerChallengeView extends GetView<AlarmChallengeController> {
                                   .displayMedium!
                                   .copyWith(
                                     fontWeight: FontWeight.w500,
-                                    color: themeController.primaryTextColor.value.withOpacity(0.7),
+                                    color: themeController
+                                        .primaryTextColor.value
+                                        .withOpacity(0.7),
                                   ),
                             ),
                           ),
@@ -67,7 +65,8 @@ class PedometerChallengeView extends GetView<AlarmChallengeController> {
                             () => Icon(
                               Icons.directions_walk,
                               size: height * 0.2,
-                              color: themeController.primaryTextColor.value.withOpacity(0.7),
+                              color: themeController.primaryTextColor.value
+                                  .withOpacity(0.7),
                             ),
                           ),
                           SizedBox(

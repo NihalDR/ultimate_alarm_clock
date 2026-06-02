@@ -48,6 +48,5 @@ class BottomNavigationBarController extends GetxController
   void changeTab(int index) {
     activeTabIndex.value = index;
     _saveState();
-
   }
 }

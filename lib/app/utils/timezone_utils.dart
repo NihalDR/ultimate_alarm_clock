@@ -1,4 +1,6 @@
 import 'dart:io';
+// ignore_for_file: require_trailing_commas
+
 import 'package:flutter/material.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz_data;
@@ -108,18 +110,20 @@ class TimezoneUtils {
     final hours = offsetInMinutes ~/ 60;
     final minutes = offsetInMinutes % 60;
     final sign = offsetInMinutes >= 0 ? '+' : '-';
-    return 'UTC$sign${hours.abs().toString().padLeft(2, '0')}:${minutes.abs().toString().padLeft(2, '0')}';
+    return 'UTC$sign'
+        '${hours.abs().toString().padLeft(2, '0')}:'
+        '${minutes.abs().toString().padLeft(2, '0')}';
   }
 
   static String _formatDisplayName(String id, String offset) {
     final parts = id.split('/');
     String cityName = parts.last.replaceAll('_', ' ');
-    
+
     if (parts.length > 2) {
       final region = parts[parts.length - 2];
       cityName = '$cityName, $region';
     }
-    
+
     return '$cityName ($offset)';
   }
 
@@ -144,12 +148,16 @@ class TimezoneUtils {
   }
 
   // Debug method to test timezone conversion
-  static String debugConversion(TimeOfDay localTime, String localTimezoneId, String targetTimezoneId) {
+  static String debugConversion(
+    TimeOfDay localTime,
+    String localTimezoneId,
+    String targetTimezoneId,
+  ) {
     try {
       final now = DateTime.now();
       final localLocation = tz.getLocation(localTimezoneId);
       final targetLocation = tz.getLocation(targetTimezoneId);
-      
+
       final localDateTime = tz.TZDateTime(
         localLocation,
         now.year,
@@ -158,10 +166,11 @@ class TimezoneUtils {
         localTime.hour,
         localTime.minute,
       );
-      
+
       final targetDateTime = tz.TZDateTime.from(localDateTime, targetLocation);
-      
-      return 'Local: ${localDateTime.toString()} -> Target: ${targetDateTime.toString()}';
+
+      return 'Local: ${localDateTime.toString()} -> '
+          'Target: ${targetDateTime.toString()}';
     } catch (e) {
       return 'Error: $e';
     }
@@ -305,7 +314,7 @@ class TimezoneUtils {
     try {
       final location = tz.getLocation(timezoneId);
       final now = tz.TZDateTime.now(location);
-      
+
       DateTime nextAlarm = DateTime(
         now.year,
         now.month,
@@ -318,7 +327,7 @@ class TimezoneUtils {
         for (int i = 0; i < 7; i++) {
           final candidateAlarm = nextAlarm.add(Duration(days: i));
           final dayOfWeek = (candidateAlarm.weekday - 1) % 7;
-          
+
           if (selectedDays[dayOfWeek]) {
             if (i == 0) {
               if (candidateAlarm.isAfter(now.toLocal())) {
@@ -351,7 +360,7 @@ class TimezoneUtils {
     try {
       final targetLocation = tz.getLocation(timezoneId);
       final deviceLocation = tz.getLocation(deviceTimezoneId);
-      
+
       final now = DateTime.now();
       final targetTime = tz.TZDateTime(
         targetLocation,
@@ -361,7 +370,7 @@ class TimezoneUtils {
         time.hour,
         time.minute,
       );
-      
+
       final deviceTime = tz.TZDateTime.from(targetTime, deviceLocation);
 
       final targetFormatted = DateFormat('h:mm a').format(targetTime);
@@ -374,7 +383,7 @@ class TimezoneUtils {
       final targetAbbr = getTimezoneAbbreviation(timezoneId);
       final deviceAbbr = getTimezoneAbbreviation(deviceTimezoneId);
 
-      return '$targetFormatted $targetAbbr ' +
+      return '$targetFormatted $targetAbbr '
           '(Local: $deviceFormatted $deviceAbbr)';
     } catch (e) {
       final hourStr = time.hour.toString().padLeft(2, '0');

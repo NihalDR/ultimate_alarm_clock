@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'dart:async';
 import 'package:get/get.dart';
-import '../../../data/providers/isar_provider.dart';
 import '../../../modules/settings/controllers/theme_controller.dart';
 import '../../../utils/constants.dart';
 import '../../../utils/utils.dart';
@@ -11,17 +9,15 @@ import '../../../data/models/debug_model.dart';
 class DebugView extends GetView<DebugController> {
   DebugView({super.key});
 
-  ThemeController themeController = Get.find<ThemeController>();
+  final ThemeController themeController = Get.find<ThemeController>();
 
   @override
   Widget build(BuildContext context) {
-    final double width = MediaQuery.of(context).size.width;
-    final double height = MediaQuery.of(context).size.height;
-
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: controller.themeController.primaryBackgroundColor.value,
+        backgroundColor:
+            controller.themeController.primaryBackgroundColor.value,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -32,31 +28,42 @@ class DebugView extends GetView<DebugController> {
                     fontWeight: FontWeight.bold,
                   ),
             ),
-            Obx(() => Text(
-              '${controller.filteredLogs.length} logs',
-              style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                    color: controller.themeController.primaryTextColor.value.withOpacity(0.7),
-                  ),
-            )),
+            Obx(
+              () => Text(
+                '${controller.filteredLogs.length} logs',
+                style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                      color: controller.themeController.primaryTextColor.value
+                          .withOpacity(0.7),
+                    ),
+              ),
+            ),
           ],
         ),
         actions: [
-          Obx(() => IconButton(
-            icon: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: controller.isDevMode.value ? kprimaryColor : Colors.transparent,
-                borderRadius: BorderRadius.circular(8),
+          Obx(
+            () => IconButton(
+              icon: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: controller.isDevMode.value
+                      ? kprimaryColor
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  Icons.developer_mode,
+                  color: controller.isDevMode.value
+                      ? Colors.white
+                      : controller.themeController.primaryTextColor.value,
+                  size: 20,
+                ),
               ),
-              child: Icon(
-                Icons.developer_mode,
-                color: controller.isDevMode.value ? Colors.white : controller.themeController.primaryTextColor.value,
-                size: 20,
-              ),
+              onPressed: controller.toggleDevMode,
+              tooltip: controller.isDevMode.value
+                  ? 'Disable Developer Mode'
+                  : 'Enable Developer Mode',
             ),
-            onPressed: controller.toggleDevMode,
-            tooltip: controller.isDevMode.value ? 'Disable Developer Mode' : 'Enable Developer Mode',
-          )),
+          ),
           IconButton(
             icon: Icon(
               Icons.refresh,
@@ -83,9 +90,18 @@ class DebugView extends GetView<DebugController> {
                 value: 'export',
                 child: Row(
                   children: [
-                    Icon(Icons.download, color: controller.themeController.primaryTextColor.value),
+                    Icon(
+                      Icons.download,
+                      color: controller.themeController.primaryTextColor.value,
+                    ),
                     const SizedBox(width: 8),
-                    Text('Export Logs', style: TextStyle(color: controller.themeController.primaryTextColor.value)),
+                    Text(
+                      'Export Logs',
+                      style: TextStyle(
+                        color:
+                            controller.themeController.primaryTextColor.value,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -95,7 +111,13 @@ class DebugView extends GetView<DebugController> {
                   children: [
                     const Icon(Icons.delete, color: Colors.red),
                     const SizedBox(width: 8),
-                    Text('Clear All Logs', style: TextStyle(color: controller.themeController.primaryTextColor.value)),
+                    Text(
+                      'Clear All Logs',
+                      style: TextStyle(
+                        color:
+                            controller.themeController.primaryTextColor.value,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -121,10 +143,12 @@ class DebugView extends GetView<DebugController> {
                 // Search Bar
                 Container(
                   decoration: BoxDecoration(
-                    color: controller.themeController.primaryBackgroundColor.value,
+                    color:
+                        controller.themeController.primaryBackgroundColor.value,
                     borderRadius: BorderRadius.circular(15),
                     border: Border.all(
-                      color: controller.themeController.primaryTextColor.value.withOpacity(0.1),
+                      color: controller.themeController.primaryTextColor.value
+                          .withOpacity(0.1),
                     ),
                   ),
                   child: TextField(
@@ -133,16 +157,20 @@ class DebugView extends GetView<DebugController> {
                       controller.applyFilters();
                     },
                     decoration: InputDecoration(
-                      hintText: 'Search by alarm time, ID, message, or type...'.tr,
+                      hintText:
+                          'Search by alarm time, ID, message, or type...'.tr,
                       prefixIcon: Icon(
                         Icons.search,
-                        color: controller.themeController.primaryTextColor.value.withOpacity(0.5),
+                        color: controller.themeController.primaryTextColor.value
+                            .withOpacity(0.5),
                       ),
                       suffixIcon: controller.searchController.text.isNotEmpty
                           ? IconButton(
                               icon: Icon(
                                 Icons.clear,
-                                color: controller.themeController.primaryTextColor.value.withOpacity(0.5),
+                                color: controller
+                                    .themeController.primaryTextColor.value
+                                    .withOpacity(0.5),
                               ),
                               onPressed: () {
                                 controller.searchController.clear();
@@ -151,9 +179,13 @@ class DebugView extends GetView<DebugController> {
                             )
                           : null,
                       border: InputBorder.none,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
                       hintStyle: TextStyle(
-                        color: controller.themeController.primaryTextColor.value.withOpacity(0.5),
+                        color: controller.themeController.primaryTextColor.value
+                            .withOpacity(0.5),
                       ),
                     ),
                     style: TextStyle(
@@ -162,113 +194,130 @@ class DebugView extends GetView<DebugController> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                                 // Filter Row
-                 Row(
-                   children: [
-                     // Status Filter
-                     Expanded(
-                       flex: 3,
-                       child: Obx(() => Container(
-                        decoration: BoxDecoration(
-                          color: controller.themeController.primaryBackgroundColor.value,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: controller.themeController.primaryTextColor.value.withOpacity(0.1),
-                          ),
-                        ),
-                        child: DropdownButtonFormField<LogLevel>(
-                          value: controller.selectedLogLevel.value,
-                          decoration: const InputDecoration(
-                            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                            border: InputBorder.none,
-                          ),
-                          hint: Text(
-                            'All Status',
-                            style: TextStyle(
-                              color: controller.themeController.primaryTextColor.value.withOpacity(0.5),
-                              fontSize: 14,
+                // Filter Row
+                Row(
+                  children: [
+                    // Status Filter
+                    Expanded(
+                      flex: 3,
+                      child: Obx(
+                        () => Container(
+                          decoration: BoxDecoration(
+                            color: controller
+                                .themeController.primaryBackgroundColor.value,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: controller
+                                  .themeController.primaryTextColor.value
+                                  .withOpacity(0.1),
                             ),
                           ),
-                          dropdownColor: controller.themeController.secondaryBackgroundColor.value,
-                          style: TextStyle(
-                            color: controller.themeController.primaryTextColor.value,
-                            fontSize: 14,
-                          ),
-                          items: [
-                            DropdownMenuItem<LogLevel>(
-                              value: null,
-                              child: Row(
-                                children: [
-                                  Container(
-                                    width: 8,
-                                    height: 8,
-                                    decoration: BoxDecoration(
-                                      color: Colors.grey,
-                                      shape: BoxShape.circle,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text('All Status'),
-                                ],
+                          child: DropdownButtonFormField<LogLevel>(
+                            value: controller.selectedLogLevel.value,
+                            decoration: const InputDecoration(
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
+                              border: InputBorder.none,
+                            ),
+                            hint: Text(
+                              'All Status',
+                              style: TextStyle(
+                                color: controller
+                                    .themeController.primaryTextColor.value
+                                    .withOpacity(0.5),
+                                fontSize: 14,
                               ),
                             ),
-                            ...LogLevel.values.map((level) {
-                              Color levelColor;
-                              String levelText;
-                              switch (level) {
-                                case LogLevel.error:
-                                  levelColor = Colors.red;
-                                  levelText = 'Error';
-                                  break;
-                                case LogLevel.warning:
-                                  levelColor = Colors.orange;
-                                  levelText = 'Warning';
-                                  break;
-                                case LogLevel.info:
-                                  levelColor = Colors.green;
-                                  levelText = 'Success';
-                                  break;
-                              }
-                              return DropdownMenuItem(
-                                value: level,
+                            dropdownColor: controller
+                                .themeController.secondaryBackgroundColor.value,
+                            style: TextStyle(
+                              color: controller
+                                  .themeController.primaryTextColor.value,
+                              fontSize: 14,
+                            ),
+                            items: [
+                              DropdownMenuItem<LogLevel>(
+                                value: null,
                                 child: Row(
                                   children: [
                                     Container(
                                       width: 8,
                                       height: 8,
-                                      decoration: BoxDecoration(
-                                        color: levelColor,
+                                      decoration: const BoxDecoration(
+                                        color: Colors.grey,
                                         shape: BoxShape.circle,
                                       ),
                                     ),
                                     const SizedBox(width: 8),
-                                    Text(levelText),
+                                    const Text('All Status'),
                                   ],
                                 ),
-                              );
-                            }).toList(),
-                          ],
-                          onChanged: (value) {
-                            controller.selectedLogLevel.value = value;
-                            controller.applyFilters();
-                          },
+                              ),
+                              ...LogLevel.values.map((level) {
+                                Color levelColor;
+                                String levelText;
+                                switch (level) {
+                                  case LogLevel.error:
+                                    levelColor = Colors.red;
+                                    levelText = 'Error';
+                                    break;
+                                  case LogLevel.warning:
+                                    levelColor = Colors.orange;
+                                    levelText = 'Warning';
+                                    break;
+                                  case LogLevel.info:
+                                    levelColor = Colors.green;
+                                    levelText = 'Success';
+                                    break;
+                                }
+                                return DropdownMenuItem(
+                                  value: level,
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        width: 8,
+                                        height: 8,
+                                        decoration: BoxDecoration(
+                                          color: levelColor,
+                                          shape: BoxShape.circle,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(levelText),
+                                    ],
+                                  ),
+                                );
+                              }),
+                            ],
+                            onChanged: (value) {
+                              controller.selectedLogLevel.value = value;
+                              controller.applyFilters();
+                            },
+                          ),
                         ),
-                      )),
+                      ),
                     ),
                     const SizedBox(width: 8),
                     // Date Filter Button
                     Container(
                       decoration: BoxDecoration(
-                        color: controller.themeController.primaryBackgroundColor.value,
+                        color: controller
+                            .themeController.primaryBackgroundColor.value,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: controller.themeController.primaryTextColor.value.withOpacity(0.1),
+                          color: controller
+                              .themeController.primaryTextColor.value
+                              .withOpacity(0.1),
                         ),
                       ),
                       child: IconButton(
                         icon: Icon(
                           Icons.calendar_today,
-                          color: controller.themeController.primaryTextColor.value.withOpacity(0.7),
+                          color: controller
+                              .themeController.primaryTextColor.value
+                              .withOpacity(0.7),
                           size: 20,
                         ),
                         onPressed: controller.selectDateRange,
@@ -277,39 +326,48 @@ class DebugView extends GetView<DebugController> {
                     ),
                   ],
                 ),
-                                 // Developer Mode Toggle Info
-                 Obx(() => controller.isDevMode.value 
-                   ? Container(
-                       margin: const EdgeInsets.only(top: 12),
-                       padding: const EdgeInsets.all(12),
-                       decoration: BoxDecoration(
-                         color: kprimaryColor.withOpacity(0.1),
-                         borderRadius: BorderRadius.circular(12),
-                         border: Border.all(color: kprimaryColor.withOpacity(0.3)),
-                       ),
-                       child: IntrinsicHeight(
-                         child: Row(
-                           crossAxisAlignment: CrossAxisAlignment.center,
-                           children: [
-                             Icon(Icons.developer_mode, color: kprimaryColor, size: 16),
-                             const SizedBox(width: 8),
-                             Expanded(
-                               child: Text(
-                                 'Developer mode is ON - showing technical logs',
-                                 style: TextStyle(
-                                   color: kprimaryColor,
-                                   fontSize: 12,
-                                   fontWeight: FontWeight.w500,
-                                 ),
-                                 maxLines: 2,
-                                 overflow: TextOverflow.ellipsis,
-                               ),
-                             ),
-                           ],
-                         ),
-                       ),
-                     )
-                   : const SizedBox.shrink()),
+                // Developer Mode Toggle Info
+                Obx(
+                  () => controller.isDevMode.value
+                      ? Container(
+                          margin: const EdgeInsets.only(top: 12),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: kprimaryColor.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: kprimaryColor.withOpacity(0.3),
+                            ),
+                          ),
+                          child: const IntrinsicHeight(
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.developer_mode,
+                                  color: kprimaryColor,
+                                  size: 16,
+                                ),
+                                SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    'Developer mode is ON - showing technical '
+                                    'logs',
+                                    style: TextStyle(
+                                      color: kprimaryColor,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                      : const SizedBox.shrink(),
+                ),
               ],
             ),
           ),
@@ -319,7 +377,7 @@ class DebugView extends GetView<DebugController> {
               if (controller.filteredLogs.isEmpty) {
                 return _buildEmptyState();
               }
-              
+
               return ListView.builder(
                 padding: const EdgeInsets.all(16),
                 physics: const BouncingScrollPhysics(),
@@ -344,13 +402,15 @@ class DebugView extends GetView<DebugController> {
           Icon(
             Icons.history,
             size: 64,
-            color: controller.themeController.primaryTextColor.value.withOpacity(0.3),
+            color: controller.themeController.primaryTextColor.value
+                .withOpacity(0.3),
           ),
           const SizedBox(height: 16),
           Text(
             'No alarm history found',
             style: TextStyle(
-              color: controller.themeController.primaryTextColor.value.withOpacity(0.7),
+              color: controller.themeController.primaryTextColor.value
+                  .withOpacity(0.7),
               fontSize: 18,
               fontWeight: FontWeight.w500,
             ),
@@ -359,7 +419,8 @@ class DebugView extends GetView<DebugController> {
           Text(
             'Create some alarms to see their history here',
             style: TextStyle(
-              color: controller.themeController.primaryTextColor.value.withOpacity(0.5),
+              color: controller.themeController.primaryTextColor.value
+                  .withOpacity(0.5),
               fontSize: 14,
             ),
           ),
@@ -386,7 +447,7 @@ class DebugView extends GetView<DebugController> {
 
     // Parse message for better display
     final parsedMessage = _parseLogMessage(message);
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -407,13 +468,20 @@ class DebugView extends GetView<DebugController> {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
         child: ExpansionTile(
-          backgroundColor: controller.themeController.secondaryBackgroundColor.value,
-          collapsedBackgroundColor: controller.themeController.secondaryBackgroundColor.value,
+          backgroundColor:
+              controller.themeController.secondaryBackgroundColor.value,
+          collapsedBackgroundColor:
+              controller.themeController.secondaryBackgroundColor.value,
           childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
           tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           leading: _buildStatusIcon(status, hasRung),
           title: _buildLogTitle(parsedMessage, logType),
-          subtitle: _buildLogSubtitle(formattedTime, formattedHour, formattedMinute, alarmID),
+          subtitle: _buildLogSubtitle(
+            formattedTime,
+            formattedHour,
+            formattedMinute,
+            alarmID,
+          ),
           trailing: _buildLogTrailing(logType, status),
           children: [
             _buildLogDetails(parsedMessage, log, context),
@@ -426,7 +494,7 @@ class DebugView extends GetView<DebugController> {
   Widget _buildStatusIcon(String status, int hasRung) {
     IconData iconData;
     Color iconColor;
-    
+
     if (hasRung == 1) {
       iconData = Icons.notifications_active;
       iconColor = Colors.blue;
@@ -449,7 +517,7 @@ class DebugView extends GetView<DebugController> {
           iconColor = Colors.blue;
       }
     }
-    
+
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
@@ -491,7 +559,7 @@ class DebugView extends GetView<DebugController> {
                   color: kprimaryColor.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(4),
                 ),
-                child: Text(
+                child: const Text(
                   'DEV',
                   style: TextStyle(
                     color: kprimaryColor,
@@ -509,7 +577,8 @@ class DebugView extends GetView<DebugController> {
             child: Text(
               parsedMessage['subtitle']!,
               style: TextStyle(
-                color: controller.themeController.primaryTextColor.value.withOpacity(0.7),
+                color: controller.themeController.primaryTextColor.value
+                    .withOpacity(0.7),
                 fontSize: 12,
               ),
               maxLines: 1,
@@ -520,7 +589,12 @@ class DebugView extends GetView<DebugController> {
     );
   }
 
-  Widget _buildLogSubtitle(String formattedTime, String formattedHour, String formattedMinute, String? alarmID) {
+  Widget _buildLogSubtitle(
+    String formattedTime,
+    String formattedHour,
+    String formattedMinute,
+    String? alarmID,
+  ) {
     return Padding(
       padding: const EdgeInsets.only(top: 4),
       child: Row(
@@ -528,14 +602,16 @@ class DebugView extends GetView<DebugController> {
           Icon(
             Icons.access_time,
             size: 12,
-            color: controller.themeController.primaryTextColor.value.withOpacity(0.5),
+            color: controller.themeController.primaryTextColor.value
+                .withOpacity(0.5),
           ),
           const SizedBox(width: 4),
           Expanded(
             child: Text(
               '$formattedHour:$formattedMinute • $formattedTime',
               style: TextStyle(
-                color: controller.themeController.primaryTextColor.value.withOpacity(0.6),
+                color: controller.themeController.primaryTextColor.value
+                    .withOpacity(0.6),
                 fontSize: 12,
               ),
               overflow: TextOverflow.ellipsis,
@@ -546,13 +622,15 @@ class DebugView extends GetView<DebugController> {
             Icon(
               Icons.tag,
               size: 12,
-              color: controller.themeController.primaryTextColor.value.withOpacity(0.5),
+              color: controller.themeController.primaryTextColor.value
+                  .withOpacity(0.5),
             ),
             const SizedBox(width: 4),
             Text(
               alarmID.length > 6 ? '${alarmID.substring(0, 6)}...' : alarmID,
               style: TextStyle(
-                color: controller.themeController.primaryTextColor.value.withOpacity(0.6),
+                color: controller.themeController.primaryTextColor.value
+                    .withOpacity(0.6),
                 fontSize: 10,
                 fontFamily: 'monospace',
               ),
@@ -586,11 +664,16 @@ class DebugView extends GetView<DebugController> {
     );
   }
 
-  Widget _buildLogDetails(Map<String, String> parsedMessage, Map<String, dynamic> log, BuildContext context) {
+  Widget _buildLogDetails(
+    Map<String, String> parsedMessage,
+    Map<String, dynamic> log,
+    BuildContext context,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: controller.themeController.primaryBackgroundColor.value.withOpacity(0.5),
+        color: controller.themeController.primaryBackgroundColor.value
+            .withOpacity(0.5),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -613,7 +696,8 @@ class DebugView extends GetView<DebugController> {
               color: controller.themeController.secondaryBackgroundColor.value,
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
-                color: controller.themeController.primaryTextColor.value.withOpacity(0.1),
+                color: controller.themeController.primaryTextColor.value
+                    .withOpacity(0.1),
               ),
             ),
             child: Text(
@@ -626,27 +710,35 @@ class DebugView extends GetView<DebugController> {
             ),
           ),
           const SizedBox(height: 12),
-                     // Technical details
-           SingleChildScrollView(
-             scrollDirection: Axis.horizontal,
-             child: Row(
-               children: [
-                 _buildDetailChip('Log ID', log['LogID'].toString()),
-                 const SizedBox(width: 8),
-                 _buildDetailChip('Type', log['LogType']),
-                 if (log['AlarmID'] != null && log['AlarmID'].toString().isNotEmpty) ...[
-                   const SizedBox(width: 8),
-                   _buildDetailChip('Alarm ID', log['AlarmID'].toString().length > 8 
-                     ? '${log['AlarmID'].toString().substring(0, 8)}...' 
-                     : log['AlarmID'].toString()),
-                 ],
-                 if (log['HasRung'] == 1) ...[
-                   const SizedBox(width: 8),
-                   _buildDetailChip('Status', 'Actually Rang', color: Colors.blue),
-                 ],
-               ],
-             ),
-           ),
+          // Technical details
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                _buildDetailChip('Log ID', log['LogID'].toString()),
+                const SizedBox(width: 8),
+                _buildDetailChip('Type', log['LogType']),
+                if (log['AlarmID'] != null &&
+                    log['AlarmID'].toString().isNotEmpty) ...[
+                  const SizedBox(width: 8),
+                  _buildDetailChip(
+                    'Alarm ID',
+                    log['AlarmID'].toString().length > 8
+                        ? '${log['AlarmID'].toString().substring(0, 8)}...'
+                        : log['AlarmID'].toString(),
+                  ),
+                ],
+                if (log['HasRung'] == 1) ...[
+                  const SizedBox(width: 8),
+                  _buildDetailChip(
+                    'Status',
+                    'Actually Rang',
+                    color: Colors.blue,
+                  ),
+                ],
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -656,7 +748,8 @@ class DebugView extends GetView<DebugController> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: (color ?? controller.themeController.primaryTextColor.value).withOpacity(0.1),
+        color: (color ?? controller.themeController.primaryTextColor.value)
+            .withOpacity(0.1),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Text(
@@ -672,7 +765,7 @@ class DebugView extends GetView<DebugController> {
 
   Map<String, String> _parseLogMessage(String message) {
     final result = <String, String>{};
-    
+
     // Parse different message types
     if (message.contains('🔔 RINGING')) {
       final parts = message.split(' - ');
@@ -682,7 +775,7 @@ class DebugView extends GetView<DebugController> {
         final timeMatch = RegExp(r'⏰ Time: ([^,]+)').firstMatch(details);
         final labelMatch = RegExp(r'📝 Label: "([^"]+)"').firstMatch(details);
         final noteMatch = RegExp(r'💬 Note: "([^"]+)"').firstMatch(details);
-        
+
         if (labelMatch != null) {
           result['subtitle'] = 'Label: ${labelMatch.group(1)}';
         } else if (noteMatch != null) {
@@ -691,13 +784,16 @@ class DebugView extends GetView<DebugController> {
           result['subtitle'] = 'Time: ${timeMatch.group(1)}';
         }
       }
-    } else if (message.contains('CREATED') || message.contains('UPDATED') || message.contains('DELETED') || message.contains('SCHEDULED')) {
+    } else if (message.contains('CREATED') ||
+        message.contains('UPDATED') ||
+        message.contains('DELETED') ||
+        message.contains('SCHEDULED')) {
       final parts = message.split(' - ');
       result['title'] = parts[0];
       if (parts.length > 1) {
         final timeMatch = RegExp(r'Time: ([^,]+)').firstMatch(parts[1]);
         final labelMatch = RegExp(r'Label: "([^"]+)"').firstMatch(parts[1]);
-        
+
         if (labelMatch != null) {
           result['subtitle'] = 'Label: ${labelMatch.group(1)}';
         } else if (timeMatch != null) {
@@ -713,7 +809,7 @@ class DebugView extends GetView<DebugController> {
         result['title'] = message;
       }
     }
-    
+
     return result;
   }
 
@@ -733,26 +829,32 @@ class DebugView extends GetView<DebugController> {
   void _showClearConfirmation(BuildContext context) {
     Get.dialog(
       AlertDialog(
-        backgroundColor: controller.themeController.secondaryBackgroundColor.value,
+        backgroundColor:
+            controller.themeController.secondaryBackgroundColor.value,
         title: Text(
           'Clear All Logs',
-          style: TextStyle(color: controller.themeController.primaryTextColor.value),
+          style: TextStyle(
+            color: controller.themeController.primaryTextColor.value,
+          ),
         ),
         content: Text(
+          // ignore: lines_longer_than_80_chars
           'Are you sure you want to clear all alarm history? This action cannot be undone.',
-          style: TextStyle(color: controller.themeController.primaryTextColor.value),
+          style: TextStyle(
+            color: controller.themeController.primaryTextColor.value,
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Get.back(),
-            child: Text('Cancel'),
+            child: const Text('Cancel'),
           ),
           TextButton(
             onPressed: () {
               Get.back();
               controller.clearLogs();
             },
-            child: Text('Clear', style: TextStyle(color: Colors.red)),
+            child: const Text('Clear', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -762,14 +864,19 @@ class DebugView extends GetView<DebugController> {
   void _showExportOptions(BuildContext context) {
     Get.dialog(
       AlertDialog(
-        backgroundColor: controller.themeController.secondaryBackgroundColor.value,
+        backgroundColor:
+            controller.themeController.secondaryBackgroundColor.value,
         title: Text(
           'Export Logs',
-          style: TextStyle(color: controller.themeController.primaryTextColor.value),
+          style: TextStyle(
+            color: controller.themeController.primaryTextColor.value,
+          ),
         ),
         content: Text(
           'Choose a format to export alarm history logs.',
-          style: TextStyle(color: controller.themeController.primaryTextColor.value),
+          style: TextStyle(
+            color: controller.themeController.primaryTextColor.value,
+          ),
         ),
         actions: [
           TextButton(

@@ -12,7 +12,7 @@ import 'package:ultimate_alarm_clock/app/utils/utils.dart';
 
 // ignore: must_be_immutable
 class WorldClockView extends GetView<WorldClockController> {
-  WorldClockView({Key? key}) : super(key: key);
+  WorldClockView({super.key});
 
   final ThemeController themeController = Get.find<ThemeController>();
   final SettingsController settingsController = Get.find<SettingsController>();
@@ -279,7 +279,8 @@ class _LocalClockCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 12),
-                // Right: time + period (no overflow — "HH:mm" only, period on next line)
+                // Right: time + period (no overflow — "HH:mm" only).
+                // Period stays on the next line.
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
@@ -316,7 +317,7 @@ class _LocalClockCard extends StatelessWidget {
   }
 }
 
-// ─── User-added clock card ────────────────────────────────────────────────────
+// User-added clock card.
 
 class _ClockCard extends StatelessWidget {
   final WorldClockModel clock;
@@ -446,7 +447,7 @@ class _ClockCard extends StatelessWidget {
   }
 }
 
-// ─── Small chip label ─────────────────────────────────────────────────────────
+// Small chip label.
 
 class _Chip extends StatelessWidget {
   final String label;
@@ -470,7 +471,7 @@ class _Chip extends StatelessWidget {
   }
 }
 
-// ─── Add clock bottom sheet ───────────────────────────────────────────────────
+// Add clock bottom sheet.
 
 class _AddClockSheet extends StatefulWidget {
   final ThemeController themeController;

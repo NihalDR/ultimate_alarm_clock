@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:ultimate_alarm_clock/app/utils/constants.dart';
 import 'package:ultimate_alarm_clock/app/utils/utils.dart';
 
 /// Custom time picker designed for better font scaling and accessibility
@@ -19,7 +17,7 @@ class CustomTimePicker extends StatelessWidget {
   final double scalingFactor;
 
   const CustomTimePicker({
-    Key? key,
+    super.key,
     required this.hours,
     required this.minutes,
     required this.meridiemIndex,
@@ -31,12 +29,12 @@ class CustomTimePicker extends StatelessWidget {
     required this.textColor,
     required this.disabledTextColor,
     this.scalingFactor = 1.0,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
-    final systemScale = MediaQuery.textScaleFactorOf(context);
+    final systemScale = MediaQuery.textScalerOf(context).scale(1.0);
     final effectiveScale = scalingFactor * systemScale;
 
     // Calculate responsive widths
@@ -59,7 +57,7 @@ class CustomTimePicker extends StatelessWidget {
             width: timeUnitWidth,
             effectiveScale: effectiveScale,
           ),
-          
+
           // Colon separator
           Padding(
             padding: EdgeInsets.symmetric(horizontal: width * 0.02),
@@ -72,7 +70,7 @@ class CustomTimePicker extends StatelessWidget {
               ),
             ),
           ),
-          
+
           // Minutes picker
           _buildTimeUnitPicker(
             context: context,
@@ -83,7 +81,7 @@ class CustomTimePicker extends StatelessWidget {
             width: timeUnitWidth,
             effectiveScale: effectiveScale,
           ),
-          
+
           // AM/PM picker (for 12-hour format)
           if (!is24Hour) ...[
             Padding(
@@ -142,7 +140,7 @@ class CustomTimePicker extends StatelessWidget {
             },
             effectiveScale: effectiveScale,
           ),
-          
+
           // Current value display
           Flexible(
             child: Container(
@@ -164,7 +162,7 @@ class CustomTimePicker extends StatelessWidget {
               ),
             ),
           ),
-          
+
           // Minus button
           _buildControlButton(
             context: context,
@@ -210,7 +208,7 @@ class CustomTimePicker extends StatelessWidget {
             },
             effectiveScale: effectiveScale,
           ),
-          
+
           // Current AM/PM display
           Flexible(
             child: Container(
@@ -232,7 +230,7 @@ class CustomTimePicker extends StatelessWidget {
               ),
             ),
           ),
-          
+
           // Spacer for symmetry
           Flexible(
             child: SizedBox(height: (20 * effectiveScale).clamp(16.0, 40.0)),
@@ -253,7 +251,7 @@ class CustomTimePicker extends StatelessWidget {
       borderRadius: BorderRadius.circular(8),
       child: Container(
         padding: EdgeInsets.all((6 * effectiveScale).clamp(4.0, 12.0)),
-        constraints: BoxConstraints(
+        constraints: const BoxConstraints(
           minHeight: 32,
           minWidth: 32,
         ),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/controllers/add_or_update_alarm_controller.dart';
+import '../controllers/add_or_update_alarm_controller.dart';
 import 'package:ultimate_alarm_clock/app/modules/settings/controllers/theme_controller.dart';
 import 'package:ultimate_alarm_clock/app/utils/constants.dart';
 import 'package:ultimate_alarm_clock/app/utils/utils.dart';
@@ -20,7 +20,7 @@ class DeleteAfterGoesOff extends StatelessWidget {
     // Check if using Firestore and the current user is the owner
     // and if not using, just show the tile
     bool isVisible = (controller.isSharedAlarmEnabled.value == true &&
-            controller.userModel.value?.id == controller.ownerId) ||
+            controller.userModel.value?.id == controller.ownerId.value) ||
         (controller.isSharedAlarmEnabled.value == false);
 
     return Column(
@@ -29,7 +29,6 @@ class DeleteAfterGoesOff extends StatelessWidget {
           visible: isVisible,
           child: Obx(
             () => ListTile(
-
               title: FittedBox(
                 alignment: Alignment.centerLeft,
                 fit: BoxFit.scaleDown,
@@ -70,10 +69,8 @@ class DeleteAfterGoesOff extends StatelessWidget {
         Visibility(
           visible: isVisible,
           child: Obx(
-          () => Container(
-            child: Divider(
+            () => Divider(
               color: themeController.primaryDisabledTextColor.value,
-              ),
             ),
           ),
         ),

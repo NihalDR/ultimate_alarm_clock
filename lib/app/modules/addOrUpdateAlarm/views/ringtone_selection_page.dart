@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/controllers/add_or_update_alarm_controller.dart';
-import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/views/system_ringtone_picker.dart';
-import 'package:ultimate_alarm_clock/app/modules/settings/controllers/theme_controller.dart';
-import 'package:ultimate_alarm_clock/app/utils/audio_utils.dart';
-import 'package:ultimate_alarm_clock/app/utils/constants.dart';
-import 'package:ultimate_alarm_clock/app/utils/utils.dart';
-import 'package:ultimate_alarm_clock/app/utils/system_ringtone_service.dart';
+import '../controllers/add_or_update_alarm_controller.dart';
+import 'system_ringtone_picker.dart';
+import '../../settings/controllers/theme_controller.dart';
+import '../../../utils/audio_utils.dart';
+import '../../../utils/constants.dart';
+import '../../../utils/utils.dart';
+import '../../../utils/system_ringtone_service.dart';
 
 class RingtoneSelectionPage extends GetView<AddOrUpdateAlarmController> {
   final ThemeController themeController = Get.find<ThemeController>();
@@ -48,9 +48,9 @@ class RingtoneSelectionPage extends GetView<AddOrUpdateAlarmController> {
               title: Text(
                 'Choose Ringtone'.tr,
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  color: themeController.primaryTextColor.value,
-                  fontWeight: FontWeight.w600,
-                ),
+                      color: themeController.primaryTextColor.value,
+                      fontWeight: FontWeight.w600,
+                    ),
               ),
               bottom: PreferredSize(
                 preferredSize: const Size.fromHeight(kToolbarHeight + 8),
@@ -69,7 +69,7 @@ class RingtoneSelectionPage extends GetView<AddOrUpdateAlarmController> {
                       ),
                       child: TabBar(
                         labelColor: kprimaryColor,
-                        unselectedLabelColor: 
+                        unselectedLabelColor:
                             themeController.primaryDisabledTextColor.value,
                         indicatorColor: kprimaryColor,
                         indicatorWeight: 3,
@@ -88,7 +88,7 @@ class RingtoneSelectionPage extends GetView<AddOrUpdateAlarmController> {
                         ),
                         tabs: [
                           Tab(
-                            icon: Icon(
+                            icon: const Icon(
                               Icons.library_music,
                               size: 20,
                             ),
@@ -96,7 +96,7 @@ class RingtoneSelectionPage extends GetView<AddOrUpdateAlarmController> {
                             height: 60,
                           ),
                           Tab(
-                            icon: Icon(
+                            icon: const Icon(
                               Icons.phone_android,
                               size: 20,
                             ),
@@ -178,18 +178,23 @@ class RingtoneSelectionPage extends GetView<AddOrUpdateAlarmController> {
                   Text(
                     'Custom Ringtones'.tr,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: themeController.primaryTextColor.value,
-                      fontWeight: FontWeight.w600,
-                    ),
+                          color: themeController.primaryTextColor.value,
+                          fontWeight: FontWeight.w600,
+                        ),
                   ),
                   const Spacer(),
                   Obx(
-                    () => Text(
-                      '${controller.customRingtoneNames.length} ${controller.customRingtoneNames.length == 1 ? 'ringtone' : 'ringtones'}',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: themeController.primaryDisabledTextColor.value,
-                      ),
-                    ),
+                    () {
+                      final count = controller.customRingtoneNames.length;
+                      final label = count == 1 ? 'ringtone' : 'ringtones';
+                      return Text(
+                        '$count $label',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: themeController
+                                  .primaryDisabledTextColor.value,
+                            ),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -200,7 +205,8 @@ class RingtoneSelectionPage extends GetView<AddOrUpdateAlarmController> {
                   onPressed: () async {
                     Utils.hapticFeedback();
                     await _stopAllAudio();
-                    controller.previousRingtone = controller.customRingtoneName.value;
+                    controller.previousRingtone =
+                        controller.customRingtoneName.value;
                     await controller.saveCustomRingtone();
                     await _loadRingtones();
                   },
@@ -226,7 +232,7 @@ class RingtoneSelectionPage extends GetView<AddOrUpdateAlarmController> {
             ],
           ),
         ),
-        
+
         // Ringtone list
         Expanded(
           child: Obx(
@@ -238,17 +244,23 @@ class RingtoneSelectionPage extends GetView<AddOrUpdateAlarmController> {
                     child: ListView.separated(
                       padding: const EdgeInsets.all(16),
                       itemCount: controller.customRingtoneNames.length,
-                      separatorBuilder: (context, index) => const SizedBox(height: 8),
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(height: 8),
                       itemBuilder: (context, index) {
-                        final ringtoneName = controller.customRingtoneNames[index];
-                        return Obx(() => _buildRingtoneListItem(
-                          context: context,
-                          ringtoneName: ringtoneName,
-                          index: index,
-                          isSelected: controller.customRingtoneName.value == ringtoneName,
-                          isPlaying: controller.isPlaying.value && 
-                                    controller.customRingtoneName.value == ringtoneName,
-                        ));
+                        final ringtoneName =
+                            controller.customRingtoneNames[index];
+                        return Obx(
+                          () => _buildRingtoneListItem(
+                            context: context,
+                            ringtoneName: ringtoneName,
+                            index: index,
+                            isSelected: controller.customRingtoneName.value ==
+                                ringtoneName,
+                            isPlaying: controller.isPlaying.value &&
+                                controller.customRingtoneName.value ==
+                                    ringtoneName,
+                          ),
+                        );
                       },
                     ),
                   ),
@@ -269,6 +281,7 @@ class RingtoneSelectionPage extends GetView<AddOrUpdateAlarmController> {
         child: Padding(
           padding: const EdgeInsets.all(32.0),
           child: Text(
+            // ignore: lines_longer_than_80_chars
             'System ringtones are currently only supported on Android.\n\nPlease upload a custom ringtone to use this feature.',
             textAlign: TextAlign.center,
             style: TextStyle(
@@ -314,30 +327,31 @@ class RingtoneSelectionPage extends GetView<AddOrUpdateAlarmController> {
             Text(
               'No custom ringtones'.tr,
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: themeController.primaryTextColor.value,
-                fontWeight: FontWeight.w600,
-              ),
+                    color: themeController.primaryTextColor.value,
+                    fontWeight: FontWeight.w600,
+                  ),
             ),
             const SizedBox(height: 8),
             Text(
               'Upload your favorite sounds to personalize your alarms'.tr,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: themeController.primaryDisabledTextColor.value,
-                height: 1.4,
-              ),
+                    color: themeController.primaryDisabledTextColor.value,
+                    height: 1.4,
+                  ),
             ),
             const SizedBox(height: 24),
             OutlinedButton.icon(
               onPressed: () async {
                 Utils.hapticFeedback();
                 await _stopAllAudio();
-                controller.previousRingtone = controller.customRingtoneName.value;
+                controller.previousRingtone =
+                    controller.customRingtoneName.value;
                 await controller.saveCustomRingtone();
                 await _loadRingtones();
               },
               style: OutlinedButton.styleFrom(
-                side: BorderSide(color: kprimaryColor),
+                side: const BorderSide(color: kprimaryColor),
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24,
                   vertical: 12,
@@ -346,14 +360,14 @@ class RingtoneSelectionPage extends GetView<AddOrUpdateAlarmController> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              icon: Icon(
+              icon: const Icon(
                 Icons.upload_file,
                 color: kprimaryColor,
                 size: 20,
               ),
               label: Text(
                 'Upload Ringtone'.tr,
-                style: TextStyle(
+                style: const TextStyle(
                   color: kprimaryColor,
                   fontWeight: FontWeight.w600,
                 ),
@@ -382,16 +396,19 @@ class RingtoneSelectionPage extends GetView<AddOrUpdateAlarmController> {
         border: Border.all(
           color: isSelected
               ? kprimaryColor
-              : themeController.primaryDisabledTextColor.value.withOpacity(0.12),
+              : themeController.primaryDisabledTextColor.value
+                  .withOpacity(0.12),
           width: isSelected ? 2 : 1,
         ),
-        boxShadow: isSelected ? [
-          BoxShadow(
-            color: kprimaryColor.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ] : null,
+        boxShadow: isSelected
+            ? [
+                BoxShadow(
+                  color: kprimaryColor.withOpacity(0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ]
+            : null,
       ),
       child: Material(
         color: Colors.transparent,
@@ -404,7 +421,8 @@ class RingtoneSelectionPage extends GetView<AddOrUpdateAlarmController> {
 
             controller.customRingtoneName.value = ringtoneName;
 
-            if (controller.customRingtoneName.value != controller.previousRingtone) {
+            if (controller.customRingtoneName.value !=
+                controller.previousRingtone) {
               await AudioUtils.updateRingtoneCounterOfUsage(
                 customRingtoneName: controller.customRingtoneName.value,
                 counterUpdate: CounterUpdate.increment,
@@ -425,27 +443,30 @@ class RingtoneSelectionPage extends GetView<AddOrUpdateAlarmController> {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: isSelected 
-                        ? kprimaryColor 
+                    color: isSelected
+                        ? kprimaryColor
                         : themeController.primaryBackgroundColor.value,
                     shape: BoxShape.circle,
-                    border: isSelected ? null : Border.all(
-                      color: themeController.primaryDisabledTextColor.value
-                          .withOpacity(0.3),
-                      width: 1,
-                    ),
+                    border: isSelected
+                        ? null
+                        : Border.all(
+                            color: themeController
+                                .primaryDisabledTextColor.value
+                                .withOpacity(0.3),
+                            width: 1,
+                          ),
                   ),
                   child: Icon(
                     isSelected ? Icons.check_circle : Icons.music_note,
-                    color: isSelected 
-                        ? Colors.white 
+                    color: isSelected
+                        ? Colors.white
                         : themeController.primaryTextColor.value,
                     size: 20,
                   ),
                 ),
-                
+
                 const SizedBox(width: 16),
-                
+
                 // Ringtone name
                 Expanded(
                   child: Column(
@@ -454,61 +475,72 @@ class RingtoneSelectionPage extends GetView<AddOrUpdateAlarmController> {
                       Text(
                         ringtoneName,
                         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: themeController.primaryTextColor.value,
-                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                        ),
+                              color: themeController.primaryTextColor.value,
+                              fontWeight: isSelected
+                                  ? FontWeight.w600
+                                  : FontWeight.w500,
+                            ),
                         overflow: TextOverflow.ellipsis,
                       ),
                       if (isSelected) ...[
                         const SizedBox(height: 2),
                         Text(
                           'Current ringtone'.tr,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: kprimaryColor,
-                            fontWeight: FontWeight.w500,
-                          ),
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: kprimaryColor,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                         ),
                       ],
                     ],
                   ),
                 ),
-                
+
                 // Actions
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    // ignore: lines_longer_than_80_chars
                     // Preview button - always visible, but only functional when selected
                     Container(
                       decoration: BoxDecoration(
-                        color: isSelected && isPlaying 
-                            ? Colors.red.withOpacity(0.1) 
-                            : isSelected 
+                        color: isSelected && isPlaying
+                            ? Colors.red.withOpacity(0.1)
+                            : isSelected
                                 ? kprimaryColor.withOpacity(0.1)
                                 : Colors.transparent,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: IconButton(
-                        onPressed: isSelected ? () => _onTapPreview(ringtoneName) : null,
+                        onPressed: isSelected
+                            ? () => _onTapPreview(ringtoneName)
+                            : null,
                         icon: Icon(
-                          isSelected && isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled,
-                          color: isSelected 
+                          isSelected && isPlaying
+                              ? Icons.pause_circle_filled
+                              : Icons.play_circle_filled,
+                          color: isSelected
                               ? (isPlaying ? Colors.red : kprimaryColor)
                               : themeController.primaryDisabledTextColor.value,
                           size: 28,
                         ),
-                        tooltip: isSelected 
-                            ? (isPlaying ? 'Stop preview'.tr : 'Play preview'.tr)
+                        tooltip: isSelected
+                            ? (isPlaying
+                                ? 'Stop preview'.tr
+                                : 'Play preview'.tr)
                             : 'Select to preview'.tr,
                       ),
                     ),
-                    
+
                     // Delete button (only for non-default ringtones)
                     if (!defaultRingtones.contains(ringtoneName)) ...[
                       const SizedBox(width: 4),
                       IconButton(
                         onPressed: () async {
                           Utils.hapticFeedback();
-                          final bool? shouldDelete = await _showDeleteConfirmation(ringtoneName);
+                          final bool? shouldDelete =
+                              await _showDeleteConfirmation(ringtoneName);
                           if (shouldDelete == true) {
                             await controller.deleteCustomRingtone(
                               ringtoneName: ringtoneName,

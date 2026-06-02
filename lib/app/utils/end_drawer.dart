@@ -4,7 +4,6 @@ import 'package:ultimate_alarm_clock/app/modules/settings/controllers/theme_cont
 import 'package:ultimate_alarm_clock/app/routes/app_pages.dart';
 import 'package:ultimate_alarm_clock/app/utils/constants.dart';
 import 'package:ultimate_alarm_clock/app/utils/utils.dart';
-import 'package:ultimate_alarm_clock/app/modules/debug/views/debug_view.dart';
 
 Widget buildEndDrawer(BuildContext context) {
   ThemeController themeController = Get.find<ThemeController>();

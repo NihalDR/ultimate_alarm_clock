@@ -1,9 +1,9 @@
+import 'dart:developer' as developer;
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:collection/collection.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:fl_location/fl_location.dart';
@@ -30,7 +30,6 @@ import 'package:ultimate_alarm_clock/app/utils/constants.dart';
 import 'package:ultimate_alarm_clock/app/utils/timezone_utils.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:uuid/uuid.dart';
-import 'package:intl_phone_number_input/src/models/country_model.dart';
 import '../../settings/controllers/settings_controller.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ultimate_alarm_clock/app/utils/system_ringtone_service.dart';
@@ -240,7 +239,9 @@ class AddOrUpdateAlarmController extends GetxController {
     if (deviceTimezoneId.value != 'Asia/Kolkata') {
       deviceTimezoneId.value = 'Asia/Kolkata'; // India Standard Time
     }
-    print('🌍 Device timezone set to: ${deviceTimezoneId.value}');
+    developer.log(
+      '🌍 Device timezone set to: ${deviceTimezoneId.value}',
+    );
     loadTimezones();
 
     // Check if this is a new alarm (no arguments) and apply default settings
@@ -254,7 +255,8 @@ class AddOrUpdateAlarmController extends GetxController {
         selectedTimezoneId.value = deviceTimezoneId.value;
       }
     } else {
-      // For existing alarms, set device timezone as default if no timezone is selected
+      // For existing alarms, set device timezone as default if no timezone is
+      // selected.
       if (selectedTimezoneId.value.isEmpty && !isTimezoneEnabled.value) {
         selectedTimezoneId.value = deviceTimezoneId.value;
       }
@@ -264,16 +266,16 @@ class AddOrUpdateAlarmController extends GetxController {
   }
 
   void loadTimezones() {
-    timezoneList.value = TimezoneUtils.getCommonTimezones();
-    filteredTimezoneList.value = timezoneList.value;
+    timezoneList.assignAll(TimezoneUtils.getCommonTimezones());
+    filteredTimezoneList.assignAll(timezoneList);
   }
 
   void searchTimezones(String query) {
     timezoneSearchQuery.value = query;
     if (query.isEmpty) {
-      filteredTimezoneList.value = timezoneList.value;
+      filteredTimezoneList.assignAll(timezoneList);
     } else {
-      filteredTimezoneList.value = TimezoneUtils.searchTimezones(query);
+      filteredTimezoneList.assignAll(TimezoneUtils.searchTimezones(query));
     }
   }
 
@@ -318,7 +320,6 @@ class AddOrUpdateAlarmController extends GetxController {
       final targetLocation = tz.getLocation(selectedTimezoneId.value);
 
       // Calculate the offset difference
-      final now = DateTime.now();
       final localNow = tz.TZDateTime.now(localLocation);
       final targetNow = tz.TZDateTime.now(targetLocation);
       final offsetDifference = targetNow.timeZoneOffset.inMinutes -
@@ -344,14 +345,20 @@ class AddOrUpdateAlarmController extends GetxController {
       }
 
       // Debug output
-      print('🔧 TIMEZONE CONVERSION DEBUG:');
-      print('   Local Time Input: ${localTime.hour}:${localTime.minute}');
-      print(
-          '   Local TZ: ${deviceTimezoneId.value} (${localNow.timeZoneOffset})');
-      print(
-          '   Target TZ: ${selectedTimezoneId.value} (${targetNow.timeZoneOffset})');
-      print('   Offset Difference: $offsetDifference minutes');
-      print('   Target Time: $targetHour:$targetMinute');
+      developer.log('🔧 TIMEZONE CONVERSION DEBUG:');
+      developer.log(
+        '   Local Time Input: ${localTime.hour}:${localTime.minute}',
+      );
+      developer.log(
+        '   Local TZ: ${deviceTimezoneId.value} '
+        '(${localNow.timeZoneOffset})',
+      );
+      developer.log(
+        '   Target TZ: ${selectedTimezoneId.value} '
+        '(${targetNow.timeZoneOffset})',
+      );
+      developer.log('   Offset Difference: $offsetDifference minutes');
+      developer.log('   Target Time: $targetHour:$targetMinute');
 
       // Update selectedTime to show the converted time
       selectedTime.value = DateTime(
@@ -382,7 +389,7 @@ class AddOrUpdateAlarmController extends GetxController {
       }
     } catch (e) {
       // If conversion fails, keep the original time
-      print('Error converting timezone: $e');
+      developer.log('Error converting timezone: $e');
     }
   }
 
@@ -415,10 +422,12 @@ class AddOrUpdateAlarmController extends GetxController {
       if (selectedData == null) return '';
 
       final currentTime = TimeOfDay.fromDateTime(selectedTime.value);
-      final timeString =
-          '${currentTime.hour.toString().padLeft(2, '0')}:${currentTime.minute.toString().padLeft(2, '0')}';
+      final hourText = currentTime.hour.toString().padLeft(2, '0');
+      final minuteText = currentTime.minute.toString().padLeft(2, '0');
+      final timeString = '$hourText:$minuteText';
 
-      return 'Alarm will ring at $timeString in ${selectedData.displayName}';
+      return 'Alarm will ring at $timeString in '
+          '${selectedData.displayName}';
     } catch (e) {
       return 'Timezone conversion error';
     }
@@ -442,15 +451,6 @@ class AddOrUpdateAlarmController extends GetxController {
       // We need to convert it back to LOCAL time for scheduling
       final targetTime = TimeOfDay.fromDateTime(selectedTime.value);
       final currentDate = selectedDate.value;
-
-      // Create target timezone DateTime
-      final targetDateTime = DateTime(
-        currentDate.year,
-        currentDate.month,
-        currentDate.day,
-        targetTime.hour,
-        targetTime.minute,
-      );
 
       // Convert from target timezone to local timezone for scheduling
       final targetLocation = tz.getLocation(selectedTimezoneId.value);
@@ -479,7 +479,7 @@ class AddOrUpdateAlarmController extends GetxController {
       );
     } catch (e) {
       // Fallback to selected time if timezone conversion fails
-      print('Error in timezone conversion for scheduling: $e');
+      developer.log('Error in timezone conversion for scheduling: $e');
       return selectedTime.value;
     }
   }
@@ -534,7 +534,7 @@ class AddOrUpdateAlarmController extends GetxController {
                 if (!(await Permission.systemAlertWindow.isGranted)) {
                   final status = await Permission.systemAlertWindow.request();
                   if (!status.isGranted) {
-                    debugPrint('SYSTEM_ALERT_WINDOW permission denied!');
+                    developer.log('SYSTEM_ALERT_WINDOW permission denied!');
                     return;
                   }
                 }
@@ -544,7 +544,7 @@ class AddOrUpdateAlarmController extends GetxController {
                       .request()
                       .isGranted;
                   if (!requested) {
-                    debugPrint(
+                    developer.log(
                       'IGNORE_BATTERY_OPTIMIZATION permission denied!',
                     );
                     return;
@@ -556,7 +556,7 @@ class AddOrUpdateAlarmController extends GetxController {
               if (!await Permission.notification.isGranted) {
                 final status = await Permission.notification.request();
                 if (status != PermissionStatus.granted) {
-                  debugPrint('Notification permission denied!');
+                  developer.log('Notification permission denied!');
                   return;
                 }
               }
@@ -600,8 +600,8 @@ class AddOrUpdateAlarmController extends GetxController {
                     onPressed: () {
                       Get.back();
                     },
-                    style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all(kprimaryColor),
+                    style: const ButtonStyle(
+                      backgroundColor: WidgetStatePropertyAll(kprimaryColor),
                     ),
                     child: Text(
                       'Cancel'.tr,
@@ -616,7 +616,7 @@ class AddOrUpdateAlarmController extends GetxController {
                       Get.back();
                     },
                     style: OutlinedButton.styleFrom(
-                      side: BorderSide(
+                      side: const BorderSide(
                         color: Colors.red,
                         width: 1,
                       ),
@@ -648,7 +648,7 @@ class AddOrUpdateAlarmController extends GetxController {
       ).then((location) {
         selectedPoint.value = LatLng(location.latitude, location.longitude);
       }).onError((error, stackTrace) {
-        debugPrint('error: ${error.toString()}');
+        developer.log('error: ${error.toString()}');
       });
     }
   }
@@ -677,7 +677,9 @@ class AddOrUpdateAlarmController extends GetxController {
           color: themeController.primaryTextColor.value,
         ),
         content: const Text(
-          'To ensure timely alarm dismissal, this app requires access to your location. Please select Allow all the time. Your location will only be accessed in the background at the scheduled alarm time.',
+          'To ensure timely alarm dismissal, this app requires access to your '
+          'location. Please select Allow all the time. Your location will only '
+          'be accessed in the background at the scheduled alarm time.',
         ),
         actions: [
           TextButton(
@@ -710,11 +712,15 @@ class AddOrUpdateAlarmController extends GetxController {
         // User declined the permission request.
         return false;
       }
-      // Ask the user for location permission (must be LocationPermission.always).
+      // Ask the user for location permission (must be
+      // LocationPermission.always).
       locationPermission = await FlLocation.requestLocationPermission();
-      if (locationPermission == LocationPermission.denied ||
+      final isDenied = locationPermission == LocationPermission.denied ||
           locationPermission == LocationPermission.deniedForever ||
-          locationPermission == LocationPermission.whileInUse) return false;
+          locationPermission == LocationPermission.whileInUse;
+      if (isDenied) {
+        return false;
+      }
     }
 
     // Location services has been enabled and permission have been granted.
@@ -757,7 +763,7 @@ class AddOrUpdateAlarmController extends GetxController {
                         final List<Barcode> barcodes = capture.barcodes;
                         for (final barcode in barcodes) {
                           detectedQrValue.value = barcode.rawValue.toString();
-                          debugPrint(barcode.rawValue.toString());
+                          developer.log(barcode.rawValue.toString());
                         }
                       },
                     ),
@@ -771,9 +777,9 @@ class AddOrUpdateAlarmController extends GetxController {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       TextButton(
-                        style: ButtonStyle(
+                        style: const ButtonStyle(
                           backgroundColor:
-                              MaterialStateProperty.all(kprimaryColor),
+                              WidgetStatePropertyAll(kprimaryColor),
                         ),
                         child: Text(
                           'Save',
@@ -791,9 +797,9 @@ class AddOrUpdateAlarmController extends GetxController {
                         },
                       ),
                       TextButton(
-                        style: ButtonStyle(
+                        style: const ButtonStyle(
                           backgroundColor:
-                              MaterialStateProperty.all(kprimaryColor),
+                              WidgetStatePropertyAll(kprimaryColor),
                         ),
                         child: Text(
                           'Retake',
@@ -811,9 +817,9 @@ class AddOrUpdateAlarmController extends GetxController {
                       ),
                       if (isQrEnabled.value)
                         TextButton(
-                          style: ButtonStyle(
+                          style: const ButtonStyle(
                             backgroundColor:
-                                MaterialStateProperty.all(kprimaryColor),
+                                WidgetStatePropertyAll(kprimaryColor),
                           ),
                           child: Text(
                             'Disable',
@@ -879,8 +885,8 @@ class AddOrUpdateAlarmController extends GetxController {
           }
         },
         confirm: TextButton(
-          style: ButtonStyle(
-            backgroundColor: MaterialStateProperty.all(kprimaryColor),
+          style: const ButtonStyle(
+            backgroundColor: WidgetStatePropertyAll(kprimaryColor),
           ),
           child: Obx(
             () => Text(
@@ -903,7 +909,7 @@ class AddOrUpdateAlarmController extends GetxController {
         cancel: Obx(
           () => TextButton(
             style: ButtonStyle(
-              backgroundColor: MaterialStateProperty.all(
+              backgroundColor: WidgetStatePropertyAll(
                 themeController.primaryTextColor.value.withOpacity(0.5),
               ),
             ),
@@ -944,31 +950,39 @@ class AddOrUpdateAlarmController extends GetxController {
                   alarmRecord.value.firestoreId!.isEmpty);
 
       if (isConversion) {
-        debugPrint('🔄 Converting normal alarm to shared alarm');
+        developer.log('🔄 Converting normal alarm to shared alarm');
 
         try {
           await homeController.alarmChannel.invokeMethod('cancelAlarmById', {
             'alarmID': alarmRecord.value.alarmID,
             'isSharedAlarm': false,
           });
-          debugPrint(
-              '🗑️ Canceled existing local alarm: ${alarmRecord.value.alarmID}');
+          developer.log(
+            '🗑️ Canceled existing local alarm: '
+            '${alarmRecord.value.alarmID}',
+          );
         } catch (e) {
-          debugPrint('⚠️ Error canceling local alarm: $e');
+          developer.log('⚠️ Error canceling local alarm: $e');
         }
 
         await isar.IsarDb.deleteAlarm(alarmRecord.value.isarId);
-        debugPrint(
-            '🗑️ Deleted alarm from local database using isarId: ${alarmRecord.value.isarId}');
+        developer.log(
+          '🗑️ Deleted alarm from local database using isarId: '
+          '${alarmRecord.value.isarId}',
+        );
 
         alarmRecord.value =
             await FirestoreDb.addAlarm(userModel.value, alarmData);
-        debugPrint(
-            '✅ Created new shared alarm in Firestore: ${alarmRecord.value.firestoreId}');
+        developer.log(
+          '✅ Created new shared alarm in Firestore: '
+          '${alarmRecord.value.firestoreId}',
+        );
       } else if (alarmRecord.value.firestoreId != null &&
           alarmRecord.value.firestoreId!.isNotEmpty) {
-        debugPrint(
-            '📝 Updating existing shared alarm: ${alarmRecord.value.firestoreId}');
+        developer.log(
+          '📝 Updating existing shared alarm: '
+          '${alarmRecord.value.firestoreId}',
+        );
 
         alarmData.firestoreId = alarmRecord.value.firestoreId;
 
@@ -977,11 +991,14 @@ class AddOrUpdateAlarmController extends GetxController {
             'alarmID': alarmData.firestoreId,
             'isSharedAlarm': true,
           });
-          debugPrint(
-              '🗑️ Canceled existing shared alarm before update: ${alarmData.firestoreId}');
+          developer.log(
+            '🗑️ Canceled existing shared alarm before update: '
+            '${alarmData.firestoreId}',
+          );
         } catch (e) {
-          debugPrint(
-              '⚠️ Error canceling existing alarm (continuing anyway): $e');
+          developer.log(
+            '⚠️ Error canceling existing alarm (continuing anyway): $e',
+          );
         }
 
         await FirestoreDb.updateAlarm(alarmRecord.value.ownerId, alarmData);
@@ -990,7 +1007,7 @@ class AddOrUpdateAlarmController extends GetxController {
           PushNotifications()
               .triggerRescheduleAlarmNotification(alarmData.firestoreId!);
         } catch (e) {
-          debugPrint('Push notification failed (this is ok): $e');
+          developer.log('Push notification failed (this is ok): $e');
         }
 
         await FirestoreDb.triggerRescheduleUpdate(alarmData);
@@ -998,14 +1015,17 @@ class AddOrUpdateAlarmController extends GetxController {
         try {
           await sendDirectNotificationToSharedUsers(alarmData);
         } catch (e) {
-          debugPrint('Direct notification failed (this is ok): $e');
+          developer.log('Direct notification failed (this is ok): $e');
         }
 
         homeController.forceRefreshAfterAlarmUpdate(
-            alarmData.firestoreId, true);
+          alarmData.firestoreId,
+          true,
+        );
       } else {
-        debugPrint(
-            '⚠️ Unexpected state: shared alarm enabled but no valid ID found');
+        developer.log(
+          '⚠️ Unexpected state: shared alarm enabled but no valid ID found',
+        );
         alarmRecord.value =
             await FirestoreDb.addAlarm(userModel.value, alarmData);
       }
@@ -1015,30 +1035,37 @@ class AddOrUpdateAlarmController extends GetxController {
           !await isar.IsarDb.doesAlarmExist(alarmRecord.value.alarmID);
 
       if (isConversion) {
-        debugPrint('🔄 Converting shared alarm to normal alarm');
+        developer.log('🔄 Converting shared alarm to normal alarm');
 
         try {
           await homeController.alarmChannel.invokeMethod('cancelAlarmById', {
             'alarmID': alarmRecord.value.firestoreId,
             'isSharedAlarm': true,
           });
-          debugPrint(
-              '🗑️ Canceled existing shared alarm: ${alarmRecord.value.firestoreId}');
+          developer.log(
+            '🗑️ Canceled existing shared alarm: '
+            '${alarmRecord.value.firestoreId}',
+          );
         } catch (e) {
-          debugPrint('⚠️ Error canceling shared alarm: $e');
+          developer.log('⚠️ Error canceling shared alarm: $e');
         }
 
         await FirestoreDb.deleteAlarm(
-            userModel.value, alarmRecord.value.firestoreId!);
-        debugPrint('🗑️ Deleted alarm from Firestore');
+          userModel.value,
+          alarmRecord.value.firestoreId!,
+        );
+        developer.log('🗑️ Deleted alarm from Firestore');
 
         alarmRecord.value = await isar.IsarDb.addAlarm(alarmData);
-        debugPrint(
-            '✅ Created new normal alarm in local database: ${alarmRecord.value.alarmID}');
+        developer.log(
+          '✅ Created new normal alarm in local database: '
+          '${alarmRecord.value.alarmID}',
+        );
       } else if (await isar.IsarDb.doesAlarmExist(alarmRecord.value.alarmID) ==
           true) {
-        debugPrint(
-            '📝 Updating existing normal alarm: ${alarmRecord.value.alarmID}');
+        developer.log(
+          '📝 Updating existing normal alarm: ${alarmRecord.value.alarmID}',
+        );
 
         alarmData.isarId = alarmRecord.value.isarId;
 
@@ -1047,19 +1074,23 @@ class AddOrUpdateAlarmController extends GetxController {
             'alarmID': alarmRecord.value.alarmID,
             'isSharedAlarm': false,
           });
-          debugPrint(
-              '🗑️ Canceled existing local alarm before update: ${alarmRecord.value.alarmID}');
+          developer.log(
+            '🗑️ Canceled existing local alarm before update: '
+            '${alarmRecord.value.alarmID}',
+          );
         } catch (e) {
-          debugPrint(
-              '⚠️ Error canceling existing alarm (continuing anyway): $e');
+          developer.log(
+            '⚠️ Error canceling existing alarm (continuing anyway): $e',
+          );
         }
 
         await isar.IsarDb.updateAlarm(alarmData);
 
         homeController.forceRefreshAfterAlarmUpdate(alarmData.alarmID, false);
       } else {
-        debugPrint(
-            '⚠️ Unexpected state: normal alarm but no valid local ID found');
+        developer.log(
+          '⚠️ Unexpected state: normal alarm but no valid local ID found',
+        );
         alarmRecord.value = await isar.IsarDb.addAlarm(alarmData);
       }
     }
@@ -1077,7 +1108,7 @@ class AddOrUpdateAlarmController extends GetxController {
 
     profileTextEditingController.text = homeController.isProfileUpdate.value
         ? homeController.selectedProfile.value
-        : "";
+        : '';
     emailTextEditingController.text = '';
 
     if (Get.arguments != null) {
@@ -1093,7 +1124,8 @@ class AddOrUpdateAlarmController extends GetxController {
     }
     isar.IsarDb.loadDefaultRingtones();
 
-    // listens to the userModel declared in homeController and updates on signup event
+    // listens to the userModel declared in homeController and updates on signup
+    // event
     homeController.userModel.stream.listen((UserModel? user) {
       userModel.value = user;
       if (user != null) {
@@ -1136,10 +1168,14 @@ class AddOrUpdateAlarmController extends GetxController {
       label.value = alarmRecord.value.label;
       customRingtoneName.value = alarmRecord.value.ringtoneName;
       note.value = alarmRecord.value.note;
-      alarmTasks.value = List<String>.from(alarmRecord.value.tasks);
+      alarmTasks.assignAll(
+        List<String>.from(alarmRecord.value.tasks),
+      );
       showMotivationalQuote.value = alarmRecord.value.showMotivationalQuote;
 
-      sharedUserIds.value = alarmRecord.value.sharedUserIds!;
+      sharedUserIds.assignAll(
+        alarmRecord.value.sharedUserIds ?? <String>[],
+      );
       // Reinitializing all values here
       selectedTime.value = Utils.timeOfDayToDateTime(
         Utils.stringToTimeOfDay(alarmRecord.value.alarmTime),
@@ -1167,7 +1203,7 @@ class AddOrUpdateAlarmController extends GetxController {
         selectedDate.value,
       );
 
-      repeatDays.value = alarmRecord.value.days;
+      repeatDays.assignAll(alarmRecord.value.days);
       // Shows the selected days in UI
       daysRepeating.value = Utils.getRepeatDays(repeatDays);
 
@@ -1257,7 +1293,9 @@ class AddOrUpdateAlarmController extends GetxController {
           Utils.stringToTimeOfDay(alarmRecord.value.mainAlarmTime!),
         );
 
-        offsetDetails.value = alarmRecord.value.offsetDetails!;
+        offsetDetails.assignAll(
+          List<Map>.from(alarmRecord.value.offsetDetails ?? <Map>[]),
+        );
 
         final userOffset = alarmRecord.value.offsetDetails!
             .firstWhereOrNull((entry) => entry['userId'] == userId);
@@ -1301,9 +1339,10 @@ class AddOrUpdateAlarmController extends GetxController {
     }
 
     timeToAlarm.value = Utils.timeUntilAlarm(
-        TimeOfDay.fromDateTime(selectedTime.value),
-        repeatDays,
-        selectedDate.value);
+      TimeOfDay.fromDateTime(selectedTime.value),
+      repeatDays,
+      selectedDate.value,
+    );
 
     // store initial values of the variables
     initialValues.addAll({
@@ -1355,16 +1394,22 @@ class AddOrUpdateAlarmController extends GetxController {
   void addListeners() {
     // Updating UI to show time to alarm
     selectedTime.listen((time) {
-      debugPrint('CHANGED CHANGED CHANGED CHANGED');
+      developer.log('CHANGED CHANGED CHANGED CHANGED');
       timeToAlarm.value = Utils.timeUntilAlarm(
-          TimeOfDay.fromDateTime(time), repeatDays, selectedDate.value);
+        TimeOfDay.fromDateTime(time),
+        repeatDays,
+        selectedDate.value,
+      );
       _compareAndSetChange('selectedTime', time);
     });
 
     selectedDate.listen((date) {
-      debugPrint('CHANGED CHANGED CHANGED CHANGED');
+      developer.log('CHANGED CHANGED CHANGED CHANGED');
       timeToAlarm.value = Utils.timeUntilAlarm(
-          TimeOfDay.fromDateTime(selectedTime.value), repeatDays, date);
+        TimeOfDay.fromDateTime(selectedTime.value),
+        repeatDays,
+        date,
+      );
       _compareAndSetChange('selectedTime', date);
     });
 
@@ -1398,7 +1443,8 @@ class AddOrUpdateAlarmController extends GetxController {
       }
       weatherTypes.value = Utils.getFormattedWeatherTypes(weather);
       _compareAndSetChange('weatherTypes', weatherTypes.value);
-      // if location based is disabled and weather based is disabled, reset location
+      // if location based is disabled and weather based is disabled, reset
+      // location
       if (weatherTypes.value == 'Off' && !isLocationEnabled.value) {
         selectedPoint.value = LatLng(0, 0);
       }
@@ -1447,13 +1493,19 @@ class AddOrUpdateAlarmController extends GetxController {
 
     setupListener<bool>(isSharedAlarmEnabled, 'isSharedAlarmEnabled');
     setupListener<LocationConditionType>(
-        locationConditionType, 'locationConditionType');
+      locationConditionType,
+      'locationConditionType',
+    );
     setupListener<WeatherConditionType>(
-        weatherConditionType, 'weatherConditionType');
+      weatherConditionType,
+      'weatherConditionType',
+    );
     setupListener<int>(offsetDuration, 'offsetDuration');
     setupListener<bool>(isOffsetBefore, 'isOffsetBefore');
     setupListener<int>(
-        smartControlCombinationType, 'smartControlCombinationType');
+      smartControlCombinationType,
+      'smartControlCombinationType',
+    );
   }
 
   // adds listener to rxVar variable
@@ -1467,8 +1519,8 @@ class AddOrUpdateAlarmController extends GetxController {
     return alarmTasks.join('\n');
   }
 
-  // if initialValues map contains fieldName and newValue is equal to currentValue
-  // then set changeFields map field to true
+  // if initialValues map contains fieldName and newValue is equal to
+  // currentValue then set changeFields map field to true
   void _compareAndSetChange(String fieldName, dynamic currentValue) {
     if (initialValues.containsKey(fieldName)) {
       bool hasChanged = initialValues[fieldName] != currentValue;
@@ -1515,8 +1567,9 @@ class AddOrUpdateAlarmController extends GetxController {
       ownerName = alarmRecord.value.ownerName;
     }
 
-    debugPrint(
-        '🔔 Creating alarm with maxSnoozeCount: ${maxSnoozeCount.value}');
+    developer.log(
+      '🔔 Creating alarm with maxSnoozeCount: ${maxSnoozeCount.value}',
+    );
     return AlarmModel(
       snoozeDuration: snoozeDuration.value,
       maxSnoozeCount: maxSnoozeCount.value,
@@ -1526,8 +1579,9 @@ class AddOrUpdateAlarmController extends GetxController {
       label: label.value,
       isOneTime: isOneTime.value,
       deleteAfterGoesOff: deleteAfterGoesOff.value,
-      mainAlarmTime:
-          Utils.timeOfDayToString(TimeOfDay.fromDateTime(selectedTime.value)),
+      mainAlarmTime: Utils.timeOfDayToString(
+        TimeOfDay.fromDateTime(selectedTime.value),
+      ),
       offsetDetails: offsetDetails,
       sharedUserIds: sharedUserIds,
       lastEditedUserId: lastEditedUserId.value,
@@ -1538,14 +1592,18 @@ class AddOrUpdateAlarmController extends GetxController {
       activityInterval: activityInterval.value * 60000,
       days: repeatDays.toList(),
       alarmTime: Utils.timeOfDayToString(
-          TimeOfDay.fromDateTime(getTimezoneAwareAlarmTime())),
+        TimeOfDay.fromDateTime(getTimezoneAwareAlarmTime()),
+      ),
       intervalToAlarm: getTimezoneAwareIntervalToAlarm(),
       isActivityEnabled: isActivityenabled.value,
       minutesSinceMidnight: Utils.timeOfDayToInt(
-          TimeOfDay.fromDateTime(getTimezoneAwareAlarmTime())),
+        TimeOfDay.fromDateTime(getTimezoneAwareAlarmTime()),
+      ),
       isLocationEnabled: isLocationEnabled.value,
       locationConditionType: locationConditionType.value.index,
-      weatherTypes: Utils.getIntFromWeatherTypes(selectedWeather.toList()),
+      weatherTypes: Utils.getIntFromWeatherTypes(
+        selectedWeather.toList(),
+      ),
       isWeatherEnabled: isWeatherEnabled.value,
       weatherConditionType: weatherConditionType.value.index,
       activityConditionType: activityConditionType.value.index,
@@ -1614,7 +1672,7 @@ class AddOrUpdateAlarmController extends GetxController {
       }
       return null;
     } catch (e) {
-      debugPrint(e.toString());
+      developer.log(e.toString());
       return null;
     }
   }
@@ -1637,7 +1695,7 @@ class AddOrUpdateAlarmController extends GetxController {
 
       return newFilePath;
     } catch (e) {
-      debugPrint(e.toString());
+      developer.log(e.toString());
       return null;
     }
   }
@@ -1666,7 +1724,7 @@ class AddOrUpdateAlarmController extends GetxController {
         }
       }
     } catch (e) {
-      debugPrint(e.toString());
+      developer.log(e.toString());
     }
   }
 
@@ -1679,7 +1737,7 @@ class AddOrUpdateAlarmController extends GetxController {
           .map((customRingtone) => customRingtone.ringtoneName)
           .toList();
     } catch (e) {
-      debugPrint(e.toString());
+      developer.log(e.toString());
       return [];
     }
   }
@@ -1691,7 +1749,8 @@ class AddOrUpdateAlarmController extends GetxController {
     try {
       int customRingtoneId = AudioUtils.fastHash(ringtoneName);
       RingtoneModel? customRingtone = await isar.IsarDb.getCustomRingtone(
-          customRingtoneId: customRingtoneId);
+        customRingtoneId: customRingtoneId,
+      );
 
       if (customRingtone != null) {
         int currentCounterOfUsage = customRingtone.currentCounterOfUsage;
@@ -1753,7 +1812,7 @@ class AddOrUpdateAlarmController extends GetxController {
         }
       }
     } catch (e) {
-      debugPrint(e.toString());
+      developer.log(e.toString());
     }
   }
 
@@ -1802,7 +1861,7 @@ class AddOrUpdateAlarmController extends GetxController {
         textColor: themeController.primaryTextColor.value,
       );
     } catch (e) {
-      debugPrint(e.toString());
+      developer.log(e.toString());
     }
   }
 
@@ -1822,7 +1881,8 @@ class AddOrUpdateAlarmController extends GetxController {
       }
 
       bool exists = await isar.IsarDb.profileExists(
-          profileTextEditingController.text.trim());
+        profileTextEditingController.text.trim(),
+      );
       if (exists) {
         Get.snackbar(
           'Error',
@@ -1901,11 +1961,12 @@ class AddOrUpdateAlarmController extends GetxController {
       if (homeController.isProfileUpdate.value) {
         var profileId =
             await isar.IsarDb.profileId(homeController.selectedProfile.value);
-        print(profileId);
+        developer.log(profileId.toString());
         if (profileId != 'null') profileModel.isarId = profileId;
-        print(profileModel.isarId);
+        developer.log(profileModel.isarId.toString());
         await isar.IsarDb.updateAlarmProfiles(
-            profileTextEditingController.text);
+          profileTextEditingController.text,
+        );
       }
 
       await isar.IsarDb.addProfile(profileModel);
@@ -1923,7 +1984,7 @@ class AddOrUpdateAlarmController extends GetxController {
         margin: const EdgeInsets.all(10),
       );
     } catch (e) {
-      debugPrint('Error creating profile: $e');
+      developer.log('Error creating profile: $e');
       Get.snackbar(
         'Error',
         'Failed to create profile. Please try again.',
@@ -1938,42 +1999,45 @@ class AddOrUpdateAlarmController extends GetxController {
 
   Future<void> initializeSharedAlarmSettings() async {
     try {
-      debugPrint('Initializing shared alarm settings...');
+      developer.log('Initializing shared alarm settings...');
 
       if (userModel.value == null) {
-        debugPrint('Cannot initialize shared alarm: User not logged in');
+        developer.log('Cannot initialize shared alarm: User not logged in');
         throw Exception('User must be logged in to enable shared alarms');
       }
 
       if (ownerId.value.isEmpty) {
         ownerId.value = userModel.value!.id;
         ownerName.value = userModel.value!.fullName;
-        debugPrint('Set owner: ${ownerName.value} (${ownerId.value})');
+        developer.log(
+          'Set owner: ${ownerName.value} (${ownerId.value})',
+        );
       }
 
       if (sharedUserIds.isEmpty) {
-        sharedUserIds.value = [];
-        debugPrint('Initialized empty shared users list');
+        sharedUserIds.clear();
+        developer.log('Initialized empty shared users list');
       }
 
       if (offsetDetails.isEmpty || offsetDetails.first.isEmpty) {
-        offsetDetails.value = [
+        offsetDetails.assignAll([
           {
             'userId': userModel.value!.id,
             'offsetDuration': 0,
             'isOffsetBefore': true,
           }
-        ];
-        debugPrint('Initialized offset details for user');
+        ]);
+        developer.log('Initialized offset details for user');
       }
 
       if (mainAlarmTime.value.difference(DateTime.now()).inMinutes <= 0) {
         mainAlarmTime.value = selectedTime.value;
-        debugPrint('Set main alarm time: ${mainAlarmTime.value}');
+        developer.log('Set main alarm time: ${mainAlarmTime.value}');
       }
 
-      final userOffset = offsetDetails.value
-          .firstWhereOrNull((entry) => entry['userId'] == userModel.value!.id);
+      final userOffset = offsetDetails.firstWhereOrNull(
+        (entry) => entry['userId'] == userModel.value!.id,
+      );
 
       if (userOffset != null) {
         userOffsetDetails.value = userOffset;
@@ -1985,15 +2049,15 @@ class AddOrUpdateAlarmController extends GetxController {
           'offsetDuration': 0,
           'isOffsetBefore': true,
         };
-        offsetDetails.value = [...offsetDetails.value, newUserOffset];
+        offsetDetails.add(newUserOffset);
         userOffsetDetails.value = newUserOffset;
         offsetDuration.value = 0;
         isOffsetBefore.value = true;
       }
 
-      debugPrint('✅ Shared alarm settings initialized successfully');
+      developer.log('✅ Shared alarm settings initialized successfully');
     } catch (e) {
-      debugPrint('❌ Error initializing shared alarm settings: $e');
+      developer.log('❌ Error initializing shared alarm settings: $e');
 
       isSharedAlarmEnabled.value = false;
       rethrow;
@@ -2002,15 +2066,17 @@ class AddOrUpdateAlarmController extends GetxController {
 
   Future<void> sendDirectNotificationToSharedUsers(AlarmModel alarmData) async {
     if (alarmData.sharedUserIds == null || alarmData.sharedUserIds!.isEmpty) {
-      debugPrint('No shared users to notify');
+      developer.log('No shared users to notify');
       return;
     }
 
     try {
-      debugPrint(
-          '🔔 Sending direct notifications to ${alarmData.sharedUserIds!.length} shared users');
-      debugPrint('   - Alarm time: ${alarmData.alarmTime}');
-      debugPrint('   - Owner: ${alarmData.ownerName}');
+      developer.log(
+        '🔔 Sending direct notifications to '
+        '${alarmData.sharedUserIds!.length} shared users',
+      );
+      developer.log('   - Alarm time: ${alarmData.alarmTime}');
+      developer.log('   - Owner: ${alarmData.ownerName}');
 
       try {
         // Create shared item data for the notification
@@ -2030,11 +2096,12 @@ class AddOrUpdateAlarmController extends GetxController {
         };
 
         await PushNotifications().triggerSharedItemNotification(
-            alarmData.sharedUserIds!,
-            sharedItem: sharedItem);
-        debugPrint('✅ Cloud function notification sent');
+          alarmData.sharedUserIds!,
+          sharedItem: sharedItem,
+        );
+        developer.log('✅ Cloud function notification sent');
       } catch (e) {
-        debugPrint('⚠️ Cloud function notification failed: $e');
+        developer.log('⚠️ Cloud function notification failed: $e');
       }
 
       for (String userId in alarmData.sharedUserIds!) {
@@ -2046,18 +2113,21 @@ class AddOrUpdateAlarmController extends GetxController {
               .add({
             'type': 'alarm_update',
             'title': 'Shared Alarm Updated! 🔔',
-            'message':
-                '${alarmData.ownerName} updated the alarm time to ${alarmData.alarmTime}',
+            'message': '${alarmData.ownerName} updated the alarm time to '
+                '${alarmData.alarmTime}',
             'alarmId': alarmData.firestoreId,
             'newAlarmTime': alarmData.alarmTime,
             'ownerName': alarmData.ownerName,
             'timestamp': FieldValue.serverTimestamp(),
             'read': false,
           });
-          debugPrint('✅ Firestore notification created for user: $userId');
+          developer.log(
+            '✅ Firestore notification created for user: $userId',
+          );
         } catch (e) {
-          debugPrint(
-              '⚠️ Failed to create Firestore notification for $userId: $e');
+          developer.log(
+            '⚠️ Failed to create Firestore notification for $userId: $e',
+          );
         }
       }
 
@@ -2068,16 +2138,19 @@ class AddOrUpdateAlarmController extends GetxController {
             .update({
           'lastNotificationSent': FieldValue.serverTimestamp(),
           'notificationMessage':
-              '${alarmData.ownerName} updated the alarm time to ${alarmData.alarmTime}',
+              '${alarmData.ownerName} updated the alarm time to '
+                  '${alarmData.alarmTime}',
         });
-        debugPrint('✅ Updated shared alarm document with notification trigger');
+        developer.log(
+          '✅ Updated shared alarm document with notification trigger',
+        );
       } catch (e) {
-        debugPrint('⚠️ Failed to update alarm document: $e');
+        developer.log('⚠️ Failed to update alarm document: $e');
       }
 
-      debugPrint('🎯 Direct notification process completed');
+      developer.log('🎯 Direct notification process completed');
     } catch (e) {
-      debugPrint('❌ Error in sendDirectNotificationToSharedUsers: $e');
+      developer.log('❌ Error in sendDirectNotificationToSharedUsers: $e');
     }
   }
 
@@ -2104,7 +2177,7 @@ class AddOrUpdateAlarmController extends GetxController {
       try {
         newHour = int.parse(rawHourText);
       } catch (e) {
-        debugPrint("toggleIfAtBoundary error parsing hour: $e");
+        developer.log('toggleIfAtBoundary error parsing hour: $e');
         return;
       }
 
@@ -2168,7 +2241,7 @@ class AddOrUpdateAlarmController extends GetxController {
         meridiemIndex.value = 0;
       }
     } catch (e) {
-      debugPrint(e.toString());
+      developer.log(e.toString());
     }
   }
 
@@ -2201,10 +2274,9 @@ class AddOrUpdateAlarmController extends GetxController {
         selectedTime.value.minute.toString().padLeft(2, '0');
   }
 
-  int orderedCountryCode(Country countryA, Country countryB) {
-    // `??` for null safety of 'dialCode'
-    String dialCodeA = countryA.dialCode ?? '0';
-    String dialCodeB = countryB.dialCode ?? '0';
+  int orderedCountryCode(dynamic countryA, dynamic countryB) {
+    final dialCodeA = countryA?.dialCode?.toString() ?? '0';
+    final dialCodeB = countryB?.dialCode?.toString() ?? '0';
 
     return int.parse(dialCodeA).compareTo(int.parse(dialCodeB));
   }
@@ -2217,19 +2289,22 @@ class LimitRange extends TextInputFormatter {
 
   @override
   TextEditingValue formatEditUpdate(
-      TextEditingValue oldValue, TextEditingValue newValue) {
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
     try {
       if (newValue.text.isEmpty) {
         return newValue;
       }
       int value = int.parse(newValue.text);
-      if (value < minRange)
+      if (value < minRange) {
         return TextEditingValue(text: minRange.toString());
-      else if (value > maxRange)
+      } else if (value > maxRange) {
         return TextEditingValue(text: maxRange.toString());
+      }
       return newValue;
     } catch (e) {
-      debugPrint(e.toString());
+      developer.log(e.toString());
       return newValue;
     }
   }

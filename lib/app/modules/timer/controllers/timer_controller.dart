@@ -6,21 +6,26 @@ import 'package:ultimate_alarm_clock/app/data/models/timer_model.dart';
 import 'package:ultimate_alarm_clock/app/data/providers/isar_provider.dart';
 import 'package:ultimate_alarm_clock/app/utils/utils.dart';
 
-
 class LimitRange extends TextInputFormatter {
   LimitRange(this.minRange, this.maxRange) : assert(minRange < maxRange);
   final int minRange;
   final int maxRange;
 
   @override
-  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
     try {
       if (newValue.text.isEmpty) {
         return newValue;
       }
       int value = int.parse(newValue.text);
-      if (value < minRange) return TextEditingValue(text: minRange.toString());
-      else if (value > maxRange) return TextEditingValue(text: maxRange.toString());
+      if (value < minRange) {
+        return TextEditingValue(text: minRange.toString());
+      } else if (value > maxRange) {
+        return TextEditingValue(text: maxRange.toString());
+      }
       return newValue;
     } catch (e) {
       debugPrint(e.toString());
@@ -38,23 +43,22 @@ class TimerController extends FullLifeCycleController with FullLifeCycleMixin {
   RxBool isbottom = false.obs;
   Stream? isarTimers;
   ScrollController scrollController = ScrollController();
-  RxList timers = [].obs;
-  RxList isRinging = [].obs;
-  
-  
-  final TextEditingController inputHoursControllerTimer = TextEditingController(text: '0');
-  final TextEditingController inputMinutesControllerTimer = TextEditingController(text: '1');
-  final TextEditingController inputSecondsControllerTimer = TextEditingController(text: '0');
-  
-  
+  RxList<TimerModel> timers = <TimerModel>[].obs;
+  RxList<int> isRinging = <int>[].obs;
+
+  final TextEditingController inputHoursControllerTimer =
+      TextEditingController(text: '0');
+  final TextEditingController inputMinutesControllerTimer =
+      TextEditingController(text: '1');
+  final TextEditingController inputSecondsControllerTimer =
+      TextEditingController(text: '0');
+
   final isTimePickerTimer = false.obs;
-  
-  
+
   void changeTimePickerTimer() {
     isTimePickerTimer.value = !isTimePickerTimer.value;
   }
-  
-  
+
   void setTimerTime() {
     try {
       int hours = int.parse(inputHoursControllerTimer.text);
@@ -68,7 +72,6 @@ class TimerController extends FullLifeCycleController with FullLifeCycleMixin {
     }
   }
 
-  
   void setTextFieldTimerTime() {
     inputHoursControllerTimer.text = hours.value.toString();
     inputMinutesControllerTimer.text = minutes.value.toString();
@@ -81,7 +84,7 @@ class TimerController extends FullLifeCycleController with FullLifeCycleMixin {
   }
 
   updateTimerInfo() async {
-    timerList.value = await IsarDb.getAllTimers();
+    timerList.assignAll(await IsarDb.getAllTimers());
   }
 
   late int currentTimerIsarId;
@@ -89,7 +92,7 @@ class TimerController extends FullLifeCycleController with FullLifeCycleMixin {
 
   String strDigits(int n) => n.toString().padLeft(2, '0');
 
-  final RxList timerList = [].obs;
+  final RxList<TimerModel> timerList = <TimerModel>[].obs;
 
   @override
   Future<void> onInit() async {
@@ -111,42 +114,41 @@ class TimerController extends FullLifeCycleController with FullLifeCycleMixin {
   Future<void> onClose() async {
     // Remove the observer
     WidgetsBinding.instance.removeObserver(this);
-    
+
     // Dispose of the scroll controller
     scrollController.dispose();
-    
-    
+
     // Dispose of text controllers
     inputHoursControllerTimer.dispose();
     inputMinutesControllerTimer.dispose();
     inputSecondsControllerTimer.dispose();
-    
+
     super.onClose();
-    
+
     debugPrint('🧹 TimerController disposed - all resources cleaned up');
   }
 
   void startRinger(int id) async {
     try {
-      isRinging.value.add(id);
-      print(isRinging.value);
-      if (isRinging.value.length == 1) {
+      isRinging.add(id);
+      debugPrint('Ringing timers: $isRinging');
+      if (isRinging.length == 1) {
         await timerChannel.invokeMethod('playDefaultAlarm');
       }
     } on PlatformException catch (e) {
-      print('Failed to schedule alarm: ${e.message}');
+      debugPrint('Failed to schedule alarm: ${e.message}');
     }
   }
 
   void stopRinger(int id) async {
     try {
-      isRinging.value.remove(id);
-      print(isRinging.value);
-      if (isRinging.value.length == 0) {
+      isRinging.remove(id);
+      debugPrint('Ringing timers: $isRinging');
+      if (isRinging.isEmpty) {
         await timerChannel.invokeMethod('stopDefaultAlarm');
       }
     } on PlatformException catch (e) {
-      print('Failed to schedule alarm: ${e.message}');
+      debugPrint('Failed to schedule alarm: ${e.message}');
     }
   }
 
@@ -185,7 +187,7 @@ class TimerController extends FullLifeCycleController with FullLifeCycleMixin {
       await timerChannel.invokeMethod('runtimerNotif');
       Get.back();
     } on PlatformException catch (e) {
-      print('Failed to schedule alarm: ${e.message}');
+      debugPrint('Failed to schedule alarm: ${e.message}');
       Get.back();
     }
   }
@@ -202,12 +204,13 @@ class TimerController extends FullLifeCycleController with FullLifeCycleMixin {
       await timerChannel.invokeMethod('clearTimerNotif');
       Get.back();
     } on PlatformException catch (e) {
-      print('Failed to schedule alarm: ${e.message}');
+      debugPrint('Failed to schedule alarm: ${e.message}');
       Get.back();
     }
   }
+
   Future<void> setPresetTimer(Duration presetDuration) async {
-  remainingTime.value = presetDuration;
-  await createTimer();
-}
+    remainingTime.value = presetDuration;
+    await createTimer();
+  }
 }

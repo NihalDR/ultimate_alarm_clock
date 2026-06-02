@@ -10,11 +10,10 @@ import 'package:ultimate_alarm_clock/app/utils/utils.dart';
 
 import '../controllers/alarm_challenge_controller.dart';
 
-// ignore: must_be_immutable
 class AlarmChallengeView extends GetView<AlarmChallengeController> {
-  AlarmChallengeView({Key? key}) : super(key: key);
+  AlarmChallengeView({super.key});
 
-  ThemeController themeController = Get.find<ThemeController>();
+  final ThemeController themeController = Get.find<ThemeController>();
 
   @override
   Widget build(BuildContext context) {
@@ -76,7 +75,8 @@ class AlarmChallengeView extends GetView<AlarmChallengeController> {
                                     borderRadius: const BorderRadius.all(
                                       Radius.circular(18),
                                     ),
-                                    color: themeController.secondaryBackgroundColor.value,
+                                    color: themeController
+                                        .secondaryBackgroundColor.value,
                                   ),
                                   child: Row(
                                     mainAxisAlignment:
@@ -84,7 +84,9 @@ class AlarmChallengeView extends GetView<AlarmChallengeController> {
                                     children: [
                                       Icon(
                                         Icons.vibration,
-                                        color: themeController.primaryTextColor.value.withOpacity(0.8),
+                                        color: themeController
+                                            .primaryTextColor.value
+                                            .withOpacity(0.8),
                                         size: 28,
                                       ),
                                       Text(
@@ -93,7 +95,8 @@ class AlarmChallengeView extends GetView<AlarmChallengeController> {
                                             .textTheme
                                             .bodyLarge!
                                             .copyWith(
-                                              color: themeController.primaryTextColor.value,
+                                              color: themeController
+                                                  .primaryTextColor.value,
                                             ),
                                       ),
                                       Obx(
@@ -102,8 +105,9 @@ class AlarmChallengeView extends GetView<AlarmChallengeController> {
                                                   Status.completed
                                               ? Icons.done
                                               : Icons.arrow_forward_ios_sharp,
-                                          color: themeController.primaryTextColor.value
-                                                  .withOpacity(0.3),
+                                          color: themeController
+                                              .primaryTextColor.value
+                                              .withOpacity(0.3),
                                         ),
                                       ),
                                     ],
@@ -135,7 +139,8 @@ class AlarmChallengeView extends GetView<AlarmChallengeController> {
                                     borderRadius: const BorderRadius.all(
                                       Radius.circular(18),
                                     ),
-                                    color: themeController.secondaryBackgroundColor.value,
+                                    color: themeController
+                                        .secondaryBackgroundColor.value,
                                   ),
                                   child: Row(
                                     mainAxisAlignment:
@@ -143,7 +148,9 @@ class AlarmChallengeView extends GetView<AlarmChallengeController> {
                                     children: [
                                       Icon(
                                         Icons.calculate_sharp,
-                                        color: themeController.primaryTextColor.value.withOpacity(0.8),
+                                        color: themeController
+                                            .primaryTextColor.value
+                                            .withOpacity(0.8),
                                         size: 28,
                                       ),
                                       Text(
@@ -152,7 +159,8 @@ class AlarmChallengeView extends GetView<AlarmChallengeController> {
                                             .textTheme
                                             .bodyLarge!
                                             .copyWith(
-                                              color: themeController.primaryTextColor.value,
+                                              color: themeController
+                                                  .primaryTextColor.value,
                                             ),
                                       ),
                                       Obx(
@@ -161,7 +169,8 @@ class AlarmChallengeView extends GetView<AlarmChallengeController> {
                                                   Status.completed
                                               ? Icons.done
                                               : Icons.arrow_forward_ios_sharp,
-                                          color: themeController.primaryTextColor.value
+                                          color: themeController
+                                              .primaryTextColor.value
                                               .withOpacity(0.3),
                                         ),
                                       ),
@@ -185,14 +194,15 @@ class AlarmChallengeView extends GetView<AlarmChallengeController> {
                                 }
                               },
                               child: Obx(
-                                 () => Container(
+                                () => Container(
                                   width: width * 0.91,
                                   height: height * 0.1,
                                   decoration: BoxDecoration(
                                     borderRadius: const BorderRadius.all(
                                       Radius.circular(18),
                                     ),
-                                    color: themeController.secondaryBackgroundColor.value,
+                                    color: themeController
+                                        .secondaryBackgroundColor.value,
                                   ),
                                   child: Row(
                                     mainAxisAlignment:
@@ -200,7 +210,9 @@ class AlarmChallengeView extends GetView<AlarmChallengeController> {
                                     children: [
                                       Icon(
                                         Icons.qr_code_scanner,
-                                        color: themeController.primaryTextColor.value.withOpacity(0.8),
+                                        color: themeController
+                                            .primaryTextColor.value
+                                            .withOpacity(0.8),
                                         size: 28,
                                       ),
                                       Text(
@@ -209,7 +221,8 @@ class AlarmChallengeView extends GetView<AlarmChallengeController> {
                                             .textTheme
                                             .bodyLarge!
                                             .copyWith(
-                                              color: themeController.primaryTextColor.value,
+                                              color: themeController
+                                                  .primaryTextColor.value,
                                             ),
                                       ),
                                       Obx(
@@ -218,7 +231,8 @@ class AlarmChallengeView extends GetView<AlarmChallengeController> {
                                                   Status.completed
                                               ? Icons.done
                                               : Icons.arrow_forward_ios_sharp,
-                                          color: themeController.primaryTextColor.value
+                                          color: themeController
+                                              .primaryTextColor.value
                                               .withOpacity(0.3),
                                         ),
                                       ),
@@ -253,7 +267,8 @@ class AlarmChallengeView extends GetView<AlarmChallengeController> {
                                     borderRadius: const BorderRadius.all(
                                       Radius.circular(18),
                                     ),
-                                    color: themeController.secondaryBackgroundColor.value,
+                                    color: themeController
+                                        .secondaryBackgroundColor.value,
                                   ),
                                   child: Row(
                                     mainAxisAlignment:
@@ -261,7 +276,9 @@ class AlarmChallengeView extends GetView<AlarmChallengeController> {
                                     children: [
                                       Icon(
                                         Icons.directions_walk,
-                                        color: themeController.primaryTextColor.value.withOpacity(0.8),
+                                        color: themeController
+                                            .primaryTextColor.value
+                                            .withOpacity(0.8),
                                         size: 28,
                                       ),
                                       Text(
@@ -270,7 +287,8 @@ class AlarmChallengeView extends GetView<AlarmChallengeController> {
                                             .textTheme
                                             .bodyLarge!
                                             .copyWith(
-                                              color: themeController.primaryTextColor.value,
+                                              color: themeController
+                                                  .primaryTextColor.value,
                                             ),
                                       ),
                                       Obx(
@@ -279,7 +297,8 @@ class AlarmChallengeView extends GetView<AlarmChallengeController> {
                                                   Status.completed
                                               ? Icons.done
                                               : Icons.arrow_forward_ios_sharp,
-                                          color: themeController.primaryTextColor.value
+                                          color: themeController
+                                              .primaryTextColor.value
                                               .withOpacity(0.3),
                                         ),
                                       ),

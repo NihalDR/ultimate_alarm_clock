@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:numberpicker/numberpicker.dart';
-import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/controllers/add_or_update_alarm_controller.dart';
-import 'package:ultimate_alarm_clock/app/modules/settings/controllers/theme_controller.dart';
-import 'package:ultimate_alarm_clock/app/utils/constants.dart';
-import 'package:ultimate_alarm_clock/app/utils/utils.dart';
+import '../controllers/add_or_update_alarm_controller.dart';
+import '../../settings/controllers/theme_controller.dart';
+import '../../../utils/constants.dart';
+import '../../../utils/utils.dart';
 
 class ShakeToDismiss extends StatelessWidget {
   const ShakeToDismiss({
@@ -27,14 +27,20 @@ class ShakeToDismiss extends StatelessWidget {
           // storing initial state
           shakeTimes = controller.shakeTimes.value;
           isShakeEnabled = controller.isShakeEnabled.value;
-          
-          _showShakeSettingsBottomSheet(context, shakeTimes, isShakeEnabled);
+
+          _showShakeSettingsBottomSheet(
+            context,
+            shakeTimes,
+            isShakeEnabled,
+          );
         },
         child: ListTile(
           leading: Icon(
-            controller.isShakeEnabled.value ? Icons.vibration : Icons.vibration_outlined,
-            color: controller.isShakeEnabled.value 
-                ? kprimaryColor 
+            controller.isShakeEnabled.value
+                ? Icons.vibration
+                : Icons.vibration_outlined,
+            color: controller.isShakeEnabled.value
+                ? kprimaryColor
                 : themeController.primaryDisabledTextColor.value,
           ),
           title: Text(
@@ -62,7 +68,11 @@ class ShakeToDismiss extends StatelessWidget {
     );
   }
 
-  void _showShakeSettingsBottomSheet(BuildContext context, int initialShakeTimes, bool initialIsShakeEnabled) {
+  void _showShakeSettingsBottomSheet(
+    BuildContext context,
+    int initialShakeTimes,
+    bool initialIsShakeEnabled,
+  ) {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -97,17 +107,18 @@ class ShakeToDismiss extends StatelessWidget {
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: themeController.primaryDisabledTextColor.value.withOpacity(0.3),
+                      color: themeController.primaryDisabledTextColor.value
+                          .withOpacity(0.3),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
-                  
+
                   // Header
                   Padding(
                     padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
                     child: Row(
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.vibration,
                           color: kprimaryColor,
                           size: 28,
@@ -116,16 +127,19 @@ class ShakeToDismiss extends StatelessWidget {
                         Expanded(
                           child: Text(
                             'Shake to Dismiss'.tr,
-                            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                              color: themeController.primaryTextColor.value,
-                              fontWeight: FontWeight.w600,
-                            ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .headlineSmall
+                                ?.copyWith(
+                                  color: themeController.primaryTextColor.value,
+                                  fontWeight: FontWeight.w600,
+                                ),
                           ),
                         ),
                       ],
                     ),
                   ),
-                  
+
                   // Content
                   Expanded(
                     child: SingleChildScrollView(
@@ -137,77 +151,93 @@ class ShakeToDismiss extends StatelessWidget {
                           _buildSection(
                             title: 'Enable Shake Dismissal'.tr,
                             subtitle: 'Require shaking to dismiss alarm'.tr,
-                            child: Obx(() => Switch.adaptive(
-                              value: controller.isShakeEnabled.value,
-                              onChanged: (value) {
-                                Utils.hapticFeedback();
-                                controller.isShakeEnabled.value = value;
-                                if (!value) {
-                                  controller.shakeTimes.value = 0;
-                                } else if (controller.shakeTimes.value == 0) {
-                                  controller.shakeTimes.value = 5;
-                                }
-                              },
-                              activeColor: kprimaryColor,
-                            )),
+                            child: Obx(
+                              () => Switch.adaptive(
+                                value: controller.isShakeEnabled.value,
+                                onChanged: (value) {
+                                  Utils.hapticFeedback();
+                                  controller.isShakeEnabled.value = value;
+                                  if (!value) {
+                                    controller.shakeTimes.value = 0;
+                                  } else if (controller.shakeTimes.value == 0) {
+                                    controller.shakeTimes.value = 5;
+                                  }
+                                },
+                                activeColor: kprimaryColor,
+                              ),
+                            ),
                           ),
-                          
+
                           const SizedBox(height: 20),
-                          
+
                           // Shake Count (when enabled)
-                          Obx(() => controller.isShakeEnabled.value
-                              ? _buildSection(
-                                  title: 'Number of Shakes'.tr,
-                                  subtitle: 'How many shakes are required'.tr,
-                                  child: Column(
-                                    children: [
-                                      Obx(() => Text(
-                                        controller.shakeTimes.value.toString(),
-                                        style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                                          color: kprimaryColor,
-                                          fontWeight: FontWeight.w700,
+                          Obx(
+                            () => controller.isShakeEnabled.value
+                                ? _buildSection(
+                                    title: 'Number of Shakes'.tr,
+                                    subtitle: 'How many shakes are required'.tr,
+                                    child: Column(
+                                      children: [
+                                        Obx(
+                                          () => Text(
+                                            controller.shakeTimes.value
+                                                .toString(),
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .displaySmall
+                                                ?.copyWith(
+                                                  color: kprimaryColor,
+                                                  fontWeight: FontWeight.w700,
+                                                ),
+                                          ),
                                         ),
-                                      )),
-                                      const SizedBox(height: 16),
-                                      NumberPicker(
-                                        value: controller.shakeTimes.value,
-                                        minValue: 1,
-                                        maxValue: 50,
-                                        onChanged: (value) {
-                                          Utils.hapticFeedback();
-                                          controller.shakeTimes.value = value;
-                                        },
-                                        itemWidth: Utils
-                                            .getResponsiveNumberPickerItemWidth(
-                                          context,
-                                          screenWidth: MediaQuery.of(context).size.width,
-                                          baseWidthFactor: 0.2,
+                                        const SizedBox(height: 16),
+                                        NumberPicker(
+                                          value: controller.shakeTimes.value,
+                                          minValue: 1,
+                                          maxValue: 50,
+                                          onChanged: (value) {
+                                            Utils.hapticFeedback();
+                                            controller.shakeTimes.value = value;
+                                          },
+                                          itemWidth: Utils
+                                              // ignore: lines_longer_than_80_chars
+                                              .getResponsiveNumberPickerItemWidth(
+                                            context,
+                                            screenWidth: MediaQuery.of(context)
+                                                .size
+                                                .width,
+                                            baseWidthFactor: 0.2,
+                                          ),
+                                          textStyle: Utils
+                                              // ignore: lines_longer_than_80_chars
+                                              .getResponsiveNumberPickerTextStyle(
+                                            context,
+                                            baseFontSize: 16,
+                                            color: themeController
+                                                .primaryDisabledTextColor.value,
+                                          ),
+                                          selectedTextStyle: Utils
+                                              // ignore: lines_longer_than_80_chars
+                                              .getResponsiveNumberPickerSelectedTextStyle(
+                                            context,
+                                            baseFontSize: 20,
+                                            color: kprimaryColor,
+                                            fontWeight: FontWeight.w600,
+                                          ),
                                         ),
-                                        textStyle: Utils
-                                            .getResponsiveNumberPickerTextStyle(
-                                          context,
-                                          baseFontSize: 16,
-                                          color: themeController.primaryDisabledTextColor.value,
-                                        ),
-                                        selectedTextStyle: Utils
-                                            .getResponsiveNumberPickerSelectedTextStyle(
-                                          context,
-                                          baseFontSize: 20,
-                                          color: kprimaryColor,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                )
-                              : Container()),
-                          
+                                      ],
+                                    ),
+                                  )
+                                : const SizedBox.shrink(),
+                          ),
+
                           const SizedBox(height: 32),
                         ],
                       ),
                     ),
                   ),
-                  
+
                   // Action buttons
                   Container(
                     padding: const EdgeInsets.all(20),
@@ -215,7 +245,8 @@ class ShakeToDismiss extends StatelessWidget {
                       color: themeController.secondaryBackgroundColor.value,
                       border: Border(
                         top: BorderSide(
-                          color: themeController.primaryDisabledTextColor.value.withOpacity(0.1),
+                          color: themeController.primaryDisabledTextColor.value
+                              .withOpacity(0.1),
                         ),
                       ),
                     ),
@@ -227,7 +258,8 @@ class ShakeToDismiss extends StatelessWidget {
                               Utils.hapticFeedback();
                               // Reset to initial values
                               controller.shakeTimes.value = initialShakeTimes;
-                              controller.isShakeEnabled.value = initialIsShakeEnabled;
+                              controller.isShakeEnabled.value =
+                                  initialIsShakeEnabled;
                               Navigator.pop(context);
                             },
                             style: OutlinedButton.styleFrom(
@@ -236,15 +268,21 @@ class ShakeToDismiss extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               side: BorderSide(
-                                color: themeController.primaryDisabledTextColor.value.withOpacity(0.3),
+                                color: themeController
+                                    .primaryDisabledTextColor.value
+                                    .withOpacity(0.3),
                               ),
                             ),
                             child: Text(
                               'Cancel'.tr,
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                color: themeController.primaryTextColor.value,
-                                fontWeight: FontWeight.w600,
-                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium
+                                  ?.copyWith(
+                                    color:
+                                        themeController.primaryTextColor.value,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                             ),
                           ),
                         ),
@@ -266,10 +304,13 @@ class ShakeToDismiss extends StatelessWidget {
                             ),
                             child: Text(
                               'Done'.tr,
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium
+                                  ?.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                             ),
                           ),
                         ),
@@ -296,7 +337,8 @@ class ShakeToDismiss extends StatelessWidget {
         color: themeController.primaryBackgroundColor.value,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: themeController.primaryDisabledTextColor.value.withOpacity(0.1),
+          color:
+              themeController.primaryDisabledTextColor.value.withOpacity(0.1),
         ),
       ),
       child: Column(
@@ -334,5 +376,4 @@ class ShakeToDismiss extends StatelessWidget {
       ),
     );
   }
-
 }

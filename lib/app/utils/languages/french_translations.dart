@@ -22,17 +22,25 @@ class FrenchTranslations extends Translations {
           'Why do I have to sign in with Google?':
               'Pourquoi dois-je me connecter avec Google ?',
           'Sign-inDescription':
-              'La connexion est facultative. Elle est uniquement nécessaire pour les fonctionnalités qui utilisent des services cloud, tels que :',
+              'La connexion est facultative. Elle est uniquement nécessaire '
+                  'pour les fonctionnalités qui utilisent des services cloud, '
+                  'tels que :',
           'CollabDescription':
-              'Collaborez avec des amis, des membres de la famille ou des collègues pour vous assurer qu\'ils se réveillent à temps à l\'aide d\'alarmes partagées.',
+              'Collaborez avec des amis, des membres de la famille ou des '
+                  'collègues pour vous assurer qu\'ils se réveillent à temps à '
+                  'l\'aide d\'alarmes partagées.',
           'Syncing Across Devices': 'Synchronisation entre les appareils',
           'AccessMultiple':
-              'Accédez à vos alarmes sur plusieurs appareils où les alarmes sont mises à jour en temps réel.',
+              'Accédez à vos alarmes sur plusieurs appareils où les alarmes '
+                  'sont mises à jour en temps réel.',
           'Your privacy': 'Votre vie privée',
           'NoAccessInfo':
-              'Nous n\'accédons pas, n\'utilisons pas et ne vendons aucune information, ce que vous pouvez vérifier en inspectant le code source.',
+              'Nous n\'accédons pas, n\'utilisons pas et ne vendons aucune '
+                  'information, ce que vous pouvez vérifier en inspectant le '
+                  'code source.',
           'LimitedAccess':
-              'Tout accès est limité exclusivement à la fourniture des fonctionnalités décrites ci-dessus.',
+              'Tout accès est limité exclusivement à la fourniture des '
+                  'fonctionnalités décrites ci-dessus.',
           'Enable Light Mode': 'Activer le mode clair',
           'Change Language': 'Changer de langue',
           'English': 'Anglais',
@@ -55,8 +63,9 @@ class FrenchTranslations extends Translations {
           'Yes': 'Oui',
           'No': 'Non',
           'Confirmation': 'Confirmation',
-          'want to delete?': 'Êtes-vous sûr de vouloir supprimer cette alarme ?',
-          'delete' : 'supprimer',
+          'want to delete?':
+              'Êtes-vous sûr de vouloir supprimer cette alarme ?',
+          'delete': 'supprimer',
           'You cannot join your own alarm!':
               'Vous ne pouvez pas rejoindre votre propre réveil !',
           'An alarm with this ID doesn\'t exist!':
@@ -80,13 +89,19 @@ class FrenchTranslations extends Translations {
               'Cette action supprimera définitivement ces alarmes de votre appareil.',
 
           //about_view.dart texts
-          'This project was originally developed as part of Google Summer of code under the CCExtractor organization. It\'s free, the source code is available, and we encourage programmers to contribute':
-              'Ce projet a été initialement développé dans le cadre du Google Summer of Code sous l\'organisation CCExtractor. Il est gratuit, le code source est disponible et nous encourageons les programmeurs à contribuer.',
+          'This project was originally developed as part of Google Summer of '
+                  'code under the CCExtractor organization. It\'s free, the source '
+                  'code is available, and we encourage programmers to contribute':
+              'Ce projet a été initialement développé dans le cadre du '
+                  'Google Summer of Code sous l\'organisation CCExtractor. Il est '
+                  'gratuit, le code source est disponible et nous encourageons '
+                  'les programmeurs à contribuer.',
           'Could not launch': 'Impossible de lancer',
 //add_or_update_alarm_view.dart
           'Discard Changes?': 'Ignorer les modifications ?',
           'unsavedChanges':
-              'Vous avez des modifications non enregistrées. Êtes-vous sûr de vouloir quitter cette page ?',
+              'Vous avez des modifications non enregistrées. Êtes-vous sûr '
+                  'de vouloir quitter cette page ?',
           'Cancel': 'Annuler',
           'Leave': 'Quitter',
           'Save': 'Enregistrer',
@@ -144,7 +159,8 @@ class FrenchTranslations extends Translations {
           'Hard': 'Difficile',
 
           'mathDescription':
-              'Vous devrez résoudre des problèmes mathématiques simples du niveau de difficulté choisi pour désactiver l\'alarme.',
+              'Vous devrez résoudre des problèmes mathématiques simples du '
+                  'niveau de difficulté choisi pour désactiver l\'alarme.',
           'Solve Maths questions': 'Résoudre des questions de mathématiques',
           'questions': 'questions',
           'question': 'question',
@@ -154,21 +170,29 @@ class FrenchTranslations extends Translations {
           'step': 'étape',
           'steps': 'pas',
           'pedometerDescription':
-              'Avancez pour rejeter! Fixez un objectif en nombre de pas pour éteindre votre alarme, favorisant un début de journée actif et plein d\'énergie.',
+              'Avancez pour rejeter! Fixez un objectif en nombre de pas pour '
+                  'éteindre votre alarme, favorisant un début de journée actif et '
+                  'plein d\'énergie.',
 
 //note.dart
           'Add a note': 'Ajouter une note',
 // qr_bar_code_tile.dart
           'QR/Bar Code': 'QR/Code-barres',
           'qrDescription':
-              'Scannez le QR/Code-barres sur n\'importe quel objet, comme un livre, et déplacez-le dans une pièce différente. Pour désactiver l\'alarme, scannez à nouveau le même QR/Code-barres.',
+              'Scannez le QR/Code-barres sur n\'importe quel objet, comme un '
+                  'livre, et déplacez-le dans une pièce différente. Pour '
+                  'désactiver l\'alarme, scannez à nouveau le même QR/Code-barres.',
 //repeat_once_tile.dart
           'Repeat only once': 'Répéter une seule fois',
 //repeat_tile.dart
           'Repeat': 'Répéter',
           'Days of the week': 'Jours de la semaine',
-          'Monday': 'Lundi', 'Tuesday': 'Mardi', 'Wednesday': 'Mercredi',
-          'Thursday': 'Jeudi', 'Friday': 'Vendredi', 'Saturday': 'Samedi',
+          'Monday': 'Lundi',
+          'Tuesday': 'Mardi',
+          'Wednesday': 'Mercredi',
+          'Thursday': 'Jeudi',
+          'Friday': 'Vendredi',
+          'Saturday': 'Samedi',
           'Sunday': 'Dimanche',
 //screen_activity_tile.dart
           'Timeout Duration': 'Durée d\'expiration',
@@ -176,22 +200,26 @@ class FrenchTranslations extends Translations {
           'Screen activity based cancellation':
               'Annulation basée sur l\'activité de l\'écran',
           'screenDescription':
-              "Cette fonction annulera automatiquement l'alarme si vous utilisez votre appareil pendant un certain nombre de minutes.",
+              'Cette fonction annulera automatiquement l\'alarme si vous '
+                  'utilisez votre appareil pendant un certain nombre de minutes.',
 //shake_to_dismiss_tile.dart
           'Shake to dismiss': 'Secouez pour rejeter',
           'shakeDescription':
-              'Vous devrez secouer votre téléphone un certain nombre de fois pour rejeter l\'alarme - fini la procrastination :)',
+              'Vous devrez secouer votre téléphone un certain nombre de fois '
+                  'pour rejeter l\'alarme - fini la procrastination :)',
           'Number of shakes': 'Nombre de secousses',
           'times': 'fois',
           'time': 'fois',
 //'shared_alarm_tile.dart
-          'Shared Alarm': 'Alarme partagée',
           'Shared alarms': 'Alarmes partagées',
           'sharedDescription':
-              'Partagez des alarmes avec d\'autres en utilisant l\'ID de l\'alarme. Chaque utilisateur partagé peut choisir de faire sonner son alarme avant ou après l\'heure définie.',
+              'Partagez des alarmes avec d\'autres en utilisant l\'ID de '
+                  'l\'alarme. Chaque utilisateur partagé peut choisir de faire '
+                  'sonner son alarme avant ou après l\'heure définie.',
           'Understood': 'Compris',
           'To use this feature, you have to link your Google account!':
-              'Pour utiliser cette fonctionnalité, vous devez lier votre compte Google !',
+              'Pour utiliser cette fonctionnalité, vous devez lier votre '
+                  'compte Google !',
           'Go to settings': 'Aller aux paramètres',
           'Enable Shared Alarm': 'Activer l\'alarme partagée',
 //shared_users_tile.dart
@@ -212,7 +240,9 @@ class FrenchTranslations extends Translations {
           'Weather Condition': 'Conditions météorologiques',
           'Weather based cancellation': 'Annulation basée sur la météo',
           'weatherDescription':
-              'Cette fonction annulera automatiquement l\'alarme si la météo actuelle correspond à vos conditions météorologiques choisies, vous permettant de mieux dormir !',
+              'Cette fonction annulera automatiquement l\'alarme si la météo '
+                  'actuelle correspond à vos conditions météorologiques choisies, '
+                  'vous permettant de mieux dormir !',
           'To use this feature, you have to add an OpenWeatherMap API key!':
               'Pour utiliser cette fonction, vous devez ajouter une clé API OpenWeatherMap !',
 //alarm_challenge_view.dart
@@ -239,8 +269,13 @@ class FrenchTranslations extends Translations {
           'Everyday': 'Tous les jours',
           'Weekdays': 'Jours de la semaine',
           'Weekends': 'Week-ends',
-          'Mon': 'Lun', 'Tue': 'Mar', 'Wed': 'Mer', 'Thur': 'Jeu',
-          'Fri': 'Ven', 'Sat': 'Sam', 'Sun': 'Dim',
+          'Mon': 'Lun',
+          'Tue': 'Mar',
+          'Wed': 'Mer',
+          'Thur': 'Jeu',
+          'Fri': 'Ven',
+          'Sat': 'Sam',
+          'Sun': 'Dim',
           //OpenWeatherMap
           'onenweathermap_title1.1': 'Étapes pour obtenir ',
           'onenweathermap_title1.2': 'OpenWeatherMap API',
@@ -249,18 +284,25 @@ class FrenchTranslations extends Translations {
           'step1.3': ', cliquez sur le bouton ',
           'step1.4': 'SignIn',
           'step1.5':
-              ' (le coin supérieur droit) puis il demande les informations de connexion.',
+              ' (le coin supérieur droit) puis il demande les informations '
+                  'de connexion.',
           'step2.1':
-              "Si vous avez déjà un compte, entrez vos identifiants. Sinon, cliquez sur l'option ",
+              'Si vous avez déjà un compte, entrez vos identifiants. Sinon, '
+                  'cliquez sur l\'option ',
           'step2.2': 'Create an Account',
           'step2.3':
-              ". Il vous demande de saisir votre nom d'utilisateur, votre e-mail et votre mot de passe. Assurez-vous que les détails sont corrects.",
-          'step3':
-              "Une fois votre compte prêt, vous êtes automatiquement dirigé vers la page OpenWeather. Il vous pose des questions sur votre entreprise et le but de l'utilisation de la plateforme, remplissez ces informations en conséquence.",
+              '. Il vous demande de saisir votre nom d\'utilisateur, votre '
+                  'e-mail et votre mot de passe. Assurez-vous que les détails '
+                  'sont corrects.',
+          'step3': 'Une fois votre compte prêt, vous êtes automatiquement dirigé '
+              'vers la page OpenWeather. Il vous pose des questions sur '
+              'votre entreprise et le but de l\'utilisation de la plateforme, '
+              'remplissez ces informations en conséquence.',
           'step4.1': 'Cliquez sur votre ',
           'step4.2': 'Username',
           'step4.3':
-              "(le coin supérieur droit). Un menu déroulant apparaît. cliquez sur l'option ",
+              '(le coin supérieur droit). Un menu déroulant apparaît. cliquez '
+                  'sur l\'option ',
           'step4.4': 'My API',
           'step4.5': '.',
           'step5':
@@ -279,7 +321,7 @@ class FrenchTranslations extends Translations {
           'My Location': 'Ma position',
           'Remove Clock': 'Supprimer l\'horloge',
           'Alarm deleted': 'Alarme supprimée',
-          'The alarm has been deleted': "L'alarme a été supprimée",
+          'The alarm has been deleted': 'L\'alarme a été supprimée',
           'Undo': 'annuler',
         },
       };

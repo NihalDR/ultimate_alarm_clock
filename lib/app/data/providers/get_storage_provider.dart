@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -14,8 +15,8 @@ class GetStorageProvider {
   }
 
   Future<String> readCurrentLanguage() async {
-    print(_getStorage.read('currentLanguageKey'));
-    String? language = await _getStorage.read(('currentLanguageKey'));
+    debugPrint(_getStorage.read('currentLanguageKey').toString());
+    String? language = _getStorage.read<String>('currentLanguageKey');
     if (language == null) {
       language = Get.locale.toString();
       writeCurrentLanguage(language);
@@ -50,7 +51,7 @@ class GetStorageProvider {
   }
 
   Future<String> readProfile() async {
-    String profile = await _getStorage.read('profile') ?? 'Default';
+    String profile = _getStorage.read<String>('profile') ?? 'Default';
     return profile;
   }
 

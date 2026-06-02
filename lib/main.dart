@@ -20,7 +20,7 @@ Locale? loc;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   tzdata.initializeTimeZones();
-  
+
   try {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
@@ -28,13 +28,13 @@ void main() async {
   } catch (e) {
     debugPrint('❌ Firebase initialization failed: $e');
   }
-  
+
   try {
     await PushNotifications().initFirebaseMessaging();
   } catch (e) {
     debugPrint('❌ Push notifications initialization failed: $e');
   }
-  
+
   try {
     await Permission.notification.isDenied.then((value) {
       if (value) {
@@ -44,7 +44,6 @@ void main() async {
   } catch (e) {
     debugPrint('❌ Permission request failed: $e');
   }
-
 
   await Get.putAsync(() => GetStorageProvider().init());
 
@@ -90,9 +89,12 @@ Future<void> _checkPendingSharedAlarms() async {
   try {
     final pendingCount = await PushNotifications.getPendingSharedAlarmCount();
     if (pendingCount > 0) {
-      SharedAlarmLogger.log('PENDING_ALARMS_ON_STARTUP', details: {
-        'count': pendingCount,
-      });
+      SharedAlarmLogger.log(
+        'PENDING_ALARMS_ON_STARTUP',
+        details: {
+          'count': pendingCount,
+        },
+      );
       // Wait for the splash screen to finish before navigating
       await Future.delayed(const Duration(seconds: 3));
       Get.toNamed('/notifications');
@@ -101,7 +103,6 @@ Future<void> _checkPendingSharedAlarms() async {
     debugPrint('❌ Error checking pending shared alarms on startup: $e');
   }
 }
-
 
 class UltimateAlarmClockApp extends StatelessWidget {
   const UltimateAlarmClockApp({super.key});
@@ -116,7 +117,7 @@ class UltimateAlarmClockApp extends StatelessWidget {
       getPages: AppPages.routes,
       translations: AppTranslations(),
       locale: loc,
-      fallbackLocale: Locale('en', 'US'),
+      fallbackLocale: const Locale('en', 'US'),
       builder: (BuildContext context, Widget? error) {
         ErrorWidget.builder = (FlutterErrorDetails? error) {
           return CustomErrorScreen(errorDetails: error!);

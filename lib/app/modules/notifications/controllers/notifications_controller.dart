@@ -1,13 +1,9 @@
 import 'dart:convert';
 
 import 'package:get/get.dart';
-import 'package:ultimate_alarm_clock/app/data/models/user_model.dart';
-import 'package:ultimate_alarm_clock/app/data/providers/secure_storage_provider.dart';
 import 'package:ultimate_alarm_clock/app/data/providers/isar_provider.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 
 import '../../../data/models/alarm_model.dart';
 import '../../../data/models/profile_model.dart';
@@ -28,7 +24,8 @@ class NotificationsController extends GetxController {
     debugPrint('🔔 NotificationsController onInit');
     debugPrint('   - User signed in: ${homeController.isUserSignedIn.value}');
     debugPrint(
-        '   - User model: ${homeController.userModel.value?.email ?? 'null'}');
+      '   - User model: ${homeController.userModel.value?.email ?? 'null'}',
+    );
 
     notifications = homeController.notifications;
     selectedProfile.value = homeController.selectedProfile.value;
@@ -53,14 +50,14 @@ class NotificationsController extends GetxController {
       for (final alarm in alarmList) {
         final a = AlarmModel.fromMap(alarm);
         a.profile = profile.profileName;
-        a.alarmID = Uuid().v4();
+        a.alarmID = const Uuid().v4();
         await IsarDb.addAlarm(a);
       }
     } else {
       await IsarDb.addProfile(profile);
       for (final alarm in alarmList) {
         final a = AlarmModel.fromMap(alarm);
-        a.alarmID = Uuid().v4();
+        a.alarmID = const Uuid().v4();
         await IsarDb.addAlarm(a);
       }
     }
@@ -69,8 +66,8 @@ class NotificationsController extends GetxController {
   // Function to import alarm settings that's shared
   Future importAlarm(String email, String alarmName) async {
     final alarmMap = await FirestoreDb.receiveAlarm(email, alarmName);
-    final alarm = await AlarmModel.fromMap(alarmMap);
-    alarm.alarmID = Uuid().v4();
+    final alarm = AlarmModel.fromMap(alarmMap);
+    alarm.alarmID = const Uuid().v4();
     alarm.profile = selectedProfile.value;
     await IsarDb.addAlarm(alarm);
   }
@@ -82,7 +79,7 @@ class NotificationsController extends GetxController {
       return;
     }
     final alarm = AlarmModel.fromMap(alarmMap);
-    alarm.alarmID = Uuid().v4();
+    alarm.alarmID = const Uuid().v4();
     alarm.profile = selectedProfile.value;
     await IsarDb.addAlarm(alarm);
   }
@@ -91,7 +88,7 @@ class NotificationsController extends GetxController {
     try {
       final alarmMap = await FirestoreDb.receiveAlarm(alarmOwnerId, alarmId);
       final alarm = AlarmModel.fromMap(alarmMap);
-      alarm.alarmID = Uuid().v4();
+      alarm.alarmID = const Uuid().v4();
       alarm.profile = selectedProfile.value;
 
       // Accept the shared alarm in Firestore
@@ -101,7 +98,9 @@ class NotificationsController extends GetxController {
       await scheduleAcceptedSharedAlarm(alarm);
 
       debugPrint(
-          '✅ Successfully accepted and scheduled shared alarm: ${alarm.alarmTime}');
+        '✅ Successfully accepted and scheduled shared alarm: '
+        '${alarm.alarmTime}',
+      );
     } catch (e) {
       debugPrint('❌ Error accepting shared alarm: $e');
       rethrow;
@@ -119,12 +118,16 @@ class NotificationsController extends GetxController {
 
       if (intervalToAlarm <= 0) {
         debugPrint(
-            '⏰ Accepted shared alarm time is in the past, not scheduling: ${alarm.alarmTime}');
+          '⏰ Accepted shared alarm time is in the past, not scheduling: '
+          '${alarm.alarmTime}',
+        );
         return;
       }
 
       debugPrint(
-          '📅 Scheduling accepted shared alarm: ${alarm.alarmTime} (${intervalToAlarm}ms from now)');
+        '📅 Scheduling accepted shared alarm: ${alarm.alarmTime} '
+        '(${intervalToAlarm}ms from now)',
+      );
 
       // Get the home controller to access the alarm channel
       final homeController = Get.find<HomeController>();
@@ -153,7 +156,8 @@ class NotificationsController extends GetxController {
       homeController.lastScheduledAlarmIsShared = true;
 
       debugPrint(
-          '✅ Successfully scheduled accepted shared alarm: ${alarm.alarmTime}');
+        '✅ Successfully scheduled accepted shared alarm: ${alarm.alarmTime}',
+      );
 
       SharedAlarmLogger.alarmScheduled(
         alarmId: alarm.alarmID,
@@ -208,7 +212,7 @@ class NotificationsController extends GetxController {
       }
 
       final alarm = AlarmModel.fromMap(alarmMap);
-      alarm.alarmID = Uuid().v4();
+      alarm.alarmID = const Uuid().v4();
       alarm.profile = selectedProfile.value;
 
       await FirestoreDb.acceptSharedAlarm(
@@ -219,7 +223,9 @@ class NotificationsController extends GetxController {
       await scheduleAcceptedSharedAlarm(alarm);
 
       debugPrint(
-          '✅ Successfully accepted and scheduled shared alarm: ${alarm.alarmTime}');
+        '✅ Successfully accepted and scheduled shared alarm: '
+        '${alarm.alarmTime}',
+      );
     } catch (e) {
       debugPrint('❌ Error accepting shared alarm: $e');
       rethrow;
@@ -272,8 +278,10 @@ class NotificationsController extends GetxController {
           return alarmMap;
         }
       } catch (e) {
-        SharedAlarmLogger.log('ALARM_DATA_JSON_PARSE_FAILED',
-            error: e.toString());
+        SharedAlarmLogger.log(
+          'ALARM_DATA_JSON_PARSE_FAILED',
+          error: e.toString(),
+        );
       }
     }
 

@@ -6,8 +6,10 @@ import 'package:ultimate_alarm_clock/app/modules/settings/controllers/theme_cont
 import 'package:ultimate_alarm_clock/app/utils/utils.dart';
 
 class AboutView extends GetView<AboutController> {
+  AboutView({super.key});
+
   final AboutController aboutController = Get.find<AboutController>();
-  ThemeController themeController = Get.find<ThemeController>();
+  final ThemeController themeController = Get.find<ThemeController>();
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +53,7 @@ class AboutView extends GetView<AboutController> {
             const SizedBox(height: 10),
             Text(
               'Ultimate Alarm Clock'.tr,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
@@ -59,7 +61,7 @@ class AboutView extends GetView<AboutController> {
             const SizedBox(height: 10),
             Text(
               'Version: 0.2.1'.tr,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
@@ -68,10 +70,14 @@ class AboutView extends GetView<AboutController> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Text(
-                'This project was originally developed as part of Google Summer of code under the CCExtractor organization. It\'s free, the source code is available, and we encourage programmers to contribute'
+                // ignore: lines_longer_than_80_chars
+                'This project was originally developed as part of Google Summer '
+                        'of code under the CCExtractor organization. It\'s '
+                        'free, the source code is available, and we encourage '
+                        'programmers to contribute'
                     .tr,
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 14,
                   color: Colors.grey,
                 ),

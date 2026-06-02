@@ -16,55 +16,68 @@ class AlarmDateTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    
-    return Obx(() => InkWell(
-          onTap: () async {
-            await controller.datePicker(context);
-            if (controller.selectedDate.value != DateTime.now()) {
-              controller.repeatDays.value = [false, false, false, false, false, false, false];
-            }
-          },
-          child: ListTile(
+    return Obx(() {
+      final isFutureDate = controller.isFutureDate.value;
+      final dateText =
+          controller.selectedDate.value.toString().substring(0, 11);
 
-            title: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                FittedBox(
-                  alignment: Alignment.centerLeft,
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    "Ring On",
-                    style: TextStyle(
-                      color: themeController.primaryTextColor.value,
-                    ),
+      return InkWell(
+        onTap: () async {
+          await controller.datePicker(context);
+          if (controller.selectedDate.value != DateTime.now()) {
+            controller.repeatDays.value = [
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+            ];
+          }
+        },
+        child: ListTile(
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              FittedBox(
+                alignment: Alignment.centerLeft,
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  'Ring On',
+                  style: TextStyle(
+                    color: themeController.primaryTextColor.value,
                   ),
                 ),
-                Obx(
-                  () => Wrap(
-                    children: [Container(
+              ),
+              Obx(
+                () => Wrap(
+                  children: [
+                    Container(
                       width: 100,
                       alignment: Alignment.centerRight,
                       child: Text(
-                        controller.isFutureDate.value
-                            ? "${controller.selectedDate.value.toString().substring(0, 11)}"
-                            : "Off",
+                        isFutureDate ? dateText : 'Off',
                         style: TextStyle(
-                          color: !controller.isFutureDate.value ?
-                          themeController.primaryDisabledTextColor.value
-                                : themeController.primaryTextColor.value,
+                          color: !isFutureDate
+                              ? themeController.primaryDisabledTextColor.value
+                              : themeController.primaryTextColor.value,
                         ),
                       ),
-                    ), Icon(
+                    ),
+                    Icon(
                       Icons.chevron_right,
-                      color: !(controller.isFutureDate.value)
+                      color: !isFutureDate
                           ? themeController.primaryDisabledTextColor.value
                           : themeController.primaryTextColor.value,
-                    ),]
-                  ),
-                )
-              ],
-            ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ));
+        ),
+      );
+    });
   }
 }

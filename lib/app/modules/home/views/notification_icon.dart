@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:ultimate_alarm_clock/app/data/providers/firestore_provider.dart';
-import 'package:ultimate_alarm_clock/app/modules/home/controllers/home_controller.dart';
-import 'package:ultimate_alarm_clock/app/utils/constants.dart';
+import '../../../data/providers/firestore_provider.dart';
+import '../../../utils/constants.dart';
+import '../controllers/home_controller.dart';
 
 import '../../../routes/app_pages.dart';
 
@@ -17,10 +17,14 @@ Widget notificationIcon(HomeController controller) {
                 if (snapshot.hasData && snapshot.data != null) {
                   final document = snapshot.data!;
                   final data = document.data();
-                  final List notif = data != null ? (data['receivedItems'] ?? []) : [];
+                  final List notif =
+                      data != null ? (data['receivedItems'] ?? []) : [];
                   controller.notifications = notif;
-                  
-                  debugPrint('🔔 NotificationIcon: Document exists: ${document.exists}, Data: $data, Notifications: ${notif.length}');
+
+                  debugPrint(
+                    '🔔 NotificationIcon: Document exists: ${document.exists}, '
+                    'Data: $data, Notifications: ${notif.length}',
+                  );
                   return notif.isEmpty
                       ? InkWell(
                           onTap: () {

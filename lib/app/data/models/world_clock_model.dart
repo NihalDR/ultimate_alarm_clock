@@ -9,7 +9,8 @@ class WorldClockModel {
         'cityName': cityName,
       };
 
-  factory WorldClockModel.fromJson(Map<String, dynamic> json) => WorldClockModel(
+  factory WorldClockModel.fromJson(Map<String, dynamic> json) =>
+      WorldClockModel(
         ianaTimezone: json['ianaTimezone'] as String,
         cityName: json['cityName'] as String,
       );

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/controllers/add_or_update_alarm_controller.dart';
+import '../controllers/add_or_update_alarm_controller.dart';
 import 'package:ultimate_alarm_clock/app/modules/settings/controllers/theme_controller.dart';
 import 'package:ultimate_alarm_clock/app/utils/constants.dart';
 import 'package:ultimate_alarm_clock/app/utils/utils.dart';
@@ -174,7 +174,8 @@ class _TaskListEditorPageState extends State<_TaskListEditorPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: widget.themeController.secondaryBackgroundColor.value,
+          backgroundColor:
+              widget.themeController.secondaryBackgroundColor.value,
           title: Text(
             'Discard changes?'.tr,
             style: TextStyle(
@@ -182,7 +183,8 @@ class _TaskListEditorPageState extends State<_TaskListEditorPage> {
             ),
           ),
           content: Text(
-            'You have unsaved changes. Are you sure you want to discard them?'.tr,
+            'You have unsaved changes. Are you sure you want to discard them?'
+                .tr,
             style: TextStyle(
               color: widget.themeController.primaryDisabledTextColor.value,
             ),
@@ -214,13 +216,24 @@ class _TaskListEditorPageState extends State<_TaskListEditorPage> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: _onWillPop,
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) async {
+        if (didPop) {
+          return;
+        }
+        if (await _onWillPop()) {
+          if (context.mounted) {
+            _discardAndClose();
+          }
+        }
+      },
       child: Obx(
         () => Scaffold(
           backgroundColor: widget.themeController.primaryBackgroundColor.value,
           appBar: AppBar(
-            backgroundColor: widget.themeController.primaryBackgroundColor.value,
+            backgroundColor:
+                widget.themeController.primaryBackgroundColor.value,
             elevation: 0,
             leading: IconButton(
               icon: Icon(
@@ -270,12 +283,12 @@ class _TaskListEditorPageState extends State<_TaskListEditorPage> {
                         decoration: InputDecoration(
                           hintText: 'Add task'.tr,
                           hintStyle: TextStyle(
-                            color: widget.themeController
-                                .primaryDisabledTextColor.value,
+                            color: widget
+                                .themeController.primaryDisabledTextColor.value,
                           ),
                           filled: true,
-                          fillColor:
-                              widget.themeController.secondaryBackgroundColor.value,
+                          fillColor: widget
+                              .themeController.secondaryBackgroundColor.value,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide.none,
@@ -297,10 +310,11 @@ class _TaskListEditorPageState extends State<_TaskListEditorPage> {
                     ? Center(
                         child: Text(
                           'No tasks added yet'.tr,
-                          style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                                color: widget.themeController
-                                    .primaryDisabledTextColor.value,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.bodyMedium!.copyWith(
+                                    color: widget.themeController
+                                        .primaryDisabledTextColor.value,
+                                  ),
                         ),
                       )
                     : ListView.separated(
@@ -314,8 +328,8 @@ class _TaskListEditorPageState extends State<_TaskListEditorPage> {
                             title: Text(
                               _tasks[index],
                               style: TextStyle(
-                                color: widget.themeController
-                                    .primaryTextColor.value,
+                                color: widget
+                                    .themeController.primaryTextColor.value,
                               ),
                             ),
                             trailing: IconButton(

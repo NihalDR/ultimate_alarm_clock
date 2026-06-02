@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter/services.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
-import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/controllers/add_or_update_alarm_controller.dart';
+import '../controllers/add_or_update_alarm_controller.dart';
 import 'package:ultimate_alarm_clock/app/modules/settings/controllers/theme_controller.dart';
 import 'package:ultimate_alarm_clock/app/utils/constants.dart';
 import 'package:ultimate_alarm_clock/app/utils/utils.dart';
@@ -93,10 +93,10 @@ class GuardianAngel extends StatelessWidget {
                     ),
                     child: Row(
                       children: [
-                        Option(0, Icons.sms, 'Text'),
-                        Option(1, Icons.call, 'Call'),
+                        buildOption(0, Icons.sms, 'Text'),
+                        buildOption(1, Icons.call, 'Call'),
                         const Spacer(),
-                        Submit(),
+                        buildSubmit(),
                       ],
                     ),
                   ),
@@ -105,14 +105,14 @@ class GuardianAngel extends StatelessWidget {
             ),
           ),
         );
-      } 
-      else {
+      } else {
         // If permissions are denied, flip the toggle back off
         controller.isGuardian.value = false;
 
         Get.snackbar(
           'Permission Required',
-          'Please enable Phone and SMS permissions in app settings to use the Guardian Angel feature.',
+          ('Please enable Phone and SMS permissions in app settings '
+              'to use the Guardian Angel feature.'),
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: themeController.secondaryBackgroundColor.value,
           colorText: themeController.primaryTextColor.value,
@@ -152,10 +152,13 @@ class GuardianAngel extends StatelessWidget {
                       context: context,
                       title: 'Guardian Angel',
                       description:
-                          'This feature will automatically call or text a person'
-                          ' you trust the most if you dont wake up to an alarm!'
-                          '\n \n CALLING AND SMS PERMISSION REQUIRED.'
-                          '\n \n RATES MAY APPLY AS PER YOUR SERVICE PROVIDER',
+                          // ignore: lines_longer_than_80_chars
+                          ('This feature will automatically call or text a person '
+                              // ignore: lines_longer_than_80_chars
+                              'you trust the most if you dont wake up to an alarm!'
+                              '\n\nCALLING AND SMS PERMISSION REQUIRED.'
+                              // ignore: lines_longer_than_80_chars
+                              '\n\nRATES MAY APPLY AS PER YOUR SERVICE PROVIDER'),
                       iconData: Icons.info_sharp,
                       isLightMode:
                           themeController.currentTheme.value == ThemeMode.light,
@@ -193,7 +196,7 @@ class GuardianAngel extends StatelessWidget {
     );
   }
 
-  Widget Option(int val, IconData icon, String name) {
+  Widget buildOption(int val, IconData icon, String name) {
     return Obx(
       () => Column(
         children: [
@@ -239,7 +242,7 @@ class GuardianAngel extends StatelessWidget {
     );
   }
 
-  Widget Submit() {
+  Widget buildSubmit() {
     return Obx(
       () => Column(
         children: [

@@ -1,3 +1,5 @@
+// ignore_for_file: camel_case_types
+
 import 'package:isar/isar.dart';
 
 part 'saved_emails.g.dart';

@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/controllers/add_or_update_alarm_controller.dart';
+import '../controllers/add_or_update_alarm_controller.dart';
 import 'package:ultimate_alarm_clock/app/modules/settings/controllers/theme_controller.dart';
 import 'package:ultimate_alarm_clock/app/utils/constants.dart';
 import 'package:ultimate_alarm_clock/app/utils/utils.dart';
-import 'package:ultimate_alarm_clock/app/utils/timezone_utils.dart';
 
 class TimezoneTile extends StatelessWidget {
   const TimezoneTile({
-    Key? key,
+    super.key,
     required this.controller,
     required this.themeController,
-  }) : super(key: key);
+  });
 
   final AddOrUpdateAlarmController controller;
   final ThemeController themeController;
@@ -26,9 +25,11 @@ class TimezoneTile extends StatelessWidget {
         },
         child: ListTile(
           leading: Icon(
-            controller.isTimezoneEnabled.value ? Icons.access_time : Icons.access_time_outlined,
-            color: controller.isTimezoneEnabled.value 
-                ? kprimaryColor 
+            controller.isTimezoneEnabled.value
+                ? Icons.access_time
+                : Icons.access_time_outlined,
+            color: controller.isTimezoneEnabled.value
+                ? kprimaryColor
                 : themeController.primaryDisabledTextColor.value,
           ),
           title: Text(
@@ -38,7 +39,7 @@ class TimezoneTile extends StatelessWidget {
             ),
           ),
           subtitle: Text(
-            controller.isTimezoneEnabled.value 
+            controller.isTimezoneEnabled.value
                 ? _getTimezoneSubtitleText()
                 : 'Local time'.tr,
             style: TextStyle(
@@ -57,19 +58,14 @@ class TimezoneTile extends StatelessWidget {
   String _getTimezoneSubtitleText() {
     final selectedData = controller.getSelectedTimezoneData();
     if (selectedData != null) {
-      return '${selectedData.displayName}';
+      return selectedData.displayName;
     }
-    return controller.selectedTimezoneId.value.isNotEmpty 
-        ? controller.selectedTimezoneId.value 
+    return controller.selectedTimezoneId.value.isNotEmpty
+        ? controller.selectedTimezoneId.value
         : 'Select timezone'.tr;
   }
 
   void _showTimezoneDialog(BuildContext context) {
-    // Store original values
-    bool originalEnabled = controller.isTimezoneEnabled.value;
-    String originalTimezoneId = controller.selectedTimezoneId.value;
-    int originalOffset = controller.targetTimezoneOffset.value;
-
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -95,13 +91,16 @@ class TimezoneTile extends StatelessWidget {
                     height: 4,
                     margin: const EdgeInsets.symmetric(vertical: 12),
                     decoration: BoxDecoration(
-                      color: themeController.primaryDisabledTextColor.value.withOpacity(0.5),
+                      color: themeController.primaryDisabledTextColor.value
+                          .withOpacity(0.5),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
-                  
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 8,
+                    ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -119,7 +118,7 @@ class TimezoneTile extends StatelessWidget {
                           },
                           child: Text(
                             'Done'.tr,
-                            style: TextStyle(
+                            style: const TextStyle(
                               color: kprimaryColor,
                               fontWeight: FontWeight.w600,
                             ),
@@ -128,7 +127,6 @@ class TimezoneTile extends StatelessWidget {
                       ],
                     ),
                   ),
-                  
                   Expanded(
                     child: SingleChildScrollView(
                       controller: scrollController,
@@ -136,9 +134,13 @@ class TimezoneTile extends StatelessWidget {
                         children: [
                           // Enable/Disable Toggle
                           Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                            margin: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 8,
+                            ),
                             decoration: BoxDecoration(
-                              color: themeController.primaryBackgroundColor.value,
+                              color:
+                                  themeController.primaryBackgroundColor.value,
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Obx(
@@ -146,14 +148,18 @@ class TimezoneTile extends StatelessWidget {
                                 title: Text(
                                   'Enable Timezone'.tr,
                                   style: TextStyle(
-                                    color: themeController.primaryTextColor.value,
+                                    color:
+                                        themeController.primaryTextColor.value,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
                                 subtitle: Text(
-                                  'Convert your local time to selected timezone'.tr,
+                                  'Convert your local time to selected '
+                                          'timezone'
+                                      .tr,
                                   style: TextStyle(
-                                    color: themeController.primaryDisabledTextColor.value,
+                                    color: themeController
+                                        .primaryDisabledTextColor.value,
                                     fontSize: 13,
                                   ),
                                 ),
@@ -168,13 +174,19 @@ class TimezoneTile extends StatelessWidget {
 
                           // Current Time Preview
                           Obx(() {
-                            if (!controller.isTimezoneEnabled.value) return const SizedBox.shrink();
-                            
+                            if (!controller.isTimezoneEnabled.value) {
+                              return const SizedBox.shrink();
+                            }
+
                             return Container(
-                              margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                              margin: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 8,
+                              ),
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
-                                color: themeController.primaryBackgroundColor.value,
+                                color: themeController
+                                    .primaryBackgroundColor.value,
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
                                   color: kprimaryColor.withOpacity(0.3),
@@ -187,7 +199,8 @@ class TimezoneTile extends StatelessWidget {
                                   Text(
                                     'Conversion Preview'.tr,
                                     style: TextStyle(
-                                      color: themeController.primaryTextColor.value,
+                                      color: themeController
+                                          .primaryTextColor.value,
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
@@ -195,15 +208,19 @@ class TimezoneTile extends StatelessWidget {
                                   Text(
                                     controller.getFormattedTimezoneTime(),
                                     style: TextStyle(
-                                      color: themeController.primaryDisabledTextColor.value,
+                                      color: themeController
+                                          .primaryDisabledTextColor.value,
                                       fontSize: 13,
                                     ),
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    'Time shown above is converted from your local time'.tr,
+                                    'Time shown above is converted from your '
+                                            'local time'
+                                        .tr,
                                     style: TextStyle(
-                                      color: themeController.primaryDisabledTextColor.value,
+                                      color: themeController
+                                          .primaryDisabledTextColor.value,
                                       fontSize: 11,
                                       fontStyle: FontStyle.italic,
                                     ),
@@ -215,23 +232,33 @@ class TimezoneTile extends StatelessWidget {
 
                           // Timezone Search
                           Obx(() {
-                            if (!controller.isTimezoneEnabled.value) return const SizedBox.shrink();
-                            
+                            if (!controller.isTimezoneEnabled.value) {
+                              return const SizedBox.shrink();
+                            }
+
                             return Container(
-                              margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                              margin: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 8,
+                              ),
                               child: TextField(
-                                onChanged: (query) => controller.searchTimezones(query),
+                                onChanged: (query) {
+                                  controller.searchTimezones(query);
+                                },
                                 decoration: InputDecoration(
                                   hintText: 'Search timezones...'.tr,
                                   hintStyle: TextStyle(
-                                    color: themeController.primaryDisabledTextColor.value,
+                                    color: themeController
+                                        .primaryDisabledTextColor.value,
                                   ),
                                   prefixIcon: Icon(
                                     Icons.search,
-                                    color: themeController.primaryDisabledTextColor.value,
+                                    color: themeController
+                                        .primaryDisabledTextColor.value,
                                   ),
                                   filled: true,
-                                  fillColor: themeController.primaryBackgroundColor.value,
+                                  fillColor: themeController
+                                      .primaryBackgroundColor.value,
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
                                     borderSide: BorderSide.none,
@@ -246,43 +273,57 @@ class TimezoneTile extends StatelessWidget {
 
                           // Timezone List
                           Obx(() {
-                            if (!controller.isTimezoneEnabled.value) return const SizedBox.shrink();
-                            
+                            if (!controller.isTimezoneEnabled.value) {
+                              return const SizedBox.shrink();
+                            }
+
                             return Container(
-                              margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                              margin: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 8,
+                              ),
                               decoration: BoxDecoration(
-                                color: themeController.primaryBackgroundColor.value,
+                                color: themeController
+                                    .primaryBackgroundColor.value,
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: ListView.builder(
                                 shrinkWrap: true,
                                 physics: const NeverScrollableScrollPhysics(),
-                                itemCount: controller.filteredTimezoneList.length,
+                                itemCount:
+                                    controller.filteredTimezoneList.length,
                                 itemBuilder: (context, index) {
-                                  final timezone = controller.filteredTimezoneList[index];
-                                  final isSelected = controller.selectedTimezoneId.value == timezone.id;
-                                  
+                                  final timezone =
+                                      controller.filteredTimezoneList[index];
+                                  final isSelected =
+                                      controller.selectedTimezoneId.value ==
+                                          timezone.id;
+
                                   return ListTile(
                                     title: Text(
                                       timezone.displayName,
                                       style: TextStyle(
-                                        color: isSelected 
-                                            ? kprimaryColor 
-                                            : themeController.primaryTextColor.value,
-                                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                                        color: isSelected
+                                            ? kprimaryColor
+                                            : themeController
+                                                .primaryTextColor.value,
+                                        fontWeight: isSelected
+                                            ? FontWeight.w600
+                                            : FontWeight.w400,
                                       ),
                                     ),
                                     subtitle: Text(
                                       timezone.formattedOffset,
                                       style: TextStyle(
-                                        color: isSelected 
-                                            ? kprimaryColor.withOpacity(0.7) 
-                                            : themeController.primaryDisabledTextColor.value,
+                                        color: isSelected
+                                            ? kprimaryColor.withOpacity(0.7)
+                                            : themeController
+                                                .primaryDisabledTextColor.value,
                                         fontSize: 12,
                                       ),
                                     ),
-                                    trailing: isSelected 
-                                        ? Icon(
+                                    trailing: isSelected
+                                        ? const Icon(
                                             Icons.check,
                                             color: kprimaryColor,
                                           )
@@ -295,7 +336,7 @@ class TimezoneTile extends StatelessWidget {
                               ),
                             );
                           }),
-                          
+
                           const SizedBox(height: 24),
                         ],
                       ),

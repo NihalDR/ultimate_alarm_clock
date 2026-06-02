@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:numberpicker/numberpicker.dart';
-import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/controllers/add_or_update_alarm_controller.dart';
-import 'package:ultimate_alarm_clock/app/modules/settings/controllers/theme_controller.dart';
-import 'package:ultimate_alarm_clock/app/utils/constants.dart';
-import 'package:ultimate_alarm_clock/app/utils/utils.dart';
+import '../controllers/add_or_update_alarm_controller.dart';
+import '../../settings/controllers/theme_controller.dart';
+import '../../../utils/constants.dart';
+import '../../../utils/utils.dart';
 
 class MathsChallenge extends StatelessWidget {
   const MathsChallenge({
@@ -29,14 +29,21 @@ class MathsChallenge extends StatelessWidget {
           isMathsEnabled = controller.isMathsEnabled.value;
           sliderValue = controller.mathsSliderValue.value;
           noOfMathQues = controller.numMathsQuestions.value;
-          
-          _showMathSettingsBottomSheet(context, isMathsEnabled, sliderValue, noOfMathQues);
+
+          _showMathSettingsBottomSheet(
+            context,
+            isMathsEnabled,
+            sliderValue,
+            noOfMathQues,
+          );
         },
         child: ListTile(
           leading: Icon(
-            controller.isMathsEnabled.value ? Icons.calculate : Icons.calculate_outlined,
-            color: controller.isMathsEnabled.value 
-                ? kprimaryColor 
+            controller.isMathsEnabled.value
+                ? Icons.calculate
+                : Icons.calculate_outlined,
+            color: controller.isMathsEnabled.value
+                ? kprimaryColor
                 : themeController.primaryDisabledTextColor.value,
           ),
           title: Text(
@@ -46,8 +53,12 @@ class MathsChallenge extends StatelessWidget {
             ),
           ),
           subtitle: Text(
-            controller.isMathsEnabled.value && controller.numMathsQuestions.value > 0
-                ? '${Utils.getDifficultyLabel(controller.mathsDifficulty.value).tr} • ${controller.numMathsQuestions.value} questions'
+            controller.isMathsEnabled.value &&
+                    controller.numMathsQuestions.value > 0
+                ? '${Utils.getDifficultyLabel(
+                    controller.mathsDifficulty.value,
+                  ).tr} '
+                    '• ${controller.numMathsQuestions.value} questions'
                 : 'Disabled'.tr,
             style: TextStyle(
               color: themeController.primaryDisabledTextColor.value,
@@ -62,7 +73,12 @@ class MathsChallenge extends StatelessWidget {
     );
   }
 
-  void _showMathSettingsBottomSheet(BuildContext context, bool initialIsMathsEnabled, double initialSliderValue, int initialNoOfMathQues) {
+  void _showMathSettingsBottomSheet(
+    BuildContext context,
+    bool initialIsMathsEnabled,
+    double initialSliderValue,
+    int initialNoOfMathQues,
+  ) {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -97,17 +113,18 @@ class MathsChallenge extends StatelessWidget {
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: themeController.primaryDisabledTextColor.value.withOpacity(0.3),
+                      color: themeController.primaryDisabledTextColor.value
+                          .withOpacity(0.3),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
-                  
+
                   // Header
                   Padding(
                     padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
                     child: Row(
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.calculate,
                           color: kprimaryColor,
                           size: 28,
@@ -116,16 +133,19 @@ class MathsChallenge extends StatelessWidget {
                         Expanded(
                           child: Text(
                             'Math Challenge'.tr,
-                            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                              color: themeController.primaryTextColor.value,
-                              fontWeight: FontWeight.w600,
-                            ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .headlineSmall
+                                ?.copyWith(
+                                  color: themeController.primaryTextColor.value,
+                                  fontWeight: FontWeight.w600,
+                                ),
                           ),
                         ),
                       ],
                     ),
                   ),
-                  
+
                   // Content
                   Expanded(
                     child: SingleChildScrollView(
@@ -137,165 +157,220 @@ class MathsChallenge extends StatelessWidget {
                           _buildSection(
                             title: 'Enable Math Challenge'.tr,
                             subtitle: 'Require solving math problems'.tr,
-                            child: Obx(() => Switch.adaptive(
-                              value: controller.isMathsEnabled.value,
-                              onChanged: (value) {
-                                Utils.hapticFeedback();
-                                controller.isMathsEnabled.value = value;
-                                if (!value) {
-                                  controller.numMathsQuestions.value = 0;
-                                } else if (controller.numMathsQuestions.value == 0) {
-                                  controller.numMathsQuestions.value = 3;
-                                }
-                              },
-                              activeColor: kprimaryColor,
-                            )),
+                            child: Obx(
+                              () => Switch.adaptive(
+                                value: controller.isMathsEnabled.value,
+                                onChanged: (value) {
+                                  Utils.hapticFeedback();
+                                  controller.isMathsEnabled.value = value;
+                                  if (!value) {
+                                    controller.numMathsQuestions.value = 0;
+                                  } else if (controller
+                                          .numMathsQuestions.value ==
+                                      0) {
+                                    controller.numMathsQuestions.value = 3;
+                                  }
+                                },
+                                activeColor: kprimaryColor,
+                              ),
+                            ),
                           ),
-                          
+
                           const SizedBox(height: 20),
-                          
+
                           // Settings (when enabled)
-                          Obx(() => controller.isMathsEnabled.value
-                              ? Column(
-                                  children: [
-                                    // Difficulty Section
-                                    _buildSection(
-                                      title: 'Difficulty Level'.tr,
-                                      subtitle: 'Choose problem complexity'.tr,
-                                      child: Column(
-                                        children: [
-                                          // Preview problem
-                                          Obx(() => Container(
-                                            padding: const EdgeInsets.all(16),
-                                            margin: const EdgeInsets.only(bottom: 16),
-                                            decoration: BoxDecoration(
-                                              color: kprimaryColor.withOpacity(0.1),
-                                              borderRadius: BorderRadius.circular(12),
-                                              border: Border.all(
-                                                color: kprimaryColor.withOpacity(0.3),
-                                              ),
-                                            ),
-                                            child: Column(
-                                              children: [
-                                                Text(
-                                                  Utils.getDifficultyLabel(controller.mathsDifficulty.value).tr,
-                                                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                                    color: kprimaryColor,
-                                                    fontWeight: FontWeight.w700,
-                                                  ),
-                                                ),
-                                                const SizedBox(height: 8),
-                                                Text(
-                                                  Utils.generateMathProblem(controller.mathsDifficulty.value)[0],
-                                                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                                    color: themeController.primaryTextColor.value,
-                                                    fontWeight: FontWeight.w600,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          )),
-                                          
-                                          // Difficulty slider
-                                          Obx(() => Slider.adaptive(
-                                            min: 0.0,
-                                            max: 2.0,
-                                            divisions: 2,
-                                            value: controller.mathsSliderValue.value,
-                                            onChanged: (newValue) {
-                                              Utils.hapticFeedback();
-                                              controller.mathsSliderValue.value = newValue;
-                                              controller.mathsDifficulty.value = Utils.getDifficulty(newValue);
-                                            },
-                                            activeColor: kprimaryColor,
-                                            inactiveColor: kprimaryColor.withOpacity(0.3),
-                                          )),
-                                          
-                                          // Difficulty labels
-                                          Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          Obx(
+                            () {
+                              final disabledTextColor = themeController
+                                  .primaryDisabledTextColor.value;
+                              return controller.isMathsEnabled.value
+                                  ? Column(
+                                      children: [
+                                        // Difficulty Section
+                                        _buildSection(
+                                          title: 'Difficulty Level'.tr,
+                                          subtitle:
+                                              'Choose problem complexity'.tr,
+                                          child: Column(
                                             children: [
-                                              Text(
-                                                'Easy'.tr,
-                                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                                  color: themeController.primaryDisabledTextColor.value,
+                                              // Preview problem
+                                              Obx(
+                                                () {
+                                                  final difficulty = controller
+                                                      .mathsDifficulty.value;
+                                                  final primaryTextColor =
+                                                      themeController
+                                                          .primaryTextColor
+                                                          .value;
+                                                  final previewProblem =
+                                                      Utils.generateMathProblem(
+                                                    difficulty,
+                                                  )[0];
+                                                  return Container(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                      16,
+                                                    ),
+                                                    margin:
+                                                        const EdgeInsets.only(
+                                                      bottom: 16,
+                                                    ),
+                                                    decoration: BoxDecoration(
+                                                      color: kprimaryColor
+                                                          .withOpacity(0.1),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                        12,
+                                                      ),
+                                                      border: Border.all(
+                                                        color: kprimaryColor
+                                                            .withOpacity(0.3),
+                                                      ),
+                                                    ),
+                                                    child: Column(
+                                                      children: [
+                                                        Text(
+                                                          Utils
+                                                              // ignore: lines_longer_than_80_chars
+                                                              .getDifficultyLabel(
+                                                            difficulty,
+                                                          ).tr,
+                                                          style:
+                                                              Theme.of(context)
+                                                                  .textTheme
+                                                                  .titleMedium
+                                                                  ?.copyWith(
+                                                                    color:
+                                                                        // ignore: lines_longer_than_80_chars
+                                                                        kprimaryColor,
+                                                                    fontWeight:
+                                                                        // ignore: lines_longer_than_80_chars
+                                                                        FontWeight
+                                                                            // ignore: lines_longer_than_80_chars
+                                                                            .w700,
+                                                                  ),
+                                                        ),
+                                                        const SizedBox(
+                                                          height: 8,
+                                                        ),
+                                                        Text(
+                                                          previewProblem,
+                                                          style:
+                                                              Theme.of(context)
+                                                                  .textTheme
+                                                                  .titleLarge
+                                                                  ?.copyWith(
+                                                                    color:
+                                                                        // ignore: lines_longer_than_80_chars
+                                                                        primaryTextColor,
+                                                                    fontWeight:
+                                                                        // ignore: lines_longer_than_80_chars
+                                                                        FontWeight
+                                                                            // ignore: lines_longer_than_80_chars
+                                                                            .w600,
+                                                                  ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  );
+                                                },
+                                              ),
+
+                                              // Difficulty slider
+                                              Obx(
+                                                () => Slider.adaptive(
+                                                  min: 0.0,
+                                                  max: 2.0,
+                                                  divisions: 2,
+                                                  value: controller
+                                                      .mathsSliderValue.value,
+                                                  onChanged: (newValue) {
+                                                    Utils.hapticFeedback();
+                                                    controller.mathsSliderValue
+                                                        .value = newValue;
+                                                    controller.mathsDifficulty
+                                                            .value =
+                                                        Utils.getDifficulty(
+                                                      newValue,
+                                                    );
+                                                  },
+                                                  activeColor: kprimaryColor,
+                                                  inactiveColor: kprimaryColor
+                                                      .withOpacity(0.3),
                                                 ),
                                               ),
-                                              Text(
-                                                'Medium'.tr,
-                                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                                  color: themeController.primaryDisabledTextColor.value,
-                                                ),
-                                              ),
-                                              Text(
-                                                'Hard'.tr,
-                                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                                  color: themeController.primaryDisabledTextColor.value,
-                                                ),
+
+                                              // Difficulty labels
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  _buildDifficultyLabel(
+                                                    context,
+                                                    'Easy'.tr,
+                                                    disabledTextColor,
+                                                  ),
+                                                  _buildDifficultyLabel(
+                                                    context,
+                                                    'Medium'.tr,
+                                                    disabledTextColor,
+                                                  ),
+                                                  _buildDifficultyLabel(
+                                                    context,
+                                                    'Hard'.tr,
+                                                    disabledTextColor,
+                                                  ),
+                                                ],
                                               ),
                                             ],
                                           ),
-                                        ],
-                                      ),
-                                    ),
-                                    
-                                    const SizedBox(height: 20),
-                                    
-                                    // Number of Questions
-                                    _buildSection(
-                                      title: 'Number of Questions'.tr,
-                                      subtitle: 'How many problems to solve'.tr,
-                                      child: Column(
-                                        children: [
-                                          Obx(() => Text(
-                                            controller.numMathsQuestions.value.toString(),
-                                            style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                                              color: kprimaryColor,
-                                              fontWeight: FontWeight.w700,
-                                            ),
-                                          )),
-                                          const SizedBox(height: 16),
-                                          NumberPicker(
-                                            value: controller.numMathsQuestions.value,
-                                            minValue: 1,
-                                            maxValue: 20,
-                                            onChanged: (value) {
-                                              Utils.hapticFeedback();
-                                              controller.numMathsQuestions.value = value;
-                                            },
-                                            itemWidth: Utils
-                                                .getResponsiveNumberPickerItemWidth(
-                                              context,
-                                              screenWidth: MediaQuery.of(context).size.width,
-                                              baseWidthFactor: 0.2,
-                                            ),
-                                            textStyle: Utils
-                                                .getResponsiveNumberPickerTextStyle(
-                                              context,
-                                              baseFontSize: 16,
-                                              color: themeController.primaryDisabledTextColor.value,
-                                            ),
-                                            selectedTextStyle: Utils
-                                                .getResponsiveNumberPickerSelectedTextStyle(
-                                              context,
-                                              baseFontSize: 20,
-                                              color: kprimaryColor,
-                                              fontWeight: FontWeight.w600,
-                                            ),
+                                        ),
+
+                                        const SizedBox(height: 20),
+
+                                        // Number of Questions
+                                        _buildSection(
+                                          title: 'Number of Questions'.tr,
+                                          subtitle:
+                                              'How many problems to solve'.tr,
+                                          child: Column(
+                                            children: [
+                                              Obx(
+                                                () => Text(
+                                                  controller
+                                                      .numMathsQuestions.value
+                                                      .toString(),
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .displaySmall
+                                                      ?.copyWith(
+                                                        color: kprimaryColor,
+                                                        fontWeight:
+                                                            FontWeight.w700,
+                                                      ),
+                                                ),
+                                              ),
+                                              const SizedBox(height: 16),
+                                              _buildQuestionsPicker(
+                                                context,
+                                                disabledTextColor,
+                                              ),
+                                            ],
                                           ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                )
-                              : Container()),
-                          
+                                        ),
+                                      ],
+                                    )
+                                  : const SizedBox.shrink();
+                            },
+                          ),
+
                           const SizedBox(height: 32),
                         ],
                       ),
                     ),
                   ),
-                  
+
                   // Action buttons
                   Container(
                     padding: const EdgeInsets.all(20),
@@ -303,7 +378,8 @@ class MathsChallenge extends StatelessWidget {
                       color: themeController.secondaryBackgroundColor.value,
                       border: Border(
                         top: BorderSide(
-                          color: themeController.primaryDisabledTextColor.value.withOpacity(0.1),
+                          color: themeController.primaryDisabledTextColor.value
+                              .withOpacity(0.1),
                         ),
                       ),
                     ),
@@ -314,10 +390,14 @@ class MathsChallenge extends StatelessWidget {
                             onPressed: () {
                               Utils.hapticFeedback();
                               // Reset to initial values
-                              controller.isMathsEnabled.value = initialIsMathsEnabled;
-                              controller.mathsSliderValue.value = initialSliderValue;
-                              controller.numMathsQuestions.value = initialNoOfMathQues;
-                              controller.mathsDifficulty.value = Utils.getDifficulty(initialSliderValue);
+                              controller.isMathsEnabled.value =
+                                  initialIsMathsEnabled;
+                              controller.mathsSliderValue.value =
+                                  initialSliderValue;
+                              controller.numMathsQuestions.value =
+                                  initialNoOfMathQues;
+                              controller.mathsDifficulty.value =
+                                  Utils.getDifficulty(initialSliderValue);
                               Navigator.pop(context);
                             },
                             style: OutlinedButton.styleFrom(
@@ -326,15 +406,21 @@ class MathsChallenge extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               side: BorderSide(
-                                color: themeController.primaryDisabledTextColor.value.withOpacity(0.3),
+                                color: themeController
+                                    .primaryDisabledTextColor.value
+                                    .withOpacity(0.3),
                               ),
                             ),
                             child: Text(
                               'Cancel'.tr,
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                color: themeController.primaryTextColor.value,
-                                fontWeight: FontWeight.w600,
-                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium
+                                  ?.copyWith(
+                                    color:
+                                        themeController.primaryTextColor.value,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                             ),
                           ),
                         ),
@@ -356,10 +442,13 @@ class MathsChallenge extends StatelessWidget {
                             ),
                             child: Text(
                               'Done'.tr,
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium
+                                  ?.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                             ),
                           ),
                         ),
@@ -386,7 +475,8 @@ class MathsChallenge extends StatelessWidget {
         color: themeController.primaryBackgroundColor.value,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: themeController.primaryDisabledTextColor.value.withOpacity(0.1),
+          color:
+              themeController.primaryDisabledTextColor.value.withOpacity(0.1),
         ),
       ),
       child: Column(
@@ -412,6 +502,69 @@ class MathsChallenge extends StatelessWidget {
           child,
         ],
       ),
+    );
+  }
+
+  double _getResponsiveItemWidth(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    return Utils.getResponsiveNumberPickerItemWidth(
+      context,
+      screenWidth: screenWidth,
+      baseWidthFactor: 0.2,
+    );
+  }
+
+  TextStyle _getResponsiveTextStyle(
+    BuildContext context,
+    Color color,
+  ) {
+    return Utils.getResponsiveNumberPickerTextStyle(
+      context,
+      baseFontSize: 16,
+      color: color,
+    );
+  }
+
+  TextStyle _getResponsiveSelectedTextStyle(BuildContext context) {
+    return Utils.getResponsiveNumberPickerSelectedTextStyle(
+      context,
+      baseFontSize: 20,
+      color: kprimaryColor,
+      fontWeight: FontWeight.w600,
+    );
+  }
+
+  Widget _buildQuestionsPicker(
+    BuildContext context,
+    Color disabledTextColor,
+  ) {
+    final itemWidth = _getResponsiveItemWidth(context);
+    final textStyle = _getResponsiveTextStyle(context, disabledTextColor);
+    final selectedTextStyle = _getResponsiveSelectedTextStyle(context);
+    return NumberPicker(
+      value: controller.numMathsQuestions.value,
+      minValue: 1,
+      maxValue: 20,
+      onChanged: (value) {
+        Utils.hapticFeedback();
+        controller.numMathsQuestions.value = value;
+      },
+      itemWidth: itemWidth,
+      textStyle: textStyle,
+      selectedTextStyle: selectedTextStyle,
+    );
+  }
+
+  Widget _buildDifficultyLabel(
+    BuildContext context,
+    String label,
+    Color color,
+  ) {
+    return Text(
+      label,
+      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            color: color,
+          ),
     );
   }
 }

@@ -1,10 +1,16 @@
+// ignore_for_file: lines_longer_than_80_chars
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:ultimate_alarm_clock/app/modules/settings/controllers/theme_controller.dart';
-import 'package:ultimate_alarm_clock/app/modules/timer/controllers/timer_controller.dart';
-import 'package:ultimate_alarm_clock/app/utils/constants.dart';
+import '../modules/settings/controllers/theme_controller.dart';
+import '../modules/timer/controllers/timer_controller.dart';
+import 'constants.dart';
 
-Widget hoverPresetButton(BuildContext context, String label, Duration duration) {
+Widget hoverPresetButton(
+  BuildContext context,
+  String label,
+  Duration duration,
+) {
   final TimerController timerController = Get.find<TimerController>();
   final ThemeController themeController = Get.find<ThemeController>();
 
@@ -22,7 +28,6 @@ Widget hoverPresetButton(BuildContext context, String label, Duration duration) 
         horizontal: width * 0.02,
         vertical: height * 0.01,
       ),
-
       backgroundColor: themeController.primaryColor.value,
       shadowColor: Colors.transparent,
       minimumSize: Size(
@@ -38,7 +43,6 @@ Widget hoverPresetButton(BuildContext context, String label, Duration duration) 
       style: TextStyle(
         fontSize: height * 0.02,
         color: kprimaryBackgroundColor,
-      
         fontWeight: FontWeight.bold,
       ),
     ),

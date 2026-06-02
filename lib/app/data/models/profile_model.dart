@@ -61,55 +61,56 @@ class ProfileModel {
   @ignore
   List<Map>? offsetDetails;
 
-  ProfileModel(
-      {required this.profileName,
-      this.sharedUserIds = const [],
-      required this.ownerId,
-      required this.ownerName,
-      required this.lastEditedUserId,
-      required this.mutexLock,
-      this.isEnabled = true,
-      required this.days,
-      required this.intervalToAlarm,
-      required this.isActivityEnabled,
-      required this.minutesSinceMidnight,
-      required this.isLocationEnabled,
-      required this.isSharedAlarmEnabled,
-      required this.isWeatherEnabled,
-      required this.location,
-      required this.weatherTypes,
-      required this.isMathsEnabled,
-      required this.mathsDifficulty,
-      required this.numMathsQuestions,
-      required this.isShakeEnabled,
-      required this.shakeTimes,
-      required this.isQrEnabled,
-      required this.qrValue,
-      required this.isPedometerEnabled,
-      required this.numberOfSteps,
-      required this.activityInterval,
-      this.offsetDetails = const [{}],
-      required this.label,
-      required this.isOneTime,
-      required this.snoozeDuration,
-      required this.gradient,
-      required this.ringtoneName,
-      required this.note,
-      required this.deleteAfterGoesOff,
-      required this.showMotivationalQuote,
-      required this.volMax,
-      required this.volMin,
-      required this.activityMonitor,
-      required this.alarmDate,
-      required this.ringOn,
-      required this.isGuardian,
-      required this.guardianTimer,
-      required this.guardian,
-      required this.isCall,
-      required this.isSunriseEnabled,
-      required this.sunriseDuration,
-      required this.sunriseIntensity,
-      required this.sunriseColorScheme});
+  ProfileModel({
+    required this.profileName,
+    this.sharedUserIds = const [],
+    required this.ownerId,
+    required this.ownerName,
+    required this.lastEditedUserId,
+    required this.mutexLock,
+    this.isEnabled = true,
+    required this.days,
+    required this.intervalToAlarm,
+    required this.isActivityEnabled,
+    required this.minutesSinceMidnight,
+    required this.isLocationEnabled,
+    required this.isSharedAlarmEnabled,
+    required this.isWeatherEnabled,
+    required this.location,
+    required this.weatherTypes,
+    required this.isMathsEnabled,
+    required this.mathsDifficulty,
+    required this.numMathsQuestions,
+    required this.isShakeEnabled,
+    required this.shakeTimes,
+    required this.isQrEnabled,
+    required this.qrValue,
+    required this.isPedometerEnabled,
+    required this.numberOfSteps,
+    required this.activityInterval,
+    this.offsetDetails = const [{}],
+    required this.label,
+    required this.isOneTime,
+    required this.snoozeDuration,
+    required this.gradient,
+    required this.ringtoneName,
+    required this.note,
+    required this.deleteAfterGoesOff,
+    required this.showMotivationalQuote,
+    required this.volMax,
+    required this.volMin,
+    required this.activityMonitor,
+    required this.alarmDate,
+    required this.ringOn,
+    required this.isGuardian,
+    required this.guardianTimer,
+    required this.guardian,
+    required this.isCall,
+    required this.isSunriseEnabled,
+    required this.sunriseDuration,
+    required this.sunriseIntensity,
+    required this.sunriseColorScheme,
+  });
 
   ProfileModel.fromDocumentSnapshot({
     required firestore.DocumentSnapshot documentSnapshot,
@@ -122,18 +123,18 @@ class ProfileModel {
     if (isSharedAlarmEnabled && user != null) {
       // Using offsetted time only if it is enabled
 
-if (offsetDetails != null) {
-  final userOffset = offsetDetails!
-      .where((entry) => entry['userId'] == user.id)
-      .toList();
+      if (offsetDetails != null) {
+        final userOffset = offsetDetails!
+            .where((entry) => entry['userId'] == user.id)
+            .toList();
 
-  if (userOffset.isNotEmpty) {
-    final data = userOffset.first;
-    minutesSinceMidnight = Utils.timeOfDayToInt(
-      Utils.stringToTimeOfDay(data['offsettedTime']),
-    );
-  }
-}
+        if (userOffset.isNotEmpty) {
+          final data = userOffset.first;
+          minutesSinceMidnight = Utils.timeOfDayToInt(
+            Utils.stringToTimeOfDay(data['offsettedTime']),
+          );
+        }
+      }
     } else {
       minutesSinceMidnight = documentSnapshot['minutesSinceMidnight'];
     }
@@ -291,7 +292,7 @@ if (offsetDetails != null) {
       'guardianTimer': profileRecord.guardianTimer,
       'guardian': profileRecord.guardian,
       'isCall': profileRecord.isCall,
-      'ringOn': profileRecord.ringOn
+      'ringOn': profileRecord.ringOn,
     };
 
     if (profileRecord.isSharedAlarmEnabled) {

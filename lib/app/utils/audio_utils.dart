@@ -2,7 +2,6 @@ import 'package:audio_session/audio_session.dart';
 import 'package:audioplayers/audioplayers.dart' as audioplayer;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_volume_controller/flutter_volume_controller.dart';
 import 'package:ultimate_alarm_clock/app/data/models/alarm_model.dart';
 import 'package:ultimate_alarm_clock/app/data/models/ringtone_model.dart';
 import 'package:ultimate_alarm_clock/app/data/models/timer_model.dart';
@@ -90,7 +89,8 @@ class AudioUtils {
         if (customRingtone.isSystemRingtone &&
             customRingtone.ringtoneUri.isNotEmpty) {
           await SystemRingtoneService.playSystemRingtone(
-              customRingtone.ringtoneUri);
+            customRingtone.ringtoneUri,
+          );
         } else {
           String customRingtonePath = customRingtone.ringtonePath;
           if (defaultRingtones.contains(ringtoneName)) {
@@ -140,7 +140,8 @@ class AudioUtils {
           if (customRingtone.isSystemRingtone &&
               customRingtone.ringtoneUri.isNotEmpty) {
             await SystemRingtoneService.playSystemRingtone(
-                customRingtone.ringtoneUri);
+              customRingtone.ringtoneUri,
+            );
           } else {
             String customRingtonePath = customRingtone.ringtonePath;
             await playCustomSound(customRingtonePath);
@@ -217,7 +218,8 @@ class AudioUtils {
             await audioSession!.setActive(false);
             await audioSession!.setActive(true);
             await SystemRingtoneService.playSystemRingtone(
-                customRingtone.ringtoneUri);
+              customRingtone.ringtoneUri,
+            );
             isPreviewing = true;
           } else {
             String customRingtonePath = customRingtone.ringtonePath;

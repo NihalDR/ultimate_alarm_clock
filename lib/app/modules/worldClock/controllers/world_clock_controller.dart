@@ -80,8 +80,6 @@ class WorldClockController extends GetxController {
     final sign = diff.isNegative ? '-' : '+';
     final h = diff.inHours.abs();
     final m = diff.inMinutes.abs() % 60;
-    return m == 0
-        ? '${sign}${h}h from you'
-        : '${sign}${h}h ${m}m from you';
+    return m == 0 ? '$sign${h}h from you' : '$sign${h}h ${m}m from you';
   }
 }

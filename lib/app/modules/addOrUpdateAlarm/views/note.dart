@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/controllers/add_or_update_alarm_controller.dart';
+import '../controllers/add_or_update_alarm_controller.dart';
 import 'package:ultimate_alarm_clock/app/modules/settings/controllers/theme_controller.dart';
 import 'package:ultimate_alarm_clock/app/utils/constants.dart';
 import 'package:ultimate_alarm_clock/app/utils/utils.dart';
@@ -17,12 +17,11 @@ class NoteTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-        final double width = MediaQuery.of(context).size.width;
-        // ignore: unused_local_variable
-        final double height = MediaQuery.of(context).size.height;
+    final double width = MediaQuery.of(context).size.width;
+    // ignore: unused_local_variable
+    final double height = MediaQuery.of(context).size.height;
     return Obx(
       () => ListTile(
-
         title: FittedBox(
           fit: BoxFit.scaleDown,
           alignment: Alignment.centerLeft,
@@ -43,7 +42,7 @@ class NoteTile extends StatelessWidget {
             children: [
               Obx(
                 () => Container(
-                  width: width*0.1,
+                  width: width * 0.1,
                   alignment: Alignment.centerRight,
                   child: Text(
                     (controller.note.value.trim().isNotEmpty)
@@ -109,9 +108,9 @@ class _NotesEditorPageState extends State<_NotesEditorPage> {
     _originalText = widget.controller.noteController.text;
     _textController = TextEditingController(text: _originalText);
     _focusNode = FocusNode();
-    
+
     _textController.addListener(_onTextChanged);
-    
+
     // Auto-focus after a short delay to ensure smooth navigation
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Future.delayed(const Duration(milliseconds: 300), () {
@@ -158,7 +157,8 @@ class _NotesEditorPageState extends State<_NotesEditorPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: widget.themeController.secondaryBackgroundColor.value,
+          backgroundColor:
+              widget.themeController.secondaryBackgroundColor.value,
           title: Text(
             'Discard changes?'.tr,
             style: TextStyle(
@@ -166,7 +166,8 @@ class _NotesEditorPageState extends State<_NotesEditorPage> {
             ),
           ),
           content: Text(
-            'You have unsaved changes. Are you sure you want to discard them?'.tr,
+            'You have unsaved changes. Are you sure you want to discard them?'
+                .tr,
             style: TextStyle(
               color: widget.themeController.primaryDisabledTextColor.value,
             ),
@@ -198,13 +199,23 @@ class _NotesEditorPageState extends State<_NotesEditorPage> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: _onWillPop,
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) async {
+        if (didPop) {
+          return;
+        }
+
+        if (await _onWillPop()) {
+          _discardAndClose();
+        }
+      },
       child: Obx(
         () => Scaffold(
           backgroundColor: widget.themeController.primaryBackgroundColor.value,
           appBar: AppBar(
-            backgroundColor: widget.themeController.primaryBackgroundColor.value,
+            backgroundColor:
+                widget.themeController.primaryBackgroundColor.value,
             elevation: 0,
             leading: IconButton(
               icon: Icon(
@@ -221,9 +232,9 @@ class _NotesEditorPageState extends State<_NotesEditorPage> {
             title: Text(
               'Add a note'.tr,
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                color: widget.themeController.primaryTextColor.value,
-                fontWeight: FontWeight.w600,
-              ),
+                    color: widget.themeController.primaryTextColor.value,
+                    fontWeight: FontWeight.w600,
+                  ),
             ),
             actions: [
               TextButton(
@@ -255,10 +266,12 @@ class _NotesEditorPageState extends State<_NotesEditorPage> {
                   padding: const EdgeInsets.all(16),
                   margin: const EdgeInsets.only(bottom: 16),
                   decoration: BoxDecoration(
-                    color: widget.themeController.secondaryBackgroundColor.value,
+                    color:
+                        widget.themeController.secondaryBackgroundColor.value,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: widget.themeController.primaryDisabledTextColor.value
+                      color: widget
+                          .themeController.primaryDisabledTextColor.value
                           .withOpacity(0.1),
                     ),
                   ),
@@ -270,16 +283,22 @@ class _NotesEditorPageState extends State<_NotesEditorPage> {
                         children: [
                           Text(
                             'Add details about your alarm'.tr,
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: widget.themeController.primaryTextColor.value,
-                              fontWeight: FontWeight.w500,
-                            ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(
+                                  color: widget
+                                      .themeController.primaryTextColor.value,
+                                  fontWeight: FontWeight.w500,
+                                ),
                           ),
                           Text(
                             '${_textController.text.length}/500',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: widget.themeController.primaryDisabledTextColor.value,
-                            ),
+                            style:
+                                Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: widget.themeController
+                                          .primaryDisabledTextColor.value,
+                                    ),
                           ),
                         ],
                       ),
@@ -287,21 +306,24 @@ class _NotesEditorPageState extends State<_NotesEditorPage> {
                       Text(
                         'Reminders, context, or any additional information'.tr,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: widget.themeController.primaryDisabledTextColor.value,
-                        ),
+                              color: widget.themeController
+                                  .primaryDisabledTextColor.value,
+                            ),
                       ),
                     ],
                   ),
                 ),
-                
+
                 // Text input field
                 Expanded(
                   child: Container(
                     decoration: BoxDecoration(
-                      color: widget.themeController.secondaryBackgroundColor.value,
+                      color:
+                          widget.themeController.secondaryBackgroundColor.value,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: widget.themeController.primaryDisabledTextColor.value
+                        color: widget
+                            .themeController.primaryDisabledTextColor.value
                             .withOpacity(0.1),
                       ),
                     ),
@@ -313,15 +335,18 @@ class _NotesEditorPageState extends State<_NotesEditorPage> {
                       expands: true,
                       textAlignVertical: TextAlignVertical.top,
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: widget.themeController.primaryTextColor.value,
-                        height: 1.5, // Better line spacing
-                      ),
+                            color:
+                                widget.themeController.primaryTextColor.value,
+                            height: 1.5, // Better line spacing
+                          ),
                       cursorColor: kprimaryColor,
                       decoration: InputDecoration(
                         hintText: 'Enter your note here...'.tr,
-                        hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: widget.themeController.primaryDisabledTextColor.value,
-                        ),
+                        hintStyle:
+                            Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                  color: widget.themeController
+                                      .primaryDisabledTextColor.value,
+                                ),
                         border: InputBorder.none,
                         contentPadding: const EdgeInsets.all(20),
                         counterText: '', // Hide the built-in counter
@@ -330,7 +355,8 @@ class _NotesEditorPageState extends State<_NotesEditorPage> {
                         // Remove leading whitespace from first line
                         if (text.isNotEmpty && text[0] == ' ') {
                           _textController.text = text.trimLeft();
-                          _textController.selection = TextSelection.fromPosition(
+                          _textController.selection =
+                              TextSelection.fromPosition(
                             TextPosition(offset: _textController.text.length),
                           );
                         }
@@ -338,7 +364,7 @@ class _NotesEditorPageState extends State<_NotesEditorPage> {
                     ),
                   ),
                 ),
-                
+
                 // Bottom action bar (optional)
                 if (_hasChanges)
                   Container(
@@ -360,7 +386,8 @@ class _NotesEditorPageState extends State<_NotesEditorPage> {
                       child: Text(
                         'Save Note'.tr,
                         style: TextStyle(
-                          color: widget.themeController.secondaryTextColor.value,
+                          color:
+                              widget.themeController.secondaryTextColor.value,
                           fontWeight: FontWeight.w600,
                           fontSize: 16,
                         ),

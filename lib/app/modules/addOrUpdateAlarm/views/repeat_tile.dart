@@ -61,16 +61,28 @@ class RepeatTile extends StatelessWidget {
                         width: width,
                         child: Padding(
                           padding: const EdgeInsets.only(
-                              left: 25, right: 25, bottom: 25),
+                            left: 25,
+                            right: 25,
+                            bottom: 25,
+                          ),
                           child: TextButton(
-                            style: ButtonStyle(
-                              backgroundColor: MaterialStateProperty.all(
+                            style: const ButtonStyle(
+                              backgroundColor: WidgetStatePropertyAll(
                                 kprimaryColor,
                               ),
                             ),
                             onPressed: () {
                               Utils.hapticFeedback();
-                              if (controller.repeatDays != [false, false, false, false, false, false, false]) {
+                              if (controller.repeatDays !=
+                                  [
+                                    false,
+                                    false,
+                                    false,
+                                    false,
+                                    false,
+                                    false,
+                                    false,
+                                  ]) {
                                 controller.selectedDate.value = DateTime.now();
                                 controller.isFutureDate.value = false;
                               }
@@ -405,6 +417,7 @@ class RepeatTile extends StatelessWidget {
 
                     // Update repeatDays based on isWeekdaysSelected value
                     for (int i = 0; i < controller.repeatDays.length; i++) {
+                      // ignore: lines_longer_than_80_chars
                       // Assuming weekdays are from Monday to Friday (index 0 to 4)
                       controller.repeatDays[i] =
                           controller.isWeekdaysSelected.value &&

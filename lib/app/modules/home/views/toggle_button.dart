@@ -20,7 +20,6 @@ class ToggleButton extends StatefulWidget {
 }
 
 class _ToggleButtonState extends State<ToggleButton> {
-
   ThemeController themeController = Get.find<ThemeController>();
 
   @override
@@ -32,13 +31,16 @@ class _ToggleButtonState extends State<ToggleButton> {
           if (widget.isSelected == null) {
             // Toggle the value of that particular alarm
             widget.controller.alarmListPairs.second[widget.alarmIndex!].value =
-                !widget.controller.alarmListPairs.second[widget.alarmIndex!].value;
+                !widget
+                    .controller.alarmListPairs.second[widget.alarmIndex!].value;
 
             // Storing the value of the toggle button for that particular alarm
-            var buttonValue = widget.controller.alarmListPairs.second[widget.alarmIndex!].value;
+            var buttonValue = widget
+                .controller.alarmListPairs.second[widget.alarmIndex!].value;
 
             // Storing the alarm model
-            AlarmModel alarm = widget.controller.alarmListPairs.first[widget.alarmIndex!];
+            AlarmModel alarm =
+                widget.controller.alarmListPairs.first[widget.alarmIndex!];
 
             // If the alarm is selected
             if (buttonValue) {
@@ -67,10 +69,8 @@ class _ToggleButtonState extends State<ToggleButton> {
               // Reduce the number of alarms selected
               widget.controller.numberOfAlarmsSelected.value--;
 
-              
               widget.controller.selectedAlarmSet.removeWhere(
-                (element) => 
-                  alarm.isSharedAlarmEnabled 
+                (element) => alarm.isSharedAlarmEnabled
                     ? alarm.firestoreId == element.first
                     : alarm.isarId == element.first,
               );
@@ -85,12 +85,10 @@ class _ToggleButtonState extends State<ToggleButton> {
                 !widget.controller.isAllAlarmsSelected.value;
 
             if (widget.controller.isAllAlarmsSelected.value) {
-              
               widget.controller.addAllAlarmsToSelectedAlarmSet();
-              widget.controller.numberOfAlarmsSelected.value = 
+              widget.controller.numberOfAlarmsSelected.value =
                   widget.controller.alarmListPairs.first.length;
             } else {
-              
               widget.controller.removeAllAlarmsFromSelectedAlarmSet();
               widget.controller.numberOfAlarmsSelected.value = 0;
             }

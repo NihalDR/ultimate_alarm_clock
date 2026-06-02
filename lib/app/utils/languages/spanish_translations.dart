@@ -24,17 +24,22 @@ class SpanishTranslations extends Translations {
           'Why do I have to sign in with Google?':
               '¿Por qué tengo que iniciar sesión con Google?',
           'Sign-inDescription':
-              'Iniciar sesión es opcional. Solo es necesario para las funciones que utilizan servicios en la nube, como:',
+              'Iniciar sesión es opcional. Solo es necesario para las '
+                  'funciones que utilizan servicios en la nube, como:',
           'CollabDescription':
-              'Colabore con amigos, familiares o colegas para asegurarse de que se despierten a tiempo utilizando alarmas compartidas.',
+              'Colabore con amigos, familiares o colegas para asegurarse de '
+                  'que se despierten a tiempo utilizando alarmas compartidas.',
           'Syncing Across Devices': 'Sincronización entre dispositivos',
           'AccessMultiple':
-              'Acceda a sus alarmas desde varios dispositivos donde las alarmas se actualizan en tiempo real.',
+              'Acceda a sus alarmas desde varios dispositivos donde las '
+                  'alarmas se actualizan en tiempo real.',
           'Your privacy': 'Tu privacidad',
           'NoAccessInfo':
-              'No accedemos, no usamos ni vendemos ninguna información, lo cual puedes verificar inspeccionando el código fuente.',
+              'No accedemos, no usamos ni vendemos ninguna información, lo '
+                  'cual puedes verificar inspeccionando el código fuente.',
           'LimitedAccess':
-              'Todo el acceso está limitado exclusivamente para proporcionar las funcionalidades descritas anteriormente.',
+              'Todo el acceso está limitado exclusivamente para proporcionar '
+                  'las funcionalidades descritas anteriormente.',
           'Enable Light Mode': 'Habilitar modo claro',
           'Change Language': 'Cambiar Idioma',
           'English': 'Inglés',
@@ -57,8 +62,9 @@ class SpanishTranslations extends Translations {
           'Yes': 'Sí',
           'No': 'No',
           'Confirmation': 'Confirmación',
-          'want to delete?': '¿Estás seguro de que deseas eliminar esta alarma?',
-          'delete':'borrar',
+          'want to delete?':
+              '¿Estás seguro de que deseas eliminar esta alarma?',
+          'delete': 'borrar',
           'You cannot join your own alarm!':
               '¡No puedes unirte a tu propia alarma!',
           'An alarm with this ID doesn\'t exist!':
@@ -77,13 +83,19 @@ class SpanishTranslations extends Translations {
           'Preview Alarm': 'Vista previa de alarma',
           'Delete Alarm': 'Eliminar alarma',
           //about_view.dart texts
-          'This project was originally developed as part of Google Summer of code under the CCExtractor organization. It\'s free, the source code is available, and we encourage programmers to contribute':
-              'Este proyecto fue desarrollado originalmente como parte del Google Summer of Code bajo la organización CCExtractor. Es gratuito, el código fuente está disponible y animamos a los programadores a contribuir.',
+          'This project was originally developed as part of Google Summer of '
+                  'code under the CCExtractor organization. It\'s free, the source '
+                  'code is available, and we encourage programmers to contribute':
+              'Este proyecto fue desarrollado originalmente como parte del '
+                  'Google Summer of Code bajo la organización CCExtractor. Es '
+                  'gratuito, el código fuente está disponible y animamos a los '
+                  'programadores a contribuir.',
           'Could not launch': 'No se pudo iniciar',
 //add_or_update_alarm_view.dart
           'Discard Changes?': '¿Descartar cambios?',
           'unsavedChanges':
-              'Tiene cambios no guardados. ¿Está seguro de que desea salir de esta página?',
+              'Tiene cambios no guardados. ¿Está seguro de que desea salir '
+                  'de esta página?',
           'Cancel': 'Cancelar',
           'Leave': 'Salir',
           'Save': 'Guardar',
@@ -97,7 +109,8 @@ class SpanishTranslations extends Translations {
           'Shared Alarm': 'Alarma compartida',
           'Camera Permission': 'Permiso de cámara',
           'Please allow camera access to scan QR codes.':
-              'Por favor, permita el acceso a la cámara para escanear códigos QR.',
+              'Por favor, permita el acceso a la cámara para escanear códigos '
+                  'QR.',
           'OK': 'De \n acuerdo',
 
 //alarm_id_tile.dart
@@ -106,7 +119,8 @@ class SpanishTranslations extends Translations {
           'Alarm ID': 'ID de la alarma',
           'Disabled!': '¡Desactivado!',
           'toCopyAlarm':
-              'Para copiar el ID de la alarma, debes habilitar la alarma compartida!',
+              'Para copiar el ID de la alarma, debes habilitar la alarma '
+                  'compartida!',
           'Choose duration': 'Elegir duración',
           'minutes': 'minutos',
           'minute': 'minuto',
@@ -136,15 +150,12 @@ class SpanishTranslations extends Translations {
 //maths_challenge_tile.dart
           'Maths': 'Matemáticas',
           'Math problems': 'Problemas matemáticos',
+          'mathDescription':
+              'Deberá resolver problemas matemáticos simples del nivel de '
+                  'dificultad elegido para desactivar la alarma.',
           'Easy': 'Fácil',
           'Medium': 'Medio',
           'Hard': 'Difícil',
-
-//maths_challenge_tile.dart
-          'Maths': 'Matemáticas',
-          'Math problems': 'Problemas matemáticos',
-          'mathDescription':
-              'Deberá resolver problemas matemáticos simples del nivel de dificultad elegido para desactivar la alarma.',
           'Solve Maths questions': 'Resolver preguntas de matemáticas',
           'questions': 'preguntas',
           'question': 'pregunta',
@@ -155,20 +166,29 @@ class SpanishTranslations extends Translations {
           'step': 'paso',
           'steps': 'pasos',
           'pedometerDescription':
-              '¡Avance para despedir! Establezca una meta de pasos para apagar la alarma, promoviendo un comienzo del día activo y lleno de energía.',
+              '¡Avance para despedir! Establezca una meta de pasos para '
+                  'apagar la alarma, promoviendo un comienzo del día activo y '
+                  'lleno de energía.',
 //note.dart
           'Add a note': 'Agrega una nota',
 // qr_bar_code_tile.dart
           'QR/Bar Code': 'Código QR/Código de barras',
           'qrDescription':
-              'Escanee el código QR/código de barras en cualquier objeto, como un libro, y muévalo a una habitación diferente. Para desactivar la alarma, simplemente vuelva a escanear el mismo código QR/código de barras.',
+              'Escanee el código QR/código de barras en cualquier objeto, '
+                  'como un libro, y muévalo a una habitación diferente. Para '
+                  'desactivar la alarma, simplemente vuelva a escanear el mismo '
+                  'código QR/código de barras.',
 //repeat_once_tile.dart
           'Repeat only once': 'Repetir solo una vez',
 //repeat_tile.dart
           'Repeat': 'Repetir',
           'Days of the week': 'Días de la semana',
-          'Monday': 'Lunes', 'Tuesday': 'Martes', 'Wednesday': 'Miércoles',
-          'Thursday': 'Jueves', 'Friday': 'Viernes', 'Saturday': 'Sábado',
+          'Monday': 'Lunes',
+          'Tuesday': 'Martes',
+          'Wednesday': 'Miércoles',
+          'Thursday': 'Jueves',
+          'Friday': 'Viernes',
+          'Saturday': 'Sábado',
           'Sunday': 'Domingo',
 //screen_activity_tile.dart
           'Timeout Duration': 'Duración de tiempo de espera',
@@ -176,19 +196,23 @@ class SpanishTranslations extends Translations {
           'Screen activity based cancellation':
               'Cancelación basada en la actividad de la pantalla',
           'screenDescription':
-              'Esta función cancelará automáticamente la alarma si ha estado utilizando su dispositivo durante un número determinado de minutos.',
+              'Esta función cancelará automáticamente la alarma si ha estado '
+                  'utilizando su dispositivo durante un número determinado de '
+                  'minutos.',
 //shake_to_dismiss_tile.dart
           'Shake to dismiss': 'Agitar para descartar',
           'shakeDescription':
-              'Tendrá que agitar su teléfono un número determinado de veces para descartar la alarma, ¡nada de posponer perezosamente :)',
+              'Tendrá que agitar su teléfono un número determinado de veces '
+                  'para descartar la alarma, ¡nada de posponer perezosamente :)',
           'Number of shakes': 'Número de sacudidas',
           'times': 'veces',
           'time': 'vez',
 //'shared_alarm_tile.dart
-          'Shared Alarm': 'Alarma compartida',
           'Shared alarms': 'Alarmas compartidas',
           'sharedDescription':
-              'Comparta alarmas con otros utilizando el ID de la alarma. Cada usuario compartido puede elegir hacer sonar su alarma antes o después del tiempo establecido.',
+              'Comparta alarmas con otros utilizando el ID de la alarma. '
+                  'Cada usuario compartido puede elegir hacer sonar su alarma '
+                  'antes o después del tiempo establecido.',
           'Understood': 'Entendido',
           'To use this feature, you have to link your Google account!':
               'Para usar esta función, debe vincular su cuenta de Google!',
@@ -212,9 +236,12 @@ class SpanishTranslations extends Translations {
           'Weather Condition': 'Condición meteorológica',
           'Weather based cancellation': 'Cancelación basada en el clima',
           'weatherDescription':
-              'Esta función cancelará automáticamente la alarma si el clima actual coincide con las condiciones climáticas elegidas, ¡permitiéndote dormir mejor!',
+              'Esta función cancelará automáticamente la alarma si el clima '
+                  'actual coincide con las condiciones climáticas elegidas, '
+                  '¡permitiéndote dormir mejor!',
           'To use this feature, you have to add an OpenWeatherMap API key!':
-              'Para usar esta función, debe agregar una clave API de OpenWeatherMap!',
+              'Para usar esta función, debe agregar una clave API de '
+                  'OpenWeatherMap!',
 //alarm_challenge_view.dart
           'Shake Challenge': 'Desafío de agitación',
           'Maths Challenge': 'Desafío de matemáticas',
@@ -228,8 +255,8 @@ class SpanishTranslations extends Translations {
 //shake_challenge_view.dart
           'Shake your phone!': '¡Agita tu teléfono!',
 //alarm_ring_view.dart
-          "You can't go back while the alarm is ringing":
-              "No puedes retroceder mientras suena la alarma",
+          'You can\'t go back while the alarm is ringing':
+              'No puedes retroceder mientras suena la alarma',
           'Start Challenge': 'Comenzar el desafío',
           'Dismiss': 'Descartar',
           'Exit Preview': 'Salir de la vista previa',
@@ -239,8 +266,13 @@ class SpanishTranslations extends Translations {
           'Everyday': 'Todos los días',
           'Weekdays': 'Días laborables',
           'Weekends': 'Fines de semana',
-          'Mon': 'Lun', 'Tue': 'Mar', 'Wed': 'Mié', 'Thur': 'Jue',
-          'Fri': 'Vie', 'Sat': 'Sáb', 'Sun': 'Dom',
+          'Mon': 'Lun',
+          'Tue': 'Mar',
+          'Wed': 'Mié',
+          'Thur': 'Jue',
+          'Fri': 'Vie',
+          'Sat': 'Sáb',
+          'Sun': 'Dom',
           //OpenWeatherMap
           'onenweathermap_title1.1': 'Pasos para conseguir ',
           'onenweathermap_title1.2': 'OpenWeatherMap API',
@@ -249,18 +281,23 @@ class SpanishTranslations extends Translations {
           'step1.3': ', haga clic en el botón ',
           'step1.4': 'SignIn',
           'step1.5':
-              ' (esquina superior derecha) luego solicita las credenciales de inicio de sesión.',
-          'step2.1':
-              'Si ya tiene una cuenta, ingrese sus credenciales. De lo contrario, haga clic en la opción ',
+              ' (esquina superior derecha) luego solicita las credenciales '
+                  'de inicio de sesión.',
+          'step2.1': 'Si ya tiene una cuenta, ingrese sus credenciales. De lo '
+              'contrario, haga clic en la opción ',
           'step2.2': 'Create an Account',
           'step2.3':
-              '. Le pide que ingrese su nombre de usuario, correo electrónico y contraseña. Asegúrate de que los detalles sean correctos.',
-          'step3':
-              'Una vez que su cuenta esté lista, se le dirigirá automáticamente a la página de OpenWeather. Te pregunta sobre tu empresa y el propósito de uso de la plataforma, complete estos detalles en consecuencia.',
+              '. Le pide que ingrese su nombre de usuario, correo electrónico '
+                  'y contraseña. Asegúrate de que los detalles sean correctos.',
+          'step3': 'Una vez que su cuenta esté lista, se le dirigirá '
+              'automáticamente a la página de OpenWeather. Te pregunta sobre '
+              'tu empresa y el propósito de uso de la plataforma, complete '
+              'estos detalles en consecuencia.',
           'step4.1': 'Haga clic en su ',
           'step4.2': 'Username',
           'step4.3':
-              '(esquina superior derecha). Aparece un menú desplegable. Haga clic en la opción ',
+              '(esquina superior derecha). Aparece un menú desplegable. Haga '
+                  'clic en la opción ',
           'step4.4': 'My API',
           'step4.5': '.',
           'step5': 'Ahora tienes la API. Seleccione la API y cópiela.',
@@ -277,7 +314,7 @@ class SpanishTranslations extends Translations {
           'Remove Clock': 'Eliminar reloj',
           'Alarm deleted': 'Alarma eliminada',
           'Undo': 'Deshacer',
-          'The alarm has been deleted': 'La alarma ha sido eliminada'
+          'The alarm has been deleted': 'La alarma ha sido eliminada',
         },
       };
 }

@@ -1,3 +1,5 @@
+// ignore_for_file: lines_longer_than_80_chars
+
 import 'package:get/get.dart';
 import 'package:get/get_navigation/src/root/internacionalization.dart';
 import 'package:ultimate_alarm_clock/app/utils/languages/french_translations.dart';
@@ -24,23 +26,29 @@ class AppTranslations extends Translations {
           'Unlink': 'Unlink',
           'Sign-In with Google': 'Sign-In with Google',
           'Unlink @usermail': 'Unlink @usermail',
-          'Sign-In attempt failed! Please try again.': 'Sign-In attempt failed! Please try again.',
+          'Sign-In attempt failed! '
+              'Please try again.': 'Sign-In attempt failed! '
+              'Please try again.',
           'Sign-In failed: @error': 'Sign-In failed: @error',
           'Error': 'Error',
           'Why do I have to sign in with Google?':
               'Why do I have to sign in with Google?',
           'Sign-inDescription':
-              'Signing in is optional. It is only required for the functionalities that use cloud services to work such as:',
+              'Signing in is optional. It is only required for the '
+                  'functionalities that use cloud services to work such as:',
           'CollabDescription':
-              'Collaborate with friends, family members, or colleagues to ensure that they wake up on time using shared alarms.',
+              'Collaborate with friends, family members, or colleagues to '
+                  'ensure that they wake up on time using shared alarms.',
           'Syncing Across Devices': 'Syncing Across Devices',
           'AccessMultiple':
-              'Access your alarms across multiple devices where the alarms are updated in real-time.',
+              'Access your alarms across multiple devices where the alarms '
+                  'are updated in real-time.',
           'Your privacy': 'Your privacy',
           'NoAccessInfo':
-              'We do not access,  use or sell any information, which you can verify by inspecting the source code.',
-          'LimitedAccess':
-              'All access is limited exclusively to provide the functionalities described above.',
+              'We do not access,  use or sell any information, which you can '
+                  'verify by inspecting the source code.',
+          'LimitedAccess': 'All access is limited exclusively to provide the '
+              'functionalities described above.',
           'Enable Light Mode': 'Enable Light Mode',
 
           //home_view.dart texts
@@ -60,7 +68,7 @@ class AppTranslations extends Translations {
           'No': 'No',
           'Confirmation': 'Confirmation',
           'want to delete?': 'Are you sure you want to delete this alarm?',
-          'delete' : 'Delete',
+          'delete': 'Delete',
 
           'You cannot join your own alarm!': 'You cannot join your own alarm!',
           'An alarm with this ID doesn\'t exist!':
@@ -78,8 +86,13 @@ class AppTranslations extends Translations {
           'Preview Alarm': 'Preview Alarm',
           'Delete Alarm': 'Delete Alarm',
           //about_view.dart texts
-          'This project was originally developed as part of Google Summer of code under the CCExtractor organization. It\'s free, the source code is available, and we encourage programmers to contribute':
-              'This project was originally developed as part of Google Summer of code under the CCExtractor organization. It\'s free, the source code is available, and we encourage programmers to contribute',
+          'This project was originally developed as part of Google Summer of '
+                  'code under the CCExtractor organization. It\'s free, the source '
+                  'code is available, and we encourage programmers to contribute':
+              'This project was originally developed as part of Google Summer '
+                  'of code under the CCExtractor organization. It\'s free, the '
+                  'source code is available, and we encourage programmers to '
+                  'contribute',
           'Could not launch': 'Could not launch',
           //add_or_update_alarm_view.dart
           'Discard Changes?': 'Discard Changes?',
@@ -90,7 +103,6 @@ class AppTranslations extends Translations {
           'Leave': 'Leave',
           'Save': 'Save',
           'Update': 'Update',
-          'Rings in @timeToAlarm': 'Rings in @timeToAlarm',
           'Uh-oh!': 'Uh-oh!',
           'alarmEditing': 'This alarm is currently being edited!',
           'Go back': 'Go back',
@@ -134,20 +146,28 @@ class AppTranslations extends Translations {
           'question': 'question',
           //pedometer_challenge_tile.dart
           'Pedometer': 'Pedometer',
-          'pedometerDescription': 'You will have to walk a set number of steps to dismiss the alarm.',
+          'pedometerDescription':
+              'You will have to walk a set number of steps to dismiss the '
+                  'alarm.',
           //note.dart
           'Add a note': 'Add a note',
           // qr_bar_code_tile.dart
           'QR/Bar Code': 'QR/Bar Code',
           'qrDescription':
-              'Scan the QR/Bar code on any object, like a book, and relocate it to a different room. To deactivate the alarm, simply rescan the same QR/Bar code.',
+              'Scan the QR/Bar code on any object, like a book, and relocate '
+                  'it to a different room. To deactivate the alarm, simply rescan '
+                  'the same QR/Bar code.',
           //repeat_once_tile.dart
           'Repeat only once': 'Repeat only once',
           //repeat_tile.dart
           'Repeat': 'Repeat',
           'Days of the week': 'Days of the week',
-          'Monday': 'Monday', 'Tuesday': 'Tuesday', 'Wednesday': 'Wednesday',
-          'Thursday': 'Thursday', 'Friday': 'Friday', 'Saturday': 'Saturday',
+          'Monday': 'Monday',
+          'Tuesday': 'Tuesday',
+          'Wednesday': 'Wednesday',
+          'Thursday': 'Thursday',
+          'Friday': 'Friday',
+          'Saturday': 'Saturday',
           'Sunday': 'Sunday',
           //screen_activity_tile.dart
           'Timeout Duration': 'Timeout Duration',
@@ -164,10 +184,11 @@ class AppTranslations extends Translations {
           'times': 'times',
           'time': 'time',
           //'shared_alarm_tile.dart
-          'Shared Alarm': 'Shared Alarm',
           'Shared alarms': 'Shared alarms',
           'sharedDescription':
-              'Share alarms with others using the Alarm ID. Each shared user can choose to have their alarm ring before or after the set time.',
+              'Share alarms with others using the Alarm ID. Each shared user '
+                  'can choose to have their alarm ring before or after the set '
+                  'time.',
           'Understood': 'Understood',
           'To use this feature, you have to link your Google account!':
               'To use this feature, you have to link your Google account!',
@@ -207,8 +228,8 @@ class AppTranslations extends Translations {
           //shake_challenge_view.dart
           'Shake your phone!': 'Shake your phone!',
           //alarm_ring_view.dart
-          "You can't go back while the alarm is ringing":
-              "You can't go back while the alarm is ringing",
+          'You can\'t go back while the alarm is ringing':
+              'You can\'t go back while the alarm is ringing',
           'Start Challenge': 'Start Challenge',
           'Dismiss': 'Dismiss',
           'Exit Preview': 'Exit Preview',
@@ -217,8 +238,13 @@ class AppTranslations extends Translations {
           'Everyday': 'Everyday',
           'Weekdays': 'Weekdays',
           'Weekends': 'Weekends',
-          'Mon': 'Mon', 'Tue': 'Tue', 'Wed': 'Wed', 'Thur': 'Thur',
-          'Fri': 'Fri', 'Sat': 'Sat', 'Sun': 'Sun',
+          'Mon': 'Mon',
+          'Tue': 'Tue',
+          'Wed': 'Wed',
+          'Thur': 'Thur',
+          'Fri': 'Fri',
+          'Sat': 'Sat',
+          'Sun': 'Sun',
           //OpenWeatherMap
           'onenweathermap_title1.1': 'Steps to get ',
           'onenweathermap_title1.2': 'OpenWeatherMap API',
@@ -229,12 +255,14 @@ class AppTranslations extends Translations {
           'step1.5':
               ' button(top right corner) then it ask for login credentials.',
           'step2.1':
-              'If you already have an account then enter your credentials. Otherwise, click on ',
+              'If you already have an account then enter your credentials. '
+                  'Otherwise, click on ',
           'step2.2': 'Create an Account',
-          'step2.3':
-              ' option. It asks you to Enter your username, email, and password. Make sure entered details are correct.',
-          'step3':
-              'Once your account is created, you are automatically directed to the OpenWeather page. It asks you about your company and the purpose of using the platform, fill this details accordingly.',
+          'step2.3': ' option. It asks you to Enter your username, email, and '
+              'password. Make sure entered details are correct.',
+          'step3': 'Once your account is created, you are automatically directed '
+              'to the OpenWeather page. It asks you about your company and the '
+              'purpose of using the platform, fill this details accordingly.',
           'step4.1': 'Click on your ',
           'step4.2': 'Username',
           'step4.3': '(top right corner). A dropdown menu appears. Click on ',

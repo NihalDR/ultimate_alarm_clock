@@ -6,7 +6,9 @@ import 'package:ultimate_alarm_clock/app/modules/timerRing/controllers/timer_rin
 import 'package:ultimate_alarm_clock/app/utils/constants.dart';
 
 class TimerRingView extends GetView<TimerRingController> {
-  ThemeController themeController = Get.find<ThemeController>();
+  TimerRingView({super.key});
+
+  final ThemeController themeController = Get.find<ThemeController>();
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +23,7 @@ class TimerRingView extends GetView<TimerRingController> {
 
         Get.snackbar(
           'Note',
-          "You can't go back while the timer is ringing",
+          'You can\'t go back while the timer is ringing',
           backgroundColor: Colors.red,
           colorText: Colors.white,
         );
@@ -36,8 +38,8 @@ class TimerRingView extends GetView<TimerRingController> {
               height: height * 0.06,
               width: width * 0.8,
               child: TextButton(
-                style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.all(
+                style: const ButtonStyle(
+                  backgroundColor: WidgetStatePropertyAll(
                     kprimaryColor,
                   ),
                 ),

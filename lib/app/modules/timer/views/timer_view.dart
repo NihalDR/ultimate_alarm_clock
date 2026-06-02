@@ -13,17 +13,16 @@ import 'package:ultimate_alarm_clock/app/utils/end_drawer.dart';
 import 'package:ultimate_alarm_clock/app/utils/hover_preset_button.dart';
 import 'package:ultimate_alarm_clock/app/utils/preset_button.dart';
 import 'package:ultimate_alarm_clock/app/utils/utils.dart';
-import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/views/custom_time_picker.dart';
 
 import '../../../data/models/timer_model.dart';
 
 class TimerView extends GetView<TimerController> {
-  TimerView({Key? key}) : super(key: key);
+  TimerView({super.key});
   final GlobalKey dialogKey = GlobalKey();
   final ThemeController themeController = Get.find<ThemeController>();
   // var width = Get.width;
   // var height = Get.height;
-  
+
   @override
   Widget build(BuildContext context) {
     final double height = MediaQuery.of(context).size.height;
@@ -72,7 +71,7 @@ class TimerView extends GetView<TimerController> {
         () => Visibility(
           visible:
               controller.isbottom.value && controller.timerList.length >= 3,
-          child: Container(
+          child: SizedBox(
             height: 85,
             child: FittedBox(
               child: FloatingActionButton(
@@ -284,7 +283,12 @@ class TimerView extends GetView<TimerController> {
                           color: themeController.primaryBackgroundColor.value,
                           width: width,
                           child: controller.isTimePickerTimer.value
-                              ? _buildAdaptiveTimerPicker(context, width, height, themeController)
+                              ? _buildAdaptiveTimerPicker(
+                                  context,
+                                  width,
+                                  height,
+                                  themeController,
+                                )
                               : Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -319,7 +323,8 @@ class TimerView extends GetView<TimerController> {
                                               border: InputBorder.none,
                                             ),
                                             textAlign: TextAlign.center,
-                                            controller: controller.inputHoursControllerTimer,
+                                            controller: controller
+                                                .inputHoursControllerTimer,
                                             keyboardType: TextInputType.number,
                                             inputFormatters: [
                                               FilteringTextInputFormatter.allow(
@@ -388,7 +393,8 @@ class TimerView extends GetView<TimerController> {
                                               border: InputBorder.none,
                                             ),
                                             textAlign: TextAlign.center,
-                                            controller: controller.inputMinutesControllerTimer,
+                                            controller: controller
+                                                .inputMinutesControllerTimer,
                                             keyboardType: TextInputType.number,
                                             inputFormatters: [
                                               FilteringTextInputFormatter.allow(
@@ -457,7 +463,8 @@ class TimerView extends GetView<TimerController> {
                                               border: InputBorder.none,
                                             ),
                                             textAlign: TextAlign.center,
-                                            controller: controller.inputSecondsControllerTimer,
+                                            controller: controller
+                                                .inputSecondsControllerTimer,
                                             keyboardType: TextInputType.number,
                                             inputFormatters: [
                                               FilteringTextInputFormatter.allow(
@@ -612,9 +619,14 @@ class TimerView extends GetView<TimerController> {
     );
   }
 
-  Widget _buildAdaptiveTimerPicker(BuildContext context, double width, double height, ThemeController themeController) {
+  Widget _buildAdaptiveTimerPicker(
+    BuildContext context,
+    double width,
+    double height,
+    ThemeController themeController,
+  ) {
     // Check if font scaling is too high for NumberPicker
-    final systemScale = MediaQuery.textScaleFactorOf(context);
+    final systemScale = MediaQuery.textScalerOf(context).scale(1.0);
     final combinedScale = systemScale;
     final useCustomPicker = combinedScale > 1.5;
 
@@ -710,9 +722,9 @@ class TimerView extends GetView<TimerController> {
                 Text(
                   'Hours',
                   style: Theme.of(context).textTheme.displaySmall!.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: themeController.primaryDisabledTextColor.value,
-                  ),
+                        fontWeight: FontWeight.bold,
+                        color: themeController.primaryDisabledTextColor.value,
+                      ),
                 ),
                 SizedBox(height: height * 0.008),
                 NumberPicker(
@@ -735,7 +747,8 @@ class TimerView extends GetView<TimerController> {
                     baseFontSize: 30,
                   ),
                   zeroPad: true,
-                  selectedTextStyle: Utils.getResponsiveNumberPickerSelectedTextStyle(
+                  selectedTextStyle:
+                      Utils.getResponsiveNumberPickerSelectedTextStyle(
                     context,
                     baseFontSize: 30,
                     color: kprimaryColor,
@@ -766,9 +779,9 @@ class TimerView extends GetView<TimerController> {
               child: Text(
                 ':',
                 style: Theme.of(context).textTheme.displayLarge!.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: themeController.primaryDisabledTextColor.value,
-                ),
+                      fontWeight: FontWeight.bold,
+                      color: themeController.primaryDisabledTextColor.value,
+                    ),
               ),
             ),
             // Minutes Picker
@@ -778,9 +791,9 @@ class TimerView extends GetView<TimerController> {
                 Text(
                   'Minutes',
                   style: Theme.of(context).textTheme.displaySmall!.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: themeController.primaryDisabledTextColor.value,
-                  ),
+                        fontWeight: FontWeight.bold,
+                        color: themeController.primaryDisabledTextColor.value,
+                      ),
                 ),
                 SizedBox(height: height * 0.008),
                 NumberPicker(
@@ -803,7 +816,8 @@ class TimerView extends GetView<TimerController> {
                     baseFontSize: 30,
                   ),
                   zeroPad: true,
-                  selectedTextStyle: Utils.getResponsiveNumberPickerSelectedTextStyle(
+                  selectedTextStyle:
+                      Utils.getResponsiveNumberPickerSelectedTextStyle(
                     context,
                     baseFontSize: 30,
                     color: kprimaryColor,
@@ -834,9 +848,9 @@ class TimerView extends GetView<TimerController> {
               child: Text(
                 ':',
                 style: Theme.of(context).textTheme.displayLarge!.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: themeController.primaryDisabledTextColor.value,
-                ),
+                      fontWeight: FontWeight.bold,
+                      color: themeController.primaryDisabledTextColor.value,
+                    ),
               ),
             ),
             // Seconds Picker
@@ -846,9 +860,9 @@ class TimerView extends GetView<TimerController> {
                 Text(
                   'Seconds',
                   style: Theme.of(context).textTheme.displaySmall!.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: themeController.primaryDisabledTextColor.value,
-                  ),
+                        fontWeight: FontWeight.bold,
+                        color: themeController.primaryDisabledTextColor.value,
+                      ),
                 ),
                 SizedBox(height: height * 0.008),
                 NumberPicker(
@@ -871,7 +885,8 @@ class TimerView extends GetView<TimerController> {
                     baseFontSize: 30,
                   ),
                   zeroPad: true,
-                  selectedTextStyle: Utils.getResponsiveNumberPickerSelectedTextStyle(
+                  selectedTextStyle:
+                      Utils.getResponsiveNumberPickerSelectedTextStyle(
                     context,
                     baseFontSize: 30,
                     color: kprimaryColor,
@@ -923,7 +938,7 @@ class TimerView extends GetView<TimerController> {
             color: themeController.primaryDisabledTextColor.value,
           ),
         ),
-        SizedBox(height: 8),
+        const SizedBox(height: 8),
         Container(
           constraints: BoxConstraints(
             maxHeight: MediaQuery.of(context).size.height * 0.2,

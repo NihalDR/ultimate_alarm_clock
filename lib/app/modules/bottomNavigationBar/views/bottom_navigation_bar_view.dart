@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:ultimate_alarm_clock/app/modules/bottomNavigationBar/controllers/bottom_navigation_bar_controller.dart';
-import 'package:ultimate_alarm_clock/app/modules/settings/controllers/theme_controller.dart';
-import 'package:ultimate_alarm_clock/app/utils/constants.dart';
-import 'package:ultimate_alarm_clock/app/utils/utils.dart';
+import '../controllers/bottom_navigation_bar_controller.dart';
+import '../../settings/controllers/theme_controller.dart';
+import '../../../utils/constants.dart';
+import '../../../utils/utils.dart';
 
 class BottomNavigationBarView extends GetView<BottomNavigationBarController> {
-  PageController pageController = PageController();
+  final PageController pageController = PageController();
   final ThemeController themeController = Get.find<ThemeController>();
 
   BottomNavigationBarView({super.key});
@@ -18,7 +18,11 @@ class BottomNavigationBarView extends GetView<BottomNavigationBarController> {
         builder: (context, snapshot) {
           return Obx(() {
             if (controller.hasloaded.value) {
-              pageController = PageController(initialPage: controller.activeTabIndex.value);
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (pageController.hasClients) {
+                  pageController.jumpToPage(controller.activeTabIndex.value);
+                }
+              });
               return PageView(
                 controller: pageController,
                 children: controller.pages,

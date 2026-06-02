@@ -20,8 +20,13 @@ class StopwatchController extends GetxController {
       final currentTime = _stopwatch.elapsed;
       final lapTime = currentTime - _lastFlagTime;
       hasFlags.value = true;
-      flags.add(Flag(
-          number: flags.length + 1, lapTime: lapTime, totalTime: currentTime));
+      flags.add(
+        Flag(
+          number: flags.length + 1,
+          lapTime: lapTime,
+          totalTime: currentTime,
+        ),
+      );
       listKey.currentState
           ?.insertItem(0, duration: const Duration(milliseconds: 300));
       _lastFlagTime = currentTime;
@@ -77,17 +82,20 @@ class StopwatchController extends GetxController {
     if (!isTimerPaused.value) {
       timer.cancel();
     }
-    
+
     // Stop the stopwatch
     _stopwatch.stop();
-    
+
     super.onClose();
-    
+
     debugPrint('🧹 StopwatchController disposed - all resources cleaned up');
   }
 
   void _updateResult() {
     _result.value =
-        '${_stopwatch.elapsed.inMinutes.toString().padLeft(2, '0')}:${(_stopwatch.elapsed.inSeconds % 60).toString().padLeft(2, '0')}:${(_stopwatch.elapsed.inMilliseconds % 1000 ~/ 10).toString().padLeft(2, '0')}';
+        '${_stopwatch.elapsed.inMinutes.toString().padLeft(2, '0')}:'
+        '${(_stopwatch.elapsed.inSeconds % 60).toString().padLeft(2, '0')}:'
+        // ignore: lines_longer_than_80_chars
+        '${(_stopwatch.elapsed.inMilliseconds % 1000 ~/ 10).toString().padLeft(2, '0')}';
   }
 }

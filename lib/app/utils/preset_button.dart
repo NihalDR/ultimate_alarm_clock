@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:ultimate_alarm_clock/app/modules/settings/controllers/theme_controller.dart';
 import 'package:ultimate_alarm_clock/app/modules/timer/controllers/timer_controller.dart';
 import 'package:ultimate_alarm_clock/app/utils/constants.dart';
 
 Widget presetButton(BuildContext context, String label, Duration duration) {
   final TimerController timerController = Get.find<TimerController>();
-  final ThemeController themeController = Get.find<ThemeController>();
-
   final double width = MediaQuery.of(context).size.width;
   final double height = MediaQuery.of(context).size.height;
 

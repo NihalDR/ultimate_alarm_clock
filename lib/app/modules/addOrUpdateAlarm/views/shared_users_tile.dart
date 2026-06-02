@@ -1,13 +1,11 @@
-// ignore_for_file: lines_longer_than_80_chars, unnecessary_null_comparison
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:ultimate_alarm_clock/app/data/models/user_model.dart';
-import 'package:ultimate_alarm_clock/app/data/providers/firestore_provider.dart';
-import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/controllers/add_or_update_alarm_controller.dart';
-import 'package:ultimate_alarm_clock/app/modules/settings/controllers/theme_controller.dart';
-import 'package:ultimate_alarm_clock/app/utils/constants.dart';
-import 'package:ultimate_alarm_clock/app/utils/utils.dart';
+import '../../../data/models/user_model.dart';
+import '../../../data/providers/firestore_provider.dart';
+import '../controllers/add_or_update_alarm_controller.dart';
+import '../../settings/controllers/theme_controller.dart';
+import '../../../utils/constants.dart';
+import '../../../utils/utils.dart';
 
 class SharedUsers extends StatelessWidget {
   const SharedUsers({
@@ -22,93 +20,111 @@ class SharedUsers extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(
-      () => Container(
-        child: (controller.isSharedAlarmEnabled.value &&
-                controller.alarmRecord.value != null)
-            ? (controller.alarmRecord.value.ownerId !=
-                    controller.userModel.value!.id)
-                ? Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      color: themeController.secondaryBackgroundColor.value.withOpacity(0.3),
+      () => (controller.isSharedAlarmEnabled.value)
+          ? (controller.alarmRecord.value.ownerId !=
+                  controller.userModel.value!.id)
+              ? Container(
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    color: themeController.secondaryBackgroundColor.value
+                        .withOpacity(0.3),
+                  ),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 4,
                     ),
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                      leading: CircleAvatar(
-                        backgroundColor: kprimaryColor.withOpacity(0.2),
-                        child: Icon(
-                          Icons.person,
-                          color: kprimaryColor,
-                        ),
-                      ),
-                      title: Text(
-                        'Alarm Owner'.tr,
-                        style: TextStyle(
-                          color: themeController.primaryTextColor.value,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      subtitle: Text(
-                        controller.alarmRecord.value.ownerName,
-                        style: TextStyle(
-                          color: themeController.primaryTextColor.value.withOpacity(0.7),
-                          fontSize: 12,
-                        ),
+                    leading: CircleAvatar(
+                      backgroundColor: kprimaryColor.withOpacity(0.2),
+                      child: const Icon(
+                        Icons.person,
+                        color: kprimaryColor,
                       ),
                     ),
-                  )
-                : Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      color: themeController.secondaryBackgroundColor.value.withOpacity(0.3),
+                    title: Text(
+                      'Alarm Owner'.tr,
+                      style: TextStyle(
+                        color: themeController.primaryTextColor.value,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                      leading: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: kprimaryColor.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Icon(
-                          Icons.people_alt_rounded,
-                          color: kprimaryColor,
-                          size: 20,
-                        ),
+                    subtitle: Text(
+                      controller.alarmRecord.value.ownerName,
+                      style: TextStyle(
+                        color: themeController.primaryTextColor.value
+                            .withOpacity(0.7),
+                        fontSize: 12,
                       ),
-                      title: Text(
-                        'Shared Users'.tr,
-                        style: TextStyle(
-                          color: themeController.primaryTextColor.value,
-                          fontWeight: FontWeight.w600,
-                        ),
+                    ),
+                  ),
+                )
+              : Container(
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    color: themeController.secondaryBackgroundColor.value
+                        .withOpacity(0.3),
+                  ),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 4,
+                    ),
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: kprimaryColor.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                      subtitle: Obx(() => Text(
-                        controller.sharedUserIds.isEmpty
+                      child: const Icon(
+                        Icons.people_alt_rounded,
+                        color: kprimaryColor,
+                        size: 20,
+                      ),
+                    ),
+                    title: Text(
+                      'Shared Users'.tr,
+                      style: TextStyle(
+                        color: themeController.primaryTextColor.value,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    subtitle: Obx(
+                      () {
+                        final count = controller.sharedUserIds.length;
+                        final label = count == 1 ? 'user'.tr : 'users'.tr;
+                        final subtitleText = controller.sharedUserIds.isEmpty
                             ? 'No users yet'.tr
-                            : '${controller.sharedUserIds.length} ${controller.sharedUserIds.length == 1 ? 'user'.tr : 'users'.tr}',
-                        style: TextStyle(
-                          color: themeController.primaryTextColor.value.withOpacity(0.7),
-                          fontSize: 12,
-                        ),
-                      )),
-                      trailing: InkWell(
-                        onTap: () {
-                          Utils.hapticFeedback();
-                          _showSharedUsersBottomSheet(context);
-                        },
-                        child: Icon(
-                          Icons.arrow_forward_ios_rounded,
-                          color: themeController.primaryTextColor.value.withOpacity(0.7),
-                          size: 16,
-                        ),
+                            : '$count $label';
+
+                        return Text(
+                          subtitleText,
+                          style: TextStyle(
+                            color: themeController.primaryTextColor.value
+                                .withOpacity(0.7),
+                            fontSize: 12,
+                          ),
+                        );
+                      },
+                    ),
+                    trailing: InkWell(
+                      onTap: () {
+                        Utils.hapticFeedback();
+                        _showSharedUsersBottomSheet(context);
+                      },
+                      child: Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        color: themeController.primaryTextColor.value
+                            .withOpacity(0.7),
+                        size: 16,
                       ),
                     ),
-                  )
-            : const SizedBox(),
-      ),
+                  ),
+                )
+          : const SizedBox(),
     );
   }
 
@@ -149,7 +165,8 @@ class SharedUsers extends StatelessWidget {
                       'Share this alarm with others to see them here'.tr,
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: themeController.primaryTextColor.value.withOpacity(0.7),
+                        color: themeController.primaryTextColor.value
+                            .withOpacity(0.7),
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -162,7 +179,8 @@ class SharedUsers extends StatelessWidget {
                       label: Text('Go back'.tr),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: kprimaryColor,
-                        foregroundColor: themeController.secondaryTextColor.value,
+                        foregroundColor:
+                            themeController.secondaryTextColor.value,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -209,7 +227,7 @@ class SharedUsers extends StatelessWidget {
                     ),
                     child: Row(
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.people_alt_rounded,
                           color: kprimaryColor,
                         ),
@@ -224,9 +242,11 @@ class SharedUsers extends StatelessWidget {
                         ),
                         const Spacer(),
                         Text(
+                          // ignore: lines_longer_than_80_chars
                           '${userDetails.length} ${userDetails.length == 1 ? 'user'.tr : 'users'.tr}',
                           style: TextStyle(
-                            color: themeController.primaryTextColor.value.withOpacity(0.7),
+                            color: themeController.primaryTextColor.value
+                                .withOpacity(0.7),
                           ),
                         ),
                       ],
@@ -244,7 +264,7 @@ class SharedUsers extends StatelessWidget {
                                 backgroundColor: kprimaryColor.withOpacity(0.2),
                                 child: Text(
                                   Utils.getInitials(user.fullName),
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     color: kprimaryColor,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -260,7 +280,8 @@ class SharedUsers extends StatelessWidget {
                               subtitle: Text(
                                 user.email,
                                 style: TextStyle(
-                                  color: themeController.primaryTextColor.value.withOpacity(0.7),
+                                  color: themeController.primaryTextColor.value
+                                      .withOpacity(0.7),
                                   fontSize: 12,
                                 ),
                               ),
@@ -289,57 +310,62 @@ class SharedUsers extends StatelessWidget {
                                 ),
                                 onPressed: () async {
                                   Utils.hapticFeedback();
-                                  
+
                                   // Show confirmation dialog
                                   final confirmed = await Get.dialog<bool>(
-                                    AlertDialog(
-                                      backgroundColor: themeController.secondaryBackgroundColor.value,
-                                      title: Text('Remove user?'.tr),
-                                      content: Text(
-                                        'Are you sure you want to remove ${user.fullName} from this alarm?'.tr,
-                                      ),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () => Get.back(result: false),
-                                          child: Text(
-                                            'Cancel'.tr,
-                                            style: TextStyle(
-                                              color: themeController.primaryTextColor.value,
+                                        AlertDialog(
+                                          backgroundColor: themeController
+                                              .secondaryBackgroundColor.value,
+                                          title: Text('Remove user?'.tr),
+                                          content: Text(
+                                            // ignore: lines_longer_than_80_chars
+                                            'Are you sure you want to remove ${user.fullName} from this alarm?'
+                                                .tr,
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () =>
+                                                  Get.back(result: false),
+                                              child: Text(
+                                                'Cancel'.tr,
+                                                style: TextStyle(
+                                                  color: themeController
+                                                      .primaryTextColor.value,
+                                                ),
+                                              ),
                                             ),
-                                          ),
-                                        ),
-                                        TextButton(
-                                          onPressed: () => Get.back(result: true),
-                                          style: TextButton.styleFrom(
-                                            backgroundColor: Colors.red.withOpacity(0.1),
-                                          ),
-                                          child: Text(
-                                            'Remove'.tr,
-                                            style: const TextStyle(
-                                              color: Colors.red,
+                                            TextButton(
+                                              onPressed: () =>
+                                                  Get.back(result: true),
+                                              style: TextButton.styleFrom(
+                                                backgroundColor:
+                                                    Colors.red.withOpacity(0.1),
+                                              ),
+                                              child: Text(
+                                                'Remove'.tr,
+                                                style: const TextStyle(
+                                                  color: Colors.red,
+                                                ),
+                                              ),
                                             ),
-                                          ),
+                                          ],
                                         ),
-                                      ],
-                                    ),
-                                  ) ?? false;
-                                  
+                                      ) ??
+                                      false;
+
                                   if (confirmed) {
-                                    await FirestoreDb.removeUserFromAlarmSharedUsers(
+                                    await FirestoreDb
+                                        .removeUserFromAlarmSharedUsers(
                                       user,
                                       controller.alarmID,
                                     );
-                                    
-                                    
+
                                     controller.sharedUserIds.remove(user.id);
 
-                                    
                                     userDetails.remove(user);
 
-                                    
                                     userDetails.refresh();
-                                    
-                                    
+
                                     Get.snackbar(
                                       'Success'.tr,
                                       'User removed successfully'.tr,
@@ -353,7 +379,9 @@ class SharedUsers extends StatelessWidget {
                               ),
                             ),
                             Divider(
-                              color: themeController.primaryDisabledTextColor.value.withOpacity(0.3),
+                              color: themeController
+                                  .primaryDisabledTextColor.value
+                                  .withOpacity(0.3),
                               height: 1,
                               indent: 70,
                             ),

@@ -1,3 +1,5 @@
+// ignore_for_file: lines_longer_than_80_chars, require_trailing_commas
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -29,9 +31,13 @@ class FirestoreDb {
 
     final dir = await getDatabasesPath();
     final dbPath = '$dir/alarms.db';
-    print(dir);
-    db = await openDatabase(dbPath,
-      version: 8, onCreate: _onCreate, onUpgrade: _onUpgrade);
+    debugPrint(dir);
+    db = await openDatabase(
+      dbPath,
+      version: 8,
+      onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
+    );
     return db;
   }
 
@@ -73,21 +79,17 @@ class FirestoreDb {
     }
     if (oldVersion < 7) {
       // Add task list column
-      await db.execute(
-          'ALTER TABLE alarms ADD COLUMN tasks TEXT');
+      await db.execute('ALTER TABLE alarms ADD COLUMN tasks TEXT');
     }
     if (oldVersion < 8) {
       // Add calendar event columns
+      await db.execute('ALTER TABLE alarms ADD COLUMN calendarEventId TEXT');
+      await db.execute('ALTER TABLE alarms ADD COLUMN calendarEventStart TEXT');
+      await db
+          .execute('ALTER TABLE alarms ADD COLUMN calendarEventUpdated TEXT');
+      await db.execute('ALTER TABLE alarms ADD COLUMN calendarId TEXT');
       await db.execute(
-        'ALTER TABLE alarms ADD COLUMN calendarEventId TEXT');
-      await db.execute(
-        'ALTER TABLE alarms ADD COLUMN calendarEventStart TEXT');
-      await db.execute(
-        'ALTER TABLE alarms ADD COLUMN calendarEventUpdated TEXT');
-      await db.execute(
-        'ALTER TABLE alarms ADD COLUMN calendarId TEXT');
-      await db.execute(
-        'ALTER TABLE alarms ADD COLUMN isCalendarEvent INTEGER NOT NULL DEFAULT 0');
+          'ALTER TABLE alarms ADD COLUMN isCalendarEvent INTEGER NOT NULL DEFAULT 0');
     }
   }
 
@@ -248,7 +250,7 @@ class FirestoreDb {
         // Try to insert with all fields including new columns
         await sql!
             .insert('alarms', alarmRecord.toSQFliteMap())
-            .then((value) => print('insert success'));
+            .then((value) => debugPrint('insert success'));
       } catch (e) {
         if (e.toString().contains('locationConditionType') ||
             e.toString().contains('weatherConditionType') ||
@@ -276,7 +278,9 @@ class FirestoreDb {
           fallbackMap.remove('isTimezoneEnabled');
           fallbackMap.remove('targetTimezoneOffset');
           await sql!.insert('alarms', fallbackMap).then(
-              (value) => print('insert success (backward compatibility)'));
+                (value) =>
+                    debugPrint('insert success (backward compatibility)'),
+              );
         } else {
           rethrow; // Re-throw other errors
         }
@@ -554,9 +558,7 @@ class FirestoreDb {
 
     if (incoming != null) {
       for (final item in incoming) {
-        if (item is Map) {
-          addEntry(Map<String, dynamic>.from(item));
-        }
+        addEntry(Map<String, dynamic>.from(item));
       }
     }
 
@@ -598,7 +600,6 @@ class FirestoreDb {
         .then((v) {
       Get.snackbar('Notification', 'Item Shared!');
     });
-    ;
     for (final email in emails) {
       await _firebaseFirestore.collection('users').doc(email).update({
         'receivedItems': FieldValue.arrayUnion([sharedItem])
@@ -1055,7 +1056,7 @@ class FirestoreDb {
   }
 
   static removeItem(Map item) async {
-    print(item);
+    debugPrint(item.toString());
 
     await _firebaseFirestore
         .collection('users')
@@ -1221,8 +1222,7 @@ class FirestoreDb {
         alarmTime: alarm.alarmTime,
       );
 
-      debugPrint(
-          '❌ User declined shared alarm: ${alarm.firestoreId}');
+      debugPrint('❌ User declined shared alarm: ${alarm.firestoreId}');
     } catch (e) {
       debugPrint('❌ Error declining shared alarm: $e');
     }

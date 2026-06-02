@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:numberpicker/numberpicker.dart';
-import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/controllers/add_or_update_alarm_controller.dart';
-import 'package:ultimate_alarm_clock/app/modules/settings/controllers/theme_controller.dart';
-import 'package:ultimate_alarm_clock/app/utils/constants.dart';
-import 'package:ultimate_alarm_clock/app/utils/utils.dart';
+import '../controllers/add_or_update_alarm_controller.dart';
+import '../../settings/controllers/theme_controller.dart';
+import '../../../utils/constants.dart';
+import '../../../utils/utils.dart';
 
 class SnoozeSettingsTile extends StatelessWidget {
-  SnoozeSettingsTile({
+  const SnoozeSettingsTile({
     super.key,
     required this.controller,
     required this.themeController,
@@ -15,8 +15,6 @@ class SnoozeSettingsTile extends StatelessWidget {
 
   final AddOrUpdateAlarmController controller;
   final ThemeController themeController;
-  int initialDuration = 0;
-  int initialCount = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -24,22 +22,23 @@ class SnoozeSettingsTile extends StatelessWidget {
       () => ListTile(
         onTap: () {
           Utils.hapticFeedback();
-          initialDuration = controller.snoozeDuration.value;
-          initialCount = controller.maxSnoozeCount.value;
-          
+          final initialDuration = controller.snoozeDuration.value;
+          final initialCount = controller.maxSnoozeCount.value;
+
           Get.dialog(
             Dialog.fullscreen(
               child: Scaffold(
                 appBar: AppBar(
                   backgroundColor: themeController.primaryBackgroundColor.value,
-                  title: Text('Snooze Settings'.tr, 
+                  title: Text(
+                    'Snooze Settings'.tr,
                     style: TextStyle(
                       color: themeController.primaryTextColor.value,
                     ),
                   ),
                   leading: IconButton(
                     icon: Icon(
-                      Icons.close, 
+                      Icons.close,
                       color: themeController.primaryTextColor.value,
                     ),
                     onPressed: () {
@@ -57,7 +56,7 @@ class SnoozeSettingsTile extends StatelessWidget {
                       },
                       child: Text(
                         'Done'.tr,
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: kprimaryColor,
                           fontWeight: FontWeight.bold,
                         ),
@@ -86,7 +85,8 @@ class SnoozeSettingsTile extends StatelessWidget {
                               Text(
                                 'Set how long the snooze lasts'.tr,
                                 style: TextStyle(
-                                  color: themeController.primaryDisabledTextColor.value,
+                                  color: themeController
+                                      .primaryDisabledTextColor.value,
                                   fontSize: 14,
                                 ),
                               ),
@@ -97,9 +97,10 @@ class SnoozeSettingsTile extends StatelessWidget {
                                 children: [
                                   Obx(
                                     () => NumberPicker(
-                                      value: controller.snoozeDuration.value <= 0
-                                          ? 0
-                                          : controller.snoozeDuration.value,
+                                      value:
+                                          controller.snoozeDuration.value <= 0
+                                              ? 0
+                                              : controller.snoozeDuration.value,
                                       minValue: 0,
                                       maxValue: 60,
                                       onChanged: (value) {
@@ -109,16 +110,19 @@ class SnoozeSettingsTile extends StatelessWidget {
                                       itemWidth: Utils
                                           .getResponsiveNumberPickerItemWidth(
                                         context,
-                                        screenWidth: MediaQuery.of(context).size.width,
+                                        screenWidth:
+                                            MediaQuery.of(context).size.width,
                                         baseWidthFactor: 0.2,
                                       ),
                                       textStyle: Utils
                                           .getResponsiveNumberPickerTextStyle(
                                         context,
                                         baseFontSize: 20,
-                                        color: themeController.primaryDisabledTextColor.value,
+                                        color: themeController
+                                            .primaryDisabledTextColor.value,
                                       ),
                                       selectedTextStyle: Utils
+                                          // ignore: lines_longer_than_80_chars
                                           .getResponsiveNumberPickerSelectedTextStyle(
                                         context,
                                         baseFontSize: 32,
@@ -136,7 +140,8 @@ class SnoozeSettingsTile extends StatelessWidget {
                                               : 'minute'.tr
                                           : 'Off'.tr,
                                       style: TextStyle(
-                                        color: themeController.primaryTextColor.value,
+                                        color: themeController
+                                            .primaryTextColor.value,
                                         fontSize: 18,
                                       ),
                                     ),
@@ -146,12 +151,10 @@ class SnoozeSettingsTile extends StatelessWidget {
                             ],
                           ),
                         ),
-                        
                         Divider(
                           color: themeController.secondaryBackgroundColor.value,
                           thickness: 8,
                         ),
-                      
                         Padding(
                           padding: const EdgeInsets.all(20.0),
                           child: Column(
@@ -168,7 +171,8 @@ class SnoozeSettingsTile extends StatelessWidget {
                               Text(
                                 'Set the number of times you can snooze'.tr,
                                 style: TextStyle(
-                                  color: themeController.primaryDisabledTextColor.value,
+                                  color: themeController
+                                      .primaryDisabledTextColor.value,
                                   fontSize: 14,
                                 ),
                               ),
@@ -179,9 +183,10 @@ class SnoozeSettingsTile extends StatelessWidget {
                                 children: [
                                   Obx(
                                     () => NumberPicker(
-                                      value: controller.maxSnoozeCount.value <= 0
-                                          ? 1
-                                          : controller.maxSnoozeCount.value,
+                                      value:
+                                          controller.maxSnoozeCount.value <= 0
+                                              ? 1
+                                              : controller.maxSnoozeCount.value,
                                       minValue: 1,
                                       maxValue: 10,
                                       onChanged: (value) {
@@ -191,16 +196,19 @@ class SnoozeSettingsTile extends StatelessWidget {
                                       itemWidth: Utils
                                           .getResponsiveNumberPickerItemWidth(
                                         context,
-                                        screenWidth: MediaQuery.of(context).size.width,
+                                        screenWidth:
+                                            MediaQuery.of(context).size.width,
                                         baseWidthFactor: 0.2,
                                       ),
                                       textStyle: Utils
                                           .getResponsiveNumberPickerTextStyle(
                                         context,
                                         baseFontSize: 20,
-                                        color: themeController.primaryDisabledTextColor.value,
+                                        color: themeController
+                                            .primaryDisabledTextColor.value,
                                       ),
                                       selectedTextStyle: Utils
+                                          // ignore: lines_longer_than_80_chars
                                           .getResponsiveNumberPickerSelectedTextStyle(
                                         context,
                                         baseFontSize: 32,
@@ -216,7 +224,8 @@ class SnoozeSettingsTile extends StatelessWidget {
                                           ? 'times'.tr
                                           : 'time'.tr,
                                       style: TextStyle(
-                                        color: themeController.primaryTextColor.value,
+                                        color: themeController
+                                            .primaryTextColor.value,
                                         fontSize: 18,
                                       ),
                                     ),
@@ -226,11 +235,11 @@ class SnoozeSettingsTile extends StatelessWidget {
                             ],
                           ),
                         ),
-                        
                         Padding(
                           padding: const EdgeInsets.all(20.0),
                           child: Card(
-                            color: themeController.secondaryBackgroundColor.value,
+                            color:
+                                themeController.secondaryBackgroundColor.value,
                             child: Padding(
                               padding: const EdgeInsets.all(16.0),
                               child: Column(
@@ -239,15 +248,17 @@ class SnoozeSettingsTile extends StatelessWidget {
                                   Row(
                                     children: [
                                       Icon(
-                                        Icons.info_outline, 
-                                        color: themeController.primaryTextColor.value,
+                                        Icons.info_outline,
+                                        color: themeController
+                                            .primaryTextColor.value,
                                         size: 18,
                                       ),
                                       const SizedBox(width: 8),
                                       Text(
                                         'How Snooze Works'.tr,
                                         style: TextStyle(
-                                          color: themeController.primaryTextColor.value,
+                                          color: themeController
+                                              .primaryTextColor.value,
                                           fontWeight: FontWeight.bold,
                                           fontSize: 16,
                                         ),
@@ -256,11 +267,16 @@ class SnoozeSettingsTile extends StatelessWidget {
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
+                                    // ignore: lines_longer_than_80_chars
                                     'When the alarm rings, you can press the snooze button to temporarily silence it. '
-                                    'The alarm will ring again after the snooze duration. '
-                                    'You can snooze the alarm up to the maximum snooze count.'.tr,
+                                            // ignore: lines_longer_than_80_chars
+                                            'The alarm will ring again after the snooze duration. '
+                                            // ignore: lines_longer_than_80_chars
+                                            'You can snooze the alarm up to the maximum snooze count.'
+                                        .tr,
                                     style: TextStyle(
-                                      color: themeController.primaryTextColor.value,
+                                      color: themeController
+                                          .primaryTextColor.value,
                                       fontSize: 14,
                                     ),
                                   ),
@@ -292,6 +308,7 @@ class SnoozeSettingsTile extends StatelessWidget {
           children: [
             Obx(
               () => Text(
+                // ignore: lines_longer_than_80_chars
                 '${controller.snoozeDuration.value} min, ${controller.maxSnoozeCount.value}x',
                 style: Theme.of(context).textTheme.bodyMedium!.copyWith(
                       color: themeController.primaryTextColor.value,
@@ -307,4 +324,4 @@ class SnoozeSettingsTile extends StatelessWidget {
       ),
     );
   }
-} 
+}

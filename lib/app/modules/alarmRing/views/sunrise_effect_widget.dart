@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:flutter/services.dart';
 import 'package:screen_brightness/screen_brightness.dart';
 
 enum SunriseColorScheme {
-  natural,  // Orange to yellow to white
-  warm,     // Deep red to orange to yellow
-  cool,     // Purple to blue to light blue to white
+  natural, // Orange to yellow to white
+  warm, // Deep red to orange to yellow
+  cool, // Purple to blue to light blue to white
 }
 
 class SunriseEffectWidget extends StatefulWidget {
@@ -17,13 +15,13 @@ class SunriseEffectWidget extends StatefulWidget {
   final VoidCallback? onComplete;
 
   const SunriseEffectWidget({
-    Key? key,
+    super.key,
     required this.isEnabled,
     required this.durationMinutes,
     required this.maxIntensity,
     required this.colorScheme,
     this.onComplete,
-  }) : super(key: key);
+  });
 
   @override
   State<SunriseEffectWidget> createState() => _SunriseEffectWidgetState();
@@ -35,7 +33,7 @@ class _SunriseEffectWidgetState extends State<SunriseEffectWidget>
   late AnimationController _colorController;
   late Animation<double> _brightnessAnimation;
   late Animation<Color?> _colorAnimation;
-  
+
   double _originalBrightness = 0.5;
   bool _isActive = false;
 
@@ -65,10 +63,12 @@ class _SunriseEffectWidgetState extends State<SunriseEffectWidget>
     _brightnessAnimation = Tween<double>(
       begin: 0.0,
       end: widget.maxIntensity,
-    ).animate(CurvedAnimation(
-      parent: _brightController,
-      curve: Curves.easeInOut,
-    ));
+    ).animate(
+      CurvedAnimation(
+        parent: _brightController,
+        curve: Curves.easeInOut,
+      ),
+    );
 
     // Color animation based on selected scheme
     _colorAnimation = _createColorAnimation();
@@ -76,7 +76,7 @@ class _SunriseEffectWidgetState extends State<SunriseEffectWidget>
     // Listen for animation updates
     _brightController.addListener(_updateBrightness);
     _colorController.addListener(_updateUI);
-    
+
     // Complete callback
     _brightController.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
@@ -87,7 +87,7 @@ class _SunriseEffectWidgetState extends State<SunriseEffectWidget>
 
   Animation<Color?> _createColorAnimation() {
     List<Color> colors;
-    
+
     switch (widget.colorScheme) {
       case SunriseColorScheme.natural:
         colors = [
@@ -125,7 +125,7 @@ class _SunriseEffectWidgetState extends State<SunriseEffectWidget>
       colors.asMap().entries.map((entry) {
         int index = entry.key;
         Color color = entry.value;
-        
+
         return TweenSequenceItem<Color?>(
           tween: ColorTween(
             begin: index == 0 ? color : colors[index - 1],
@@ -134,28 +134,29 @@ class _SunriseEffectWidgetState extends State<SunriseEffectWidget>
           weight: 1.0,
         );
       }).toList(),
-    ).animate(CurvedAnimation(
-      parent: _colorController,
-      curve: Curves.easeInOut,
-    ));
+    ).animate(
+      CurvedAnimation(
+        parent: _colorController,
+        curve: Curves.easeInOut,
+      ),
+    );
   }
 
   Future<void> _startSunriseEffect() async {
     if (_isActive) return;
-    
+
     _isActive = true;
-    
+
     try {
       // Store original brightness
       _originalBrightness = await ScreenBrightness().current;
-      
+
       // Set initial low brightness
       await ScreenBrightness().setScreenBrightness(0.0);
-      
+
       // Start both animations
       _brightController.forward();
       _colorController.forward();
-      
     } catch (e) {
       debugPrint('Error starting sunrise effect: $e');
     }
@@ -163,7 +164,7 @@ class _SunriseEffectWidgetState extends State<SunriseEffectWidget>
 
   void _updateBrightness() {
     if (!_isActive) return;
-    
+
     try {
       ScreenBrightness().setScreenBrightness(_brightnessAnimation.value);
     } catch (e) {
@@ -179,14 +180,14 @@ class _SunriseEffectWidgetState extends State<SunriseEffectWidget>
 
   Future<void> _stopSunriseEffect() async {
     if (!_isActive) return;
-    
+
     _isActive = false;
-    
+
     try {
       // Stop animations
       _brightController.stop();
       _colorController.stop();
-      
+
       // Restore original brightness
       await ScreenBrightness().setScreenBrightness(_originalBrightness);
     } catch (e) {
@@ -236,9 +237,9 @@ class _SunriseEffectWidgetState extends State<SunriseEffectWidget>
   Widget _buildSunAnimation() {
     // Sun disc that appears during later stages
     final sunProgress = (_colorController.value * 2 - 0.5).clamp(0.0, 1.0);
-    
+
     if (sunProgress <= 0) return const SizedBox.shrink();
-    
+
     return Positioned(
       top: MediaQuery.of(context).size.height * (0.2 - sunProgress * 0.1),
       left: MediaQuery.of(context).size.width * 0.5 - 50,
@@ -259,7 +260,8 @@ class _SunriseEffectWidgetState extends State<SunriseEffectWidget>
             ),
             boxShadow: [
               BoxShadow(
-                color: (_colorAnimation.value ?? Colors.orange).withOpacity(0.3),
+                color:
+                    (_colorAnimation.value ?? Colors.orange).withOpacity(0.3),
                 blurRadius: 20,
                 spreadRadius: 10,
               ),
@@ -280,9 +282,9 @@ extension SunriseEffectExtension on Widget {
     required int colorSchemeIndex,
   }) {
     if (!isEnabled) return this;
-    
+
     final colorScheme = SunriseColorScheme.values[colorSchemeIndex.clamp(0, 2)];
-    
+
     return Stack(
       children: [
         SunriseEffectWidget(
@@ -295,4 +297,4 @@ extension SunriseEffectExtension on Widget {
       ],
     );
   }
-} 
+}

@@ -31,7 +31,8 @@ class SystemRingtoneModel {
 
   @override
   String toString() {
-    return 'SystemRingtoneModel{title: $title, uri: $uri, id: $id, category: $category}';
+    return 'SystemRingtoneModel{title: $title, uri: $uri, '
+        'id: $id, category: $category}';
   }
 
   @override
@@ -48,4 +49,4 @@ class SystemRingtoneModel {
   int get hashCode {
     return title.hashCode ^ uri.hashCode ^ id.hashCode ^ category.hashCode;
   }
-} 
+}

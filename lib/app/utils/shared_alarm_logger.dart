@@ -1,3 +1,5 @@
+// ignore_for_file: require_trailing_commas
+
 import 'package:flutter/foundation.dart';
 
 /// Structured logger for the Shared Alarm pipeline.
@@ -35,7 +37,8 @@ class SharedAlarmLogger {
   ///
   /// Example output:
   /// ```
-  /// [SharedAlarm] NOTIFICATION_RECEIVED | alarmId=abc123 | time=07:30 | from=John
+  /// [SharedAlarm] NOTIFICATION_RECEIVED | alarmId=abc123 | time=07:30 |
+  /// from=John
   /// ```
   static void log(
     String event, {
@@ -76,7 +79,8 @@ class SharedAlarmLogger {
   static void notificationReceived({
     required String alarmId,
     required String alarmTime,
-    required String appState, // 'foreground', 'background', 'terminated'
+    // 'foreground', 'background', 'terminated'
+    required String appState,
     int? payloadVersion,
   }) {
     log(eventNotificationReceived, details: {
@@ -90,7 +94,8 @@ class SharedAlarmLogger {
   /// Log when a user taps on a shared alarm notification.
   static void notificationTapped({
     required String alarmId,
-    required String source, // 'foreground_banner', 'system_notification', 'cold_start'
+    // 'foreground_banner', 'system_notification', 'cold_start'
+    required String source,
   }) {
     log(eventNotificationTapped, details: {
       'alarmId': alarmId,
@@ -141,10 +146,14 @@ class SharedAlarmLogger {
     required String alarmTime,
     required String error,
   }) {
-    log(eventAlarmScheduleFailed, details: {
-      'alarmId': alarmId,
-      'time': alarmTime,
-    }, error: error);
+    log(
+      eventAlarmScheduleFailed,
+      details: {
+        'alarmId': alarmId,
+        'time': alarmTime,
+      },
+      error: error,
+    );
   }
 
   /// Log when a pending shared alarm is persisted locally.
@@ -180,7 +189,8 @@ class SharedAlarmLogger {
     });
   }
 
-  /// Log a cold-start event (app launched from terminated by tapping notification).
+  /// Log a cold-start event (app launched from terminated by tapping
+  /// notification).
   static void coldStartHandled({
     required String alarmId,
     required String alarmTime,

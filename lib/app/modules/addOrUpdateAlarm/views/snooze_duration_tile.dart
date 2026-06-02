@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:numberpicker/numberpicker.dart';
-import 'package:ultimate_alarm_clock/app/modules/addOrUpdateAlarm/controllers/add_or_update_alarm_controller.dart';
+import '../controllers/add_or_update_alarm_controller.dart';
 import 'package:ultimate_alarm_clock/app/modules/settings/controllers/theme_controller.dart';
 import 'package:ultimate_alarm_clock/app/utils/constants.dart';
 import 'package:ultimate_alarm_clock/app/utils/utils.dart';
@@ -59,17 +59,18 @@ class SnoozeDurationTile extends StatelessWidget {
                                 Utils.hapticFeedback();
                                 controller.snoozeDuration.value = value;
                               },
-                              itemWidth: Utils
-                                  .getResponsiveNumberPickerItemWidth(
+                              itemWidth:
+                                  Utils.getResponsiveNumberPickerItemWidth(
                                 context,
                                 screenWidth: MediaQuery.of(context).size.width,
                                 baseWidthFactor: 0.2,
                               ),
-                              textStyle: Utils
-                                  .getResponsiveNumberPickerTextStyle(
+                              textStyle:
+                                  Utils.getResponsiveNumberPickerTextStyle(
                                 context,
                                 baseFontSize: 16,
-                                color: themeController.primaryDisabledTextColor.value,
+                                color: themeController
+                                    .primaryDisabledTextColor.value,
                               ),
                               selectedTextStyle: Utils
                                   .getResponsiveNumberPickerSelectedTextStyle(
@@ -83,10 +84,10 @@ class SnoozeDurationTile extends StatelessWidget {
                           Obx(
                             () => Text(
                               controller.snoozeDuration.value > 0
-                              ? controller.snoozeDuration.value > 1
-                                  ? 'minutes'.tr
-                                  : 'minute'.tr
-                              : 'Off'.tr,
+                                  ? controller.snoozeDuration.value > 1
+                                      ? 'minutes'.tr
+                                      : 'minute'.tr
+                                  : 'Off'.tr,
                             ),
                           ),
                         ],
@@ -108,8 +109,7 @@ class SnoozeDurationTile extends StatelessWidget {
                               .textTheme
                               .displaySmall!
                               .copyWith(
-                                color:
-                                    themeController.secondaryTextColor.value,
+                                color: themeController.secondaryTextColor.value,
                               ),
                         ),
                       ),

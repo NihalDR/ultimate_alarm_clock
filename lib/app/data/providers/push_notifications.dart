@@ -4,6 +4,7 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -61,14 +62,17 @@ Future<void> _persistPendingSharedAlarm(Map<String, dynamic> data) async {
     final raw = prefs.getString(_kPendingSharedAlarmsKey);
     final List<Map<String, dynamic>> pending = raw != null
         ? List<Map<String, dynamic>>.from(
-            (jsonDecode(raw) as List).map((e) => Map<String, dynamic>.from(e)))
+            (jsonDecode(raw) as List).map((e) => Map<String, dynamic>.from(e)),
+          )
         : [];
 
     final alarmId = data['sharedItemId'] ?? data['alarmId'] ?? '';
 
     // De-duplicate by alarmId
-    if (pending.any((p) =>
-        (p['sharedItemId'] ?? p['alarmId']) == alarmId && alarmId.isNotEmpty)) {
+    if (pending.any(
+      (p) =>
+          (p['sharedItemId'] ?? p['alarmId']) == alarmId && alarmId.isNotEmpty,
+    )) {
       SharedAlarmLogger.duplicateDetected(alarmId: alarmId);
       return;
     }
@@ -100,31 +104,32 @@ class PushNotifications {
         provisional: false,
       );
 
-      print(
-          '🔔 Notification permission status: ${settings.authorizationStatus}');
+      debugPrint(
+        '🔔 Notification permission status: ${settings.authorizationStatus}',
+      );
 
       if (settings.authorizationStatus == AuthorizationStatus.denied) {
-        print('❌ User denied notification permissions');
+        debugPrint('❌ User denied notification permissions');
         return;
       }
 
       // Get token with retry mechanism
       String? token = await _getTokenWithRetry();
       if (token != null) {
-        print('✅ FCM Token obtained: ${token.substring(0, 20)}...');
+        debugPrint('✅ FCM Token obtained: ${token.substring(0, 20)}...');
         await updateToken(token);
       } else {
-        print('❌ Failed to get FCM token after retries');
+        debugPrint('❌ Failed to get FCM token after retries');
       }
 
       // Listen for token updates with error handling
       FirebaseMessaging.instance.onTokenRefresh.listen(
         (token) async {
-          print('🔄 FCM Token refreshed: ${token.substring(0, 20)}...');
+          debugPrint('🔄 FCM Token refreshed: ${token.substring(0, 20)}...');
           await updateToken(token);
         },
         onError: (error) {
-          print('❌ Error during token refresh: $error');
+          debugPrint('❌ Error during token refresh: $error');
         },
       );
 
@@ -149,14 +154,14 @@ class PushNotifications {
 
       // ── Background handler registration ────────────────────────────────
       FirebaseMessaging.onBackgroundMessage(
-          _firebaseMessagingBackgroundHandler);
+        _firebaseMessagingBackgroundHandler,
+      );
 
       // ── User taps notification (app was in background) ─────────────────
       FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
         SharedAlarmLogger.notificationTapped(
-          alarmId: message.data['sharedItemId'] ??
-              message.data['alarmId'] ??
-              '',
+          alarmId:
+              message.data['sharedItemId'] ?? message.data['alarmId'] ?? '',
           source: 'system_notification',
         );
         _handleMessageNavigation(message);
@@ -182,9 +187,9 @@ class PushNotifications {
 
       await _initLocalNotifications();
 
-      print('✅ Firebase messaging initialization completed');
+      debugPrint('✅ Firebase messaging initialization completed');
     } catch (e) {
-      print('❌ Error initializing Firebase messaging: $e');
+      debugPrint('❌ Error initializing Firebase messaging: $e');
       // Don't rethrow - allow app to continue even if messaging init fails
     }
   }
@@ -199,12 +204,13 @@ class PushNotifications {
           return token;
         }
       } catch (e) {
-        print('❌ Attempt ${i + 1} failed to get FCM token: $e');
+        debugPrint('❌ Attempt ${i + 1} failed to get FCM token: $e');
       }
 
       if (i < maxRetries - 1) {
         await Future.delayed(
-            Duration(seconds: 2 * (i + 1))); // Exponential backoff
+          Duration(seconds: 2 * (i + 1)),
+        ); // Exponential backoff
       }
     }
     return null;
@@ -215,18 +221,18 @@ class PushNotifications {
       // Check if user is logged in before updating token
       final currentUser = FirebaseAuth.instance.currentUser;
       if (currentUser != null) {
-        print('🔄 Updating FCM token for user: ${currentUser.uid}');
+        debugPrint('🔄 Updating FCM token for user: ${currentUser.uid}');
         await FirestoreDb.updateToken(token);
-        print('✅ FCM token updated successfully');
+        debugPrint('✅ FCM token updated successfully');
       } else {
-        print('❌ User not logged in. Token update skipped.');
+        debugPrint('❌ User not logged in. Token update skipped.');
         // Store token locally for when user logs in
         await _storeTokenLocally(token);
       }
     } catch (e) {
-      print('❌ Error updating token: $e');
+      debugPrint('❌ Error updating token: $e');
       // Retry token update after delay
-      Future.delayed(Duration(seconds: 30), () {
+      Future.delayed(const Duration(seconds: 30), () {
         updateToken(token);
       });
     }
@@ -236,9 +242,9 @@ class PushNotifications {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_kPendingFcmTokenKey, token);
-      print('📱 FCM token stored locally for later update');
+      debugPrint('📱 FCM token stored locally for later update');
     } catch (e) {
-      print('❌ Error storing token locally: $e');
+      debugPrint('❌ Error storing token locally: $e');
     }
   }
 
@@ -248,12 +254,12 @@ class PushNotifications {
       final storedToken = prefs.getString(_kPendingFcmTokenKey);
 
       if (storedToken != null && FirebaseAuth.instance.currentUser != null) {
-        print('🔄 Updating previously stored FCM token');
+        debugPrint('🔄 Updating previously stored FCM token');
         await updateToken(storedToken);
         await prefs.remove(_kPendingFcmTokenKey);
       }
     } catch (e) {
-      print('❌ Error updating stored token: $e');
+      debugPrint('❌ Error updating stored token: $e');
     }
   }
 
@@ -278,10 +284,13 @@ class PushNotifications {
     final payload = response.payload;
     final actionId = response.actionId;
 
-    SharedAlarmLogger.log('LOCAL_NOTIFICATION_RESPONSE', details: {
-      'actionId': actionId,
-      'hasPayload': payload != null,
-    });
+    SharedAlarmLogger.log(
+      'LOCAL_NOTIFICATION_RESPONSE',
+      details: {
+        'actionId': actionId,
+        'hasPayload': payload != null,
+      },
+    );
 
     if (payload == null) return;
 
@@ -364,7 +373,7 @@ class PushNotifications {
     final data = message.data;
     final type = data['type'] ?? '';
 
-    print("👆 User tapped notification: type=$type, data=$data");
+    debugPrint('👆 User tapped notification: type=$type, data=$data');
 
     if (type == 'sharedAlarm' ||
         type == 'sharedItem' ||
@@ -373,7 +382,7 @@ class PushNotifications {
       try {
         Get.toNamed('/notifications');
       } catch (e) {
-        print('❌ Navigation failed (GetX may not be ready): $e');
+        debugPrint('❌ Navigation failed (GetX may not be ready): $e');
         // Will be picked up by the pending alarms check on next app open
       }
     }
@@ -397,9 +406,12 @@ class PushNotifications {
       // Clear after consumption
       await prefs.remove(_kPendingSharedAlarmsKey);
 
-      SharedAlarmLogger.log('PENDING_ALARMS_CONSUMED', details: {
-        'count': pending.length,
-      });
+      SharedAlarmLogger.log(
+        'PENDING_ALARMS_CONSUMED',
+        details: {
+          'count': pending.length,
+        },
+      );
 
       return pending;
     } catch (e) {
@@ -423,20 +435,25 @@ class PushNotifications {
   // ── Cloud Function calls ───────────────────────────────────────────────
 
   Future<void> triggerRescheduleAlarmNotification(
-      String firestoreAlarmId) async {
+    String firestoreAlarmId,
+  ) async {
     try {
-      print(
-          '🔔 Attempting to trigger reschedule notification for alarm: $firestoreAlarmId');
+      debugPrint(
+        '🔔 Attempting to trigger reschedule notification for alarm: '
+        '$firestoreAlarmId',
+      );
 
       var userModel = await SecureStorageProvider().retrieveUserModel();
       if (userModel == null) {
-        print('❌ No user model found, cannot send reschedule notification');
+        debugPrint(
+          '❌ No user model found, cannot send reschedule notification',
+        );
         return;
       }
 
-      print('📤 Calling rescheduleAlarm cloud function with data:');
-      print('   - firestoreAlarmId: $firestoreAlarmId');
-      print('   - changedByUserId: ${userModel.id}');
+      debugPrint('📤 Calling rescheduleAlarm cloud function with data:');
+      debugPrint('   - firestoreAlarmId: $firestoreAlarmId');
+      debugPrint('   - changedByUserId: ${userModel.id}');
 
       final HttpsCallable callable =
           FirebaseFunctions.instance.httpsCallable('rescheduleAlarm');
@@ -446,39 +463,50 @@ class PushNotifications {
         'changedByUserId': userModel.id,
       });
 
-      print('✅ Successfully triggered reschedule notification');
-      print('   Response: ${response.data}');
+      debugPrint('✅ Successfully triggered reschedule notification');
+      debugPrint('   Response: ${response.data}');
     } catch (e) {
-      print('❌ Error calling reschedule function: $e');
-      print(
-          '   This means the Firebase Cloud Function is not working properly.');
-      print('   The local alarm updates should still work correctly.');
+      debugPrint('❌ Error calling reschedule function: $e');
+      debugPrint(
+        '   This means the Firebase Cloud Function is not working properly.',
+      );
+      debugPrint('   The local alarm updates should still work correctly.');
     }
   }
 
-  Future<void> triggerSharedItemNotification(List receivingUserIds,
-      {Map<String, dynamic>? sharedItem}) async {
-    await _sendNotificationWithRetry(receivingUserIds,
-        sharedItem: sharedItem);
+  Future<void> triggerSharedItemNotification(
+    List receivingUserIds, {
+    Map<String, dynamic>? sharedItem,
+  }) async {
+    await _sendNotificationWithRetry(
+      receivingUserIds,
+      sharedItem: sharedItem,
+    );
   }
 
-  Future<void> _sendNotificationWithRetry(List receivingUserIds,
-      {Map<String, dynamic>? sharedItem, int maxRetries = 3}) async {
+  Future<void> _sendNotificationWithRetry(
+    List receivingUserIds, {
+    Map<String, dynamic>? sharedItem,
+    int maxRetries = 3,
+  }) async {
     for (int attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        print(
-            '🔔 Attempt $attempt: Sending shared item notification to ${receivingUserIds.length} users');
-        print('📦 Shared item data: $sharedItem');
+        debugPrint(
+          '🔔 Attempt $attempt: Sending shared item notification to '
+          '${receivingUserIds.length} users',
+        );
+        debugPrint('📦 Shared item data: $sharedItem');
 
         var userModel = await SecureStorageProvider().retrieveUserModel();
         if (userModel == null) {
-          print(
-              '❌ No user model found, cannot send shared item notification');
+          debugPrint(
+            '❌ No user model found, cannot send shared item notification',
+          );
           return;
         }
 
-        print('👤 Sender: ${userModel.fullName} (${userModel.email})');
-        print('👥 Recipients: $receivingUserIds');
+        debugPrint('👤 Sender: ${userModel.fullName} (${userModel.email})');
+        debugPrint('👥 Recipients: $receivingUserIds');
 
         final HttpsCallable callable =
             FirebaseFunctions.instance.httpsCallable('sendNotification');
@@ -490,12 +518,16 @@ class PushNotifications {
         });
 
         final responseData = response.data;
-        print('📊 Notification response: $responseData');
+        debugPrint('📊 Notification response: $responseData');
 
         if (responseData['success'] == true) {
-          print('✅ Shared item notification sent successfully!');
-          print('   Success count: ${responseData['successCount']}');
-          print('   Failure count: ${responseData['failureCount']}');
+          debugPrint('✅ Shared item notification sent successfully!');
+          debugPrint(
+            '   Success count: ${responseData['successCount']}',
+          );
+          debugPrint(
+            '   Failure count: ${responseData['failureCount']}',
+          );
 
           SharedAlarmLogger.notificationSent(
             alarmId: sharedItem?['id'] ?? '',
@@ -505,37 +537,44 @@ class PushNotifications {
 
           if (responseData['failedTokens'] != null &&
               responseData['failedTokens'].isNotEmpty) {
-            print(
-                '⚠️  Some tokens failed: ${responseData['failedTokens']}');
+            debugPrint(
+              '⚠️  Some tokens failed: ${responseData['failedTokens']}',
+            );
           }
 
           return; // Success, exit retry loop
         } else {
-          print('❌ Notification failed: ${responseData['message']}');
-          print('   Failed tokens: ${responseData['failedTokens']}');
-          print('   Failed sends: ${responseData['failedSends']}');
+          debugPrint('❌ Notification failed: ${responseData['message']}');
+          debugPrint('   Failed tokens: ${responseData['failedTokens']}');
+          debugPrint('   Failed sends: ${responseData['failedSends']}');
 
           if (attempt == maxRetries) {
-            print(
-                '❌ Max retry attempts reached. Notification sending failed.');
+            debugPrint(
+              '❌ Max retry attempts reached. '
+              'Notification sending failed.',
+            );
             return;
           }
         }
       } catch (e) {
-        print('❌ Attempt $attempt failed: $e');
+        debugPrint('❌ Attempt $attempt failed: $e');
 
         if (attempt == maxRetries) {
-          print('❌ Max retry attempts reached. Error: $e');
-          print(
-              '   This means the Firebase Cloud Function is not working properly.');
-          print(
-              '   The alarm sharing will continue without notifications.');
+          debugPrint('❌ Max retry attempts reached. Error: $e');
+          debugPrint(
+            '   This means the Firebase Cloud Function is '
+            'not working properly.',
+          );
+          debugPrint(
+            '   The alarm sharing will continue without '
+            'notifications.',
+          );
           return;
         }
 
         // Exponential backoff
         final delay = Duration(seconds: 2 * attempt);
-        print('⏳ Retrying in ${delay.inSeconds} seconds...');
+        debugPrint('⏳ Retrying in ${delay.inSeconds} seconds...');
         await Future.delayed(delay);
       }
     }
@@ -547,17 +586,21 @@ class PushNotifications {
     required String newAlarmTime,
   }) async {
     try {
-      print(
-          '📤 Direct FCM messaging attempted for ${receivingUserIds.length} users');
-      print('   - Alarm ID: $alarmId');
-      print('   - New time: $newAlarmTime');
+      debugPrint(
+        '📤 Direct FCM messaging attempted for '
+        '${receivingUserIds.length} users',
+      );
+      debugPrint('   - Alarm ID: $alarmId');
+      debugPrint('   - New time: $newAlarmTime');
 
-      print(
-          '🔄 Using enhanced Firestore real-time sync instead of push notifications');
+      debugPrint(
+        '🔄 Using enhanced Firestore real-time sync instead of '
+        'push notifications',
+      );
 
       return true;
     } catch (e) {
-      print('❌ Error in direct FCM approach: $e');
+      debugPrint('❌ Error in direct FCM approach: $e');
       return false;
     }
   }
@@ -600,16 +643,16 @@ class PushNotifications {
         'timestamp': DateTime.now().toIso8601String(),
       };
 
-      print('📊 Notification Status Check:');
-      print('   Permissions: ${settings.authorizationStatus}');
-      print('   Has FCM Token: ${token != null}');
-      print('   User Logged In: ${currentUser != null}');
-      print('   Pending Token: ${storedToken != null}');
-      print('   Pending Shared Alarms: $pendingCount');
+      debugPrint('📊 Notification Status Check:');
+      debugPrint('   Permissions: ${settings.authorizationStatus}');
+      debugPrint('   Has FCM Token: ${token != null}');
+      debugPrint('   User Logged In: ${currentUser != null}');
+      debugPrint('   Pending Token: ${storedToken != null}');
+      debugPrint('   Pending Shared Alarms: $pendingCount');
 
       return status;
     } catch (e) {
-      print('❌ Error checking notification status: $e');
+      debugPrint('❌ Error checking notification status: $e');
       return {
         'error': e.toString(),
         'timestamp': DateTime.now().toIso8601String(),

@@ -158,13 +158,17 @@ class SettingsController extends GetxController {
       // Ask the user for location permission.
       locationPermission = await FlLocation.requestLocationPermission();
       if (locationPermission == LocationPermission.denied ||
-          locationPermission == LocationPermission.deniedForever) return false;
+          locationPermission == LocationPermission.deniedForever) {
+        return false;
+      }
     }
 
     // Location permission must always be allowed (LocationPermission.always)
     // to collect location data in the background.
     if (background == true &&
-        locationPermission == LocationPermission.whileInUse) return false;
+        locationPermission == LocationPermission.whileInUse) {
+      return false;
+    }
 
     // Location services has been enabled and permission have been granted.
     return true;
@@ -177,7 +181,7 @@ class SettingsController extends GetxController {
     is24HrsEnabled.value =
         await _secureStorageProvider.read24HoursEnabled(key: _f24HrsEnabledKey);
     isFlipToSnooze.value =
-    await _secureStorageProvider.readFlipToSnooze(key: _flipToSnooze);
+        await _secureStorageProvider.readFlipToSnooze(key: _flipToSnooze);
 
     isSortedAlarmListEnabled.value = await _secureStorageProvider
         .readSortedAlarmListValue(key: _sortedAlarmListKey);
@@ -240,12 +244,14 @@ class SettingsController extends GetxController {
     is24HrsEnabled.value = enabled;
     _save24HoursFormatPreference();
   }
+
   void _savePreferenceFTS() async {
     await _secureStorageProvider.writeHapticFeedbackValue(
       key: _flipToSnooze,
       isHapticFeedbackEnabled: isFlipToSnooze.value,
     );
   }
+
   void toggleFlipToSnooze(bool enabled) {
     isFlipToSnooze.value = enabled;
     _savePreferenceFTS();

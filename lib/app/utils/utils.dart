@@ -154,6 +154,33 @@ class Utils {
     return DateTime(now.year, now.month, now.day, time.hour, time.minute);
   }
 
+  static DateTime alarmDateTimeFromDateAndTime(
+    String alarmDate,
+    String alarmTime,
+  ) {
+    final date = stringToDate(alarmDate.trim());
+    final time = stringToTimeOfDay(alarmTime);
+    return DateTime(date.year, date.month, date.day, time.hour, time.minute);
+  }
+
+  static DateTime alarmDateTime(AlarmModel alarm) {
+    if (alarm.ringOn && alarm.alarmDate.trim().isNotEmpty) {
+      return alarmDateTimeFromDateAndTime(alarm.alarmDate, alarm.alarmTime);
+    }
+
+    return timeOfDayToDateTime(stringToTimeOfDay(alarm.alarmTime));
+  }
+
+  static int getMillisecondsToAlarmModel(DateTime now, AlarmModel alarm) {
+    final alarmTime = alarmDateTime(alarm);
+
+    if (alarm.ringOn && alarm.alarmDate.trim().isNotEmpty) {
+      return alarmTime.difference(now).inMilliseconds;
+    }
+
+    return getMillisecondsToAlarm(now, alarmTime);
+  }
+
   static int timeOfDayToInt(TimeOfDay time) {
     return time.hour * 60 + time.minute;
   }
@@ -856,10 +883,7 @@ class Utils {
       ),
     );
     final difference = targetDateTime.difference(currentTime);
-    final milliseconds = difference.inHours * 60 * 60 * 1000 +
-        difference.inMinutes * 60 * 1000 +
-        difference.inSeconds * 1000;
-    return milliseconds;
+    return difference.inMilliseconds;
   }
 
   static int getDifferenceMillisFromNow(

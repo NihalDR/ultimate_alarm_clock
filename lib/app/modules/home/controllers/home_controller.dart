@@ -748,11 +748,9 @@ class HomeController extends GetxController {
               );
 
               if (updatedAlarm.isEnabled && updatedAlarm.isSharedAlarmEnabled) {
-                TimeOfDay alarmTimeOfDay =
-                    Utils.stringToTimeOfDay(updatedAlarm.alarmTime);
-                int intervalToAlarm = Utils.getMillisecondsToAlarm(
+                int intervalToAlarm = Utils.getMillisecondsToAlarmModel(
                   DateTime.now(),
-                  Utils.timeOfDayToDateTime(alarmTimeOfDay),
+                  updatedAlarm,
                 );
 
                 if (intervalToAlarm > 0) {
@@ -852,10 +850,8 @@ class HomeController extends GetxController {
             user: userModel.value!,
           );
 
-          TimeOfDay alarmTimeOfDay = Utils.stringToTimeOfDay(alarm.alarmTime);
-          DateTime alarmDateTime = Utils.timeOfDayToDateTime(alarmTimeOfDay);
           int intervalToAlarm =
-              Utils.getMillisecondsToAlarm(DateTime.now(), alarmDateTime);
+              Utils.getMillisecondsToAlarmModel(DateTime.now(), alarm);
 
           debugPrint(
             '⏰ Checking alarm ${alarm.firestoreId}: ${alarm.alarmTime}, '
@@ -1167,9 +1163,9 @@ class HomeController extends GetxController {
 
     // Calculate time to alarm
     TimeOfDay alarmTimeOfDay = Utils.stringToTimeOfDay(alarm.alarmTime);
-    int intervalToAlarm = Utils.getMillisecondsToAlarm(
+    int intervalToAlarm = Utils.getMillisecondsToAlarmModel(
       DateTime.now(),
-      Utils.timeOfDayToDateTime(alarmTimeOfDay),
+      alarm,
     );
 
     if (intervalToAlarm <= 0) {

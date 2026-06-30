@@ -9,7 +9,8 @@ This project aims to build a non-conventional alarm clock with smart features su
 </p>
   
 ## Table of Contents
-- [What's new (GSOC'24)](#what's-new)
+- [GSOC'24](#GSOC'24)
+- [What's New (Latest Updates)](#whats-new-latest-updates)
 - [GetX Pattern](#getx-pattern)
 - [Database Schema](#database-schema)
 - [Installation & Setup](#installation--setup)
@@ -19,6 +20,7 @@ This project aims to build a non-conventional alarm clock with smart features su
 - [Community](#community)
 - [Flutter](#flutter)
 
+## GSOC'24
 During the GSOC'24 period, the following features were implemented by Contributor Aryan Saraf:
 
 ### 1) Migrating Alarm Scheduling logic and Smart Controls logic to Kotlin

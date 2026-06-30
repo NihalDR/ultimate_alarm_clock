@@ -19,8 +19,6 @@ This project aims to build a non-conventional alarm clock with smart features su
 - [Community](#community)
 - [Flutter](#flutter)
 
-## What's New?
-
 During the GSOC'24 period, the following features were implemented by Contributor Aryan Saraf:
 
 ### 1) Migrating Alarm Scheduling logic and Smart Controls logic to Kotlin

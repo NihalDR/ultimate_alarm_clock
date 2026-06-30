@@ -41,68 +41,75 @@ class CustomTimePicker extends StatelessWidget {
     final timeUnitWidth = (width * 0.18).clamp(80.0, 120.0);
     final meridiemWidth = (width * 0.2).clamp(80.0, 100.0);
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // Hours picker
-          _buildTimeUnitPicker(
-            context: context,
-            value: hours,
-            minValue: is24Hour ? 0 : 1,
-            maxValue: is24Hour ? 23 : 12,
-            onChanged: onHoursChanged,
-            width: timeUnitWidth,
-            effectiveScale: effectiveScale,
-          ),
-
-          // Colon separator
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: width * 0.02),
-            child: Text(
-              ':',
-              style: TextStyle(
-                fontSize: (32 * effectiveScale).clamp(24.0, 48.0),
-                fontWeight: FontWeight.bold,
-                color: disabledTextColor,
-              ),
-            ),
-          ),
-
-          // Minutes picker
-          _buildTimeUnitPicker(
-            context: context,
-            value: minutes,
-            minValue: 0,
-            maxValue: 59,
-            onChanged: onMinutesChanged,
-            width: timeUnitWidth,
-            effectiveScale: effectiveScale,
-          ),
-
-          // AM/PM picker (for 12-hour format)
-          if (!is24Hour) ...[
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: width * 0.02),
-              child: Text(
-                '',
-                style: TextStyle(
-                  fontSize: (32 * effectiveScale).clamp(24.0, 48.0),
-                  fontWeight: FontWeight.bold,
-                  color: disabledTextColor,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minWidth: constraints.maxWidth),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Hours picker
+                _buildTimeUnitPicker(
+                  context: context,
+                  value: hours,
+                  minValue: is24Hour ? 0 : 1,
+                  maxValue: is24Hour ? 23 : 12,
+                  onChanged: onHoursChanged,
+                  width: timeUnitWidth,
+                  effectiveScale: effectiveScale,
                 ),
-              ),
+
+                // Colon separator
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: width * 0.02),
+                  child: Text(
+                    ':',
+                    style: TextStyle(
+                      fontSize: (32 * effectiveScale).clamp(24.0, 48.0),
+                      fontWeight: FontWeight.bold,
+                      color: disabledTextColor,
+                    ),
+                  ),
+                ),
+
+                // Minutes picker
+                _buildTimeUnitPicker(
+                  context: context,
+                  value: minutes,
+                  minValue: 0,
+                  maxValue: 59,
+                  onChanged: onMinutesChanged,
+                  width: timeUnitWidth,
+                  effectiveScale: effectiveScale,
+                ),
+
+                // AM/PM picker (for 12-hour format)
+                if (!is24Hour) ...[
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: width * 0.02),
+                    child: Text(
+                      '',
+                      style: TextStyle(
+                        fontSize: (32 * effectiveScale).clamp(24.0, 48.0),
+                        fontWeight: FontWeight.bold,
+                        color: disabledTextColor,
+                      ),
+                    ),
+                  ),
+                  _buildMeridiemPicker(
+                    context: context,
+                    width: meridiemWidth,
+                    effectiveScale: effectiveScale,
+                  ),
+                ],
+              ],
             ),
-            _buildMeridiemPicker(
-              context: context,
-              width: meridiemWidth,
-              effectiveScale: effectiveScale,
-            ),
-          ],
-        ],
-      ),
+          ),
+        );
+      },
     );
   }
 

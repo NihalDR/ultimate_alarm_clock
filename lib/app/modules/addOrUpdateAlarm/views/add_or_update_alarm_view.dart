@@ -169,6 +169,7 @@ class AddOrUpdateAlarmView extends GetView<AddOrUpdateAlarmController> {
                                   ),
                                   child: Obx(
                                     () => Container(
+                                      width: double.infinity,
                                       decoration: BoxDecoration(
                                         color: themeController
                                             .secondaryBackgroundColor.value,

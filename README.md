@@ -75,6 +75,53 @@ Issue: [#595](https://github.com/CCExtractor/ultimate_alarm_clock/issues/595), P
 - New UI for alarm and profile setting screen.
 - Fixed existing Firebase Auth implementation.
 
+## What's New? (Latest Updates)
+The latest development cycle introduced the following improvements which are focused on improving code quality, Flutter compatibility, alarm reliability, Google Calendar integration, data portability, and overall application stability.
+
+### 1) Developer Experience Improvements
+
+This development cycle also included extensive improvements to maintainability, Flutter compatibility, and long-term code quality, making the project easier to contribute to and keeping it aligned with the latest Flutter and Dart best practices.
+
+### 2) Alarm System Improvements
+
+- Guardian Angel now supports configurable timer durations during alarm creation and editing.
+- Added numeric validation with automatic fallback to default values.
+- Improved alarm refresh and rescheduling reliability after editing alarms.
+- Fixed scheduling cases where updated alarms could remain cancelled.
+- Tasks are now correctly persisted during alarm creation.
+
+### 3) Database Improvements
+
+- Added support for Calendar-specific metadata inside the local SQLite database.
+- Introduced migration logic for existing users to safely upgrade databases without data loss.
+- Prevented crashes caused by missing calendar-related database columns.
+
+### 4) Google Calendar Enhancements
+Integrate Google Calendar to import reminders, events, and aggregate alarms. Users can create alarms that trigger on specific dates. Recent improvements increased compatibility with different Google Calendar event formats and significantly improved scheduling accuracy for calendar-based alarms.
+
+- Improved parsing of Google Calendar events.
+- Increased scheduling accuracy for calendar-based alarms.
+- Added better compatibility with different event formats.
+
+### 5) Alarm History
+
+- Added support for exporting alarm history in:
+  - CSV
+  - JSON
+
+### 6) Shared Alarm Improvements
+
+- Shared alarms now support additional functionality previously available only for normal alarms.
+- Improved synchronization reliability across devices.
+- Enhanced persistence and state management.
+
+### 7) Stability Improvements
+
+- Fixed multiple scheduling issues.
+- Improved alarm persistence.
+- Reduced database-related runtime errors.
+- Increased overall application reliability.
+
 ## GetX Pattern
 
 The "Ultimate Alarm Clock" project employs the GetX pattern for state management. The GetX pattern is a popular state management solution in the Flutter ecosystem, known for its simplicity, efficiency, and developer-friendly approach. It simplifies the process of managing the state of a Flutter application and helps in building reactive and performant user interfaces.
@@ -374,13 +421,16 @@ The "Ultimate Alarm Clock" offers a user-friendly and versatile interface design
   - Define automatic cancellation conditions based on screen activity, weather, and location.
   - Choose from challenges, including shake to dismiss, QR code, and math challenges.
   - Manage shared alarms.
+  - Configure Guardian Angel activation with customizable timer durations.
+  - Guardian Angel timer input accepts numeric values with built-in validation and default fallback.
 
 <img src="./assets/images/readme/alarm1.jpg" height="400" alt="add-alarm-1">
 <img src="./assets/images/readme/alarm2.jpg" height="400" alt="add-alarm-2">
 
 ### Shared Alarms
 
-The "Ultimate Alarm Clock" project introduces the feature of shared alarms, allowing users to collaborate with friends, family members, or colleagues to ensure they wake up on time.
+The "Ultimate Alarm Clock" project introduces recent improvements extend shared alarms with additional functionality previously limited to standard alarms while significantly improving synchronization reliability, persistence, and state consistency across connected devices.The feature of shared alarms, allowing users to collaborate with friends, family members, or colleagues to ensure they wake up on time.
+
 
 #### Creating and Joining Shared Alarms
 
@@ -489,6 +539,16 @@ We've implemented a comprehensive solution that ensures shared alarms persist ev
    # Check SharedPreferences data
    adb -s DEVICE_ID logcat | grep -E "(has_active_shared_alarm|shared_alarm_time)"
    ```
+### Alarm History
+
+Alarm History can now be exported for backup, reporting, or analysis.
+
+Supported export formats include:
+
+- CSV
+- JSON
+
+Both export formats maintain a consistent structure, making it easy to archive or process alarm history externally.
 
 ### Architecture Changes
 
@@ -508,6 +568,13 @@ We've implemented a comprehensive solution that ensures shared alarms persist ev
 ✅ **Real-time Updates**: FCM handles updates when app is closed  
 ✅ **Dual System**: Both local and shared alarms work independently  
 ✅ **Error Handling**: Graceful handling of edge cases and failures
+
+### Additional Reliability Improvements
+
+- Improved alarm refresh lifecycle after edits.
+- Ensured edited alarms are immediately rescheduled.
+- Prevented modified alarms from remaining cancelled.
+- Improved synchronization between shared alarm updates and local scheduling.
 
 ### Debug Logs
 The system provides comprehensive logging for troubleshooting:

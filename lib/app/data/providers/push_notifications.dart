@@ -518,6 +518,7 @@ class PushNotifications {
         });
 
         final responseData = response.data;
+
         debugPrint('📊 Notification response: $responseData');
 
         if (responseData['success'] == true) {

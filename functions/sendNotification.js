@@ -8,16 +8,15 @@ if (!admin.apps.length) {
 
 const db = admin.firestore();
 
-export const sendNotification = onCall(async (request) => {
-  const {receivingUserIds, message, sharedItem} = request.data;
+async function processSendNotification(payload) {
+  const {receivingUserIds, message, sharedItem} = payload;
 
-  logger.info(`📤 sendNotification called with ${receivingUserIds.length} recipients`);
-  logger.info(`📦 Shared item data:`, sharedItem);
-
-  // Input validation
   if (!receivingUserIds || !Array.isArray(receivingUserIds) || receivingUserIds.length === 0) {
     throw new Error("Invalid receivingUserIds");
   }
+
+  logger.info(`📤 sendNotification called with ${receivingUserIds.length} recipients`);
+  logger.info(`📦 Shared item data:`, sharedItem);
 
   // ── Build a compact data-only payload from the shared item ──────────
   // FCM data values MUST be strings; we JSON-encode complex fields.
@@ -76,7 +75,6 @@ export const sendNotification = onCall(async (request) => {
             body: notificationBody,
             channelId: "shared_alarm_channel",
             sound: "default",
-            autoCancel: true,
           },
           data: fcmData,
         },
@@ -113,7 +111,7 @@ export const sendNotification = onCall(async (request) => {
         // Add timestamp to shared item
         const itemWithTimestamp = {
           ...sharedItem,
-          receivedAt: admin.firestore.FieldValue.serverTimestamp(),
+          receivedAt: admin.firestore.Timestamp.now(),
         };
         
         // Add the new shared item to the array
@@ -172,6 +170,15 @@ export const sendNotification = onCall(async (request) => {
       totalRequested: receivingUserIds.length,
       responses: response.responses,
     };
+  } catch (error) {
+    logger.error("❌ Error in sendNotification function", error);
+    throw new Error(`Failed to send notifications: ${error.message}`);
+  }
+}
+
+export const sendNotification = onCall(async (request) => {
+  try {
+    return await processSendNotification(request.data ?? {});
   } catch (error) {
     logger.error("❌ Error in sendNotification function", error);
     throw new Error(`Failed to send notifications: ${error.message}`);

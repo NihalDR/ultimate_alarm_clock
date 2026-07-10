@@ -504,6 +504,30 @@ class FirestoreDb {
         final existingDoc = await alarmRef.get();
         if (existingDoc.exists) {
           final existingData = existingDoc.data() as Map<String, dynamic>;
+          
+          // Conflict detection: Check if alarm was modified by another user
+          final existingTimestamp = existingData['lastEditedTimestamp'];
+          final localTimestamp = alarmRecord.lastEditedTimestamp;
+          
+if (existingTimestamp != null && localTimestamp != null) {
+            final existingTime = _timestampToMillis(existingTimestamp);
+            final localTime = _timestampToMillis(localTimestamp);
+            
+            if (existingTime > localTime) {
+              debugPrint('⚠️ Conflict detected: Alarm modified by another user');
+              debugPrint('   Server time: $existingTime, Local time: $localTime');
+              // Log conflict for monitoring
+              SharedAlarmLogger.log(
+                'ALARM_CONFLICT_DETECTED',
+                details: {
+                  'firestoreId': alarmRecord.firestoreId,
+                  'serverTimestamp': existingTime,
+                  'localTimestamp': localTime,
+                },
+              );
+            }
+          }
+
           final existingSharedUsers =
               List<String>.from(existingData['sharedUserIds'] ?? []);
           final mergedSharedUsers = <String>{
@@ -521,12 +545,14 @@ class FirestoreDb {
       } catch (e) {
         debugPrint('⚠️ Error merging shared alarm fields: $e');
       }
-    }
 
-    await _firebaseFirestore
-        .collection('sharedAlarms')
-        .doc(alarmRecord.firestoreId)
-        .update(AlarmModel.toMap(alarmRecord));
+      // Update with server timestamp for conflict detection
+      final updateData = AlarmModel.toMap(alarmRecord);
+      updateData['lastEditedTimestamp'] = FieldValue.serverTimestamp();
+      updateData['lastEditedUserId'] = _firebaseAuthInstance.currentUser?.uid ?? '';
+
+      await alarmRef.update(updateData);
+    }
   }
 
   static List<Map>? _mergeOffsetDetails(
@@ -917,15 +943,15 @@ class FirestoreDb {
   //       .snapshots();
   // }
 
-  static Stream<QuerySnapshot<Object?>> getSharedAlarms(UserModel? user) {
-    final authUid = _firebaseAuthInstance.currentUser?.uid;
-    if (user != null && authUid != null) {
+static Stream<QuerySnapshot<Object?>> getSharedAlarms(UserModel? user) {
+    final userId = user?.id;
+    if (user != null && userId != null && userId.isNotEmpty) {
       Stream<QuerySnapshot<Object?>> sharedAlarmsStream = _firebaseFirestore
           .collection('sharedAlarms')
           .where(
             Filter.or(
-              Filter('sharedUserIds', arrayContains: authUid),
-              Filter('ownerId', isEqualTo: authUid),
+              Filter('sharedUserIds', arrayContains: userId),
+              Filter('ownerId', isEqualTo: userId),
             ),
           )
           .snapshots();
@@ -938,17 +964,17 @@ class FirestoreDb {
           .collection('_empty_shared_alarms_placeholder')
           .limit(0)
           .snapshots();
-    }
+}
   }
 
   static Stream<QuerySnapshot<Object?>> getAlarms(UserModel? user) {
-    final authUid = _firebaseAuthInstance.currentUser?.uid;
-    if (user != null && authUid != null) {
+    final userId = user?.id;
+    if (user != null && userId != null && userId.isNotEmpty) {
       Stream<QuerySnapshot<Object?>> userAlarmsStream = _alarmsCollection(user)
           .where(
             Filter.or(
-              Filter('sharedUserIds', arrayContains: authUid),
-              Filter('ownerId', isEqualTo: authUid),
+              Filter('sharedUserIds', arrayContains: userId),
+              Filter('ownerId', isEqualTo: userId),
             ),
           )
           .snapshots(includeMetadataChanges: true);
@@ -971,6 +997,122 @@ class FirestoreDb {
       await sql!.delete('alarms', where: 'firestoreId = ?', whereArgs: [id]);
     } catch (e) {
       debugPrint('Error deleting alarm: $e');
+    }
+  }
+
+  /// Removes the current user from a shared alarm's sharedUserIds array.
+  /// This allows other users to keep the alarm while only removing it for the current user.
+  /// If the current user is the owner, the entire alarm is deleted.
+  static Future<void> removeUserFromSharedAlarm(UserModel? user, String firestoreId) async {
+    if (user == null) return;
+
+    try {
+      final alarmRef = _firebaseFirestore.collection('sharedAlarms').doc(firestoreId);
+      final alarmDoc = await alarmRef.get();
+
+      if (!alarmDoc.exists) {
+        debugPrint('❌ Shared alarm not found: $firestoreId');
+        return;
+      }
+
+      final data = alarmDoc.data() as Map<String, dynamic>;
+      final ownerId = data['ownerId'] as String?;
+      final sharedUserIds = List<String>.from(data['sharedUserIds'] ?? []);
+
+      // If current user is the owner, delete the entire alarm
+      if (ownerId == user.id) {
+        debugPrint('🗑️ Owner deleting shared alarm: $firestoreId');
+        await alarmRef.delete();
+
+        final sql = await FirestoreDb().getSQLiteDatabase();
+        await sql!.delete('alarms', where: 'firestoreId = ?', whereArgs: [firestoreId]);
+        return;
+      }
+
+      // Otherwise, remove only the current user from sharedUserIds
+      if (sharedUserIds.contains(user.id)) {
+        debugPrint('👤 Removing user ${user.id} from shared alarm: $firestoreId');
+        await alarmRef.update({
+          'sharedUserIds': FieldValue.arrayRemove([user.id]),
+        });
+
+        // Also remove user's offset details if present
+        final offsetDetailsRaw = data['offsetDetails'];
+        if (offsetDetailsRaw is Map) {
+          final offsetDetails = Map<String, dynamic>.from(offsetDetailsRaw);
+          offsetDetails.remove(user.id);
+          await alarmRef.update({'offsetDetails': offsetDetails});
+        }
+
+        // If no more shared users, delete the alarm
+        final updatedSharedUsers = List<String>.from(sharedUserIds)..remove(user.id);
+        if (updatedSharedUsers.isEmpty) {
+          debugPrint('🗑️ No more shared users, deleting alarm: $firestoreId');
+          await alarmRef.delete();
+
+          final sql = await FirestoreDb().getSQLiteDatabase();
+          await sql!.delete('alarms', where: 'firestoreId = ?', whereArgs: [firestoreId]);
+        }
+      } else {
+        debugPrint('⚠️ User ${user.id} not in sharedUserIds for alarm: $firestoreId');
+      }
+    } catch (e) {
+      debugPrint('❌ Error removing user from shared alarm: $e');
+      rethrow;
+    }
+  }
+
+  /// Adds a user back to a shared alarm (for undo functionality).
+  /// Uses the sharedAlarms collection directly.
+  static Future<bool> addUserBackToSharedAlarm(UserModel? user, String firestoreId) async {
+    if (user == null) return false;
+
+    try {
+      final alarmRef = _firebaseFirestore.collection('sharedAlarms').doc(firestoreId);
+      final alarmDoc = await alarmRef.get();
+
+      if (!alarmDoc.exists) {
+        debugPrint('❌ Shared alarm not found for undo: $firestoreId');
+        return false;
+      }
+
+      final data = alarmDoc.data() as Map<String, dynamic>;
+      final ownerId = data['ownerId'] as String?;
+      final sharedUserIds = List<String>.from(data['sharedUserIds'] ?? []);
+
+      // If current user is the owner, they can't "re-add" themselves
+      if (ownerId == user.id) {
+        debugPrint('⚠️ Owner cannot re-add themselves: $firestoreId');
+        return false;
+      }
+
+      if (!sharedUserIds.contains(user.id)) {
+        debugPrint('↩️ Adding user ${user.id} back to shared alarm: $firestoreId');
+        final offsetDetailsRaw = data['offsetDetails'];
+        Map<String, dynamic> offsetDetails = {};
+        if (offsetDetailsRaw is Map) {
+          offsetDetails = Map<String, dynamic>.from(offsetDetailsRaw);
+        }
+        
+        // Add user with default offset (no offset)
+        offsetDetails[user.id] = {
+          'isOffsetBefore': true,
+          'offsetDuration': 0,
+          'offsettedTime': data['alarmTime'],
+        };
+
+        await alarmRef.update({
+          'sharedUserIds': FieldValue.arrayUnion([user.id]),
+          'offsetDetails': offsetDetails,
+        });
+        return true;
+      } else {
+        debugPrint('⚠️ User ${user.id} already in sharedUserIds for alarm: $firestoreId');
+        return false;
+      }
+    } catch (e) {
+      debugPrint('❌ Error adding user back to shared alarm: $e');
+      return false;
     }
   }
 
@@ -1119,6 +1261,9 @@ class FirestoreDb {
   static Future<String> _ensureSharedAlarmDocument(AlarmModel alarm) async {
     alarm.isSharedAlarmEnabled = true;
     final alarmData = AlarmModel.toMap(alarm);
+    // Add server timestamp for conflict detection
+    alarmData['lastEditedTimestamp'] = FieldValue.serverTimestamp();
+    alarmData['lastEditedUserId'] = _firebaseAuthInstance.currentUser?.uid ?? '';
 
     if (alarm.firestoreId != null && alarm.firestoreId!.isNotEmpty) {
       await _firebaseFirestore
@@ -1138,7 +1283,8 @@ class FirestoreDb {
     return docRef.id;
   }
 
-  static acceptSharedAlarm(String alarmOwnerId, AlarmModel alarm) async {
+  static acceptSharedAlarm(String alarmOwnerId, AlarmModel alarm,
+      {String offsetDirection = 'before', int offsetMinutes = 0}) async {
     final currentUserId = await _resolveSharedAlarmUserId();
     if (currentUserId == null || currentUserId.isEmpty) {
       debugPrint('⚠️ No current user id available for shared alarm accept');
@@ -1186,10 +1332,18 @@ class FirestoreDb {
         debugPrint('🔧 Converted offsetDetails from Array to Map format');
       }
 
+      // Use the offset parameters passed from the UI
+      final isOffsetBefore = offsetDirection == 'before';
+      final effectiveOffsetDuration = isOffsetBefore ? -offsetMinutes : offsetMinutes;
+      final mainTime = Utils.stringToTimeOfDay(alarm.alarmTime);
+      DateTime mainDateTime = Utils.timeOfDayToDateTime(mainTime);
+      final offsetDateTime = mainDateTime.add(Duration(minutes: effectiveOffsetDuration));
+      final offsettedTime = Utils.formatDateTimeToHHMMSS(offsetDateTime);
+
       offsetDetails[currentUserId] = {
-        'isOffsetBefore': true,
-        'offsetDuration': 0,
-        'offsettedTime': alarm.alarmTime,
+        'isOffsetBefore': isOffsetBefore,
+        'offsetDuration': offsetMinutes,
+        'offsettedTime': offsettedTime,
       };
 
       await _firebaseFirestore
@@ -1207,7 +1361,7 @@ class FirestoreDb {
       );
 
       debugPrint(
-          '✅ User $currentUserId accepted shared alarm and added to offsetDetails');
+          '✅ User $currentUserId accepted shared alarm with offset: ${offsetDirection} ${offsetMinutes}min');
     }
   }
 
@@ -1262,5 +1416,15 @@ class FirestoreDb {
     } catch (e) {
       debugPrint('❌ Error triggering Firestore reschedule update: $e');
     }
+  }
+
+  static int _timestampToMillis(dynamic timestamp) {
+    if (timestamp is Timestamp) {
+      return timestamp.toDate().millisecondsSinceEpoch;
+    }
+    if (timestamp is int) {
+      return timestamp;
+    }
+    return 0;
   }
 }

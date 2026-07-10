@@ -1150,6 +1150,29 @@ class HomeController extends GetxController {
     });
   }
 
+  /// Public method to schedule a shared alarm that was just accepted.
+  /// Uses the same deduplication logic as scheduleAlarmIfNeeded.
+  Future<void> scheduleAcceptedSharedAlarm(AlarmModel alarm) async {
+    if (!alarm.isEnabled) {
+      debugPrint('Shared alarm is disabled, not scheduling: ${alarm.alarmTime}');
+      return;
+    }
+
+    if (!alarm.isSharedAlarmEnabled) {
+      debugPrint('Alarm is not a shared alarm, not scheduling as shared: ${alarm.alarmTime}');
+      return;
+    }
+
+    final firestoreId = alarm.firestoreId;
+    if (firestoreId == null || firestoreId.isEmpty) {
+      debugPrint('❌ Cannot schedule shared alarm: missing firestoreId');
+      return;
+    }
+
+    debugPrint('📅 Scheduling accepted shared alarm via HomeController: ${alarm.alarmTime} (firestoreId: $firestoreId)');
+    await scheduleAlarmIfNeeded(alarm, true);
+  }
+
   // Helper method to schedule an alarm if needed
   Future<void> scheduleAlarmIfNeeded(AlarmModel alarm, bool isShared) async {
     if (!alarm.isEnabled) {
@@ -1439,7 +1462,8 @@ class HomeController extends GetxController {
                 debugPrint('⚠️ Error canceling native shared alarm: $e');
               }
 
-              await FirestoreDb.deleteAlarm(userModel.value, alarmId);
+              // Remove only current user from shared alarm (keeps it for others)
+              await FirestoreDb.removeUserFromSharedAlarm(userModel.value, alarmId);
               successCount++;
             }
           } else {
@@ -1491,7 +1515,8 @@ class HomeController extends GetxController {
             onPressed: () async {
               for (var alarm in deletedAlarms) {
                 if (alarm.isSharedAlarmEnabled) {
-                  await FirestoreDb.addAlarm(userModel.value, alarm);
+                  // Re-add user to the existing shared alarm
+                  await FirestoreDb.addUserBackToSharedAlarm(userModel.value, alarm.firestoreId ?? '');
                 } else {
                   await IsarDb.addAlarm(alarm);
                 }

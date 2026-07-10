@@ -111,7 +111,6 @@ class NotificationsView extends GetView<NotificationsController> {
               color: kprimaryColor,
               backgroundColor: ksecondaryBackgroundColor,
               onRefresh: () async {
-                // Trigger a refresh
                 await Future.delayed(const Duration(milliseconds: 500));
               },
               child: ListView.builder(
@@ -197,7 +196,6 @@ class NotificationsView extends GetView<NotificationsController> {
             padding: const EdgeInsets.all(20),
             child: Row(
               children: [
-                // Icon container
                 Container(
                   width: 56,
                   height: 56,
@@ -225,7 +223,6 @@ class NotificationsView extends GetView<NotificationsController> {
                         ),
                 ),
                 const SizedBox(width: 16),
-                // Content
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -260,7 +257,6 @@ class NotificationsView extends GetView<NotificationsController> {
                     ],
                   ),
                 ),
-                // Action indicator
                 Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -303,7 +299,6 @@ class NotificationsView extends GetView<NotificationsController> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Header
               Container(
                 width: 64,
                 height: 64,
@@ -332,7 +327,6 @@ class NotificationsView extends GetView<NotificationsController> {
               ),
               const SizedBox(height: 20),
 
-              // Title
               Text(
                 isAlarm ? 'Accept Shared Alarm?' : 'Accept Shared Profile?',
                 style: const TextStyle(
@@ -344,7 +338,6 @@ class NotificationsView extends GetView<NotificationsController> {
               ),
               const SizedBox(height: 8),
 
-              // Subtitle
               RichText(
                 textAlign: TextAlign.center,
                 text: TextSpan(
@@ -366,7 +359,6 @@ class NotificationsView extends GetView<NotificationsController> {
               ),
               const SizedBox(height: 16),
 
-              // Item details
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
@@ -416,7 +408,6 @@ class NotificationsView extends GetView<NotificationsController> {
                 ),
               ),
 
-              // Profile selection for alarms
               if (isAlarm && controller.allProfiles.isNotEmpty) ...[
                 const SizedBox(height: 20),
                 Align(
@@ -483,17 +474,163 @@ class NotificationsView extends GetView<NotificationsController> {
                                 ),
                               ),
                             ),
-                          );
-                        },
-                      );
-                    },
+                          },
+                        ),
+                      },
+
+              if (isAlarm) ...[
+                const SizedBox(height: 20),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Set your personal alarm time (offset from owner\'s time):',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white.withOpacity(0.8),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: kprimaryBackgroundColor.withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Obx(() => GestureDetector(
+                                  onTap: () => controller.offsetDirection.value = 'before',
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                                    decoration: BoxDecoration(
+                                      color: controller.offsetDirection.value == 'before'
+                                          ? kprimaryColor
+                                          : Colors.transparent,
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(
+                                        color: controller.offsetDirection.value == 'before'
+                                            ? kprimaryColor
+                                            : Colors.white.withOpacity(0.3),
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.schedule,
+                                          size: 18,
+                                          color: controller.offsetDirection.value == 'before'
+                                              ? Colors.white
+                                              : Colors.white.withOpacity(0.6),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          'Before',
+                                          style: TextStyle(
+                                            color: controller.offsetDirection.value == 'before'
+                                                ? Colors.white
+                                                : Colors.white.withOpacity(0.6),
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                )),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Obx(() => GestureDetector(
+                                  onTap: () => controller.offsetDirection.value = 'after',
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                                    decoration: BoxDecoration(
+                                      color: controller.offsetDirection.value == 'after'
+                                          ? kprimaryColor
+                                          : Colors.transparent,
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(
+                                        color: controller.offsetDirection.value == 'after'
+                                            ? kprimaryColor
+                                            : Colors.white.withOpacity(0.3),
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.schedule,
+                                          size: 18,
+                                          color: controller.offsetDirection.value == 'after'
+                                              ? Colors.white
+                                              : Colors.white.withOpacity(0.6),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          'After',
+                                          style: TextStyle(
+                                            color: controller.offsetDirection.value == 'after'
+                                                ? Colors.white
+                                                : Colors.white.withOpacity(0.6),
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                )),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          const Text(
+                            'Offset: ',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          Expanded(
+                            child: Obx(() => DropdownButton<int>(
+                                  value: controller.offsetMinutes.value,
+                                  dropdownColor: ksecondaryBackgroundColor,
+                                  style: const TextStyle(color: Colors.white, fontSize: 16),
+                                  iconEnabledColor: kprimaryColor,
+                                  isExpanded: true,
+                                  underline: Container(
+                                    height: 2,
+                                    color: kprimaryColor,
+                                  ),
+                                  items: [5, 10, 15, 20, 30, 45, 60].map((minutes) {
+                                    return DropdownMenuItem<int>(
+                                      value: minutes,
+                                      child: Text('$minutes min'),
+                                    );
+                                  }).toList(),
+                                  onChanged: (value) {
+                                    if (value != null) {
+                                      controller.offsetMinutes.value = value;
+                                    }
+                                  },
+                                )),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
               ],
 
               const SizedBox(height: 24),
 
-              // Action buttons
               Row(
                 children: [
                   Expanded(
@@ -535,7 +672,6 @@ class NotificationsView extends GetView<NotificationsController> {
                         try {
                           debugPrint('🎯 Accept button pressed');
 
-                          // Show loading
                           Get.dialog(
                             const Center(
                               child: CircularProgressIndicator(
@@ -565,9 +701,6 @@ class NotificationsView extends GetView<NotificationsController> {
                           await FirestoreDb.removeItem(notification);
                           debugPrint('✅ Notification item removed');
 
-                          // ignore: lines_longer_than_80_chars
-                          // Close all dialogs and navigate back to notifications
-                          debugPrint('❌ Closing all dialogs');
                           Get.until((route) => !Get.isDialogOpen!);
 
                           debugPrint('🎉 Showing success snackbar');
@@ -585,7 +718,6 @@ class NotificationsView extends GetView<NotificationsController> {
                           debugPrint('❌ Error in accept button: $e');
                           debugPrint('❌ Stack trace: ${StackTrace.current}');
 
-                          // Close all dialogs if open
                           if (Get.isDialogOpen ?? false) {
                             debugPrint('❌ Closing all dialogs due to error');
                             Get.until((route) => !Get.isDialogOpen!);

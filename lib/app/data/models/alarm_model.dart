@@ -1,7 +1,6 @@
 import 'dart:convert';
 
-import 'package:cloud_firestore/cloud_firestore.dart' as firestore;
-
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:isar/isar.dart';
 import 'package:ultimate_alarm_clock/app/data/models/user_model.dart';
 import 'package:ultimate_alarm_clock/app/utils/utils.dart';
@@ -47,6 +46,7 @@ class AlarmModel {
   late String ownerId;
   late String ownerName;
   late String lastEditedUserId;
+  Timestamp? lastEditedTimestamp;
   late bool mutexLock;
   String? mainAlarmTime;
   late String label;
@@ -92,6 +92,7 @@ class AlarmModel {
     required this.ownerId,
     required this.ownerName,
     required this.lastEditedUserId,
+    this.lastEditedTimestamp,
     required this.mutexLock,
     this.isEnabled = true,
     required this.days,
@@ -149,7 +150,7 @@ class AlarmModel {
   });
 
   AlarmModel.fromDocumentSnapshot({
-    required firestore.DocumentSnapshot documentSnapshot,
+    required DocumentSnapshot documentSnapshot,
     required UserModel? user,
   }) {
     final data = Map<String, dynamic>.from(
@@ -224,6 +225,9 @@ class AlarmModel {
     alarmID = _asString(data['alarmID'], documentSnapshot.id);
     sharedUserIds = _asStringList(data['sharedUserIds']);
     lastEditedUserId = _asString(data['lastEditedUserId'], '');
+    lastEditedTimestamp = data['lastEditedTimestamp'] is Timestamp
+        ? data['lastEditedTimestamp'] as Timestamp
+        : null;
     mutexLock = _asBool(data['mutexLock'], false);
     ownerId = _asString(data['ownerId'], '');
     ownerName = _asString(data['ownerName'], '');
@@ -444,6 +448,12 @@ class AlarmModel {
     alarmID = _asString(data['alarmID'], '');
     sharedUserIds = _asStringList(data['sharedUserIds']);
     lastEditedUserId = _asString(data['lastEditedUserId'], '');
+    final timestampData = data['lastEditedTimestamp'];
+    if (timestampData is Timestamp) {
+      lastEditedTimestamp = timestampData;
+    } else if (timestampData is int) {
+      lastEditedTimestamp = Timestamp.fromMillisecondsSinceEpoch(timestampData);
+    }
     mutexLock = _asBool(data['mutexLock'], false);
     ownerId = _asString(data['ownerId'], '');
     ownerName = _asString(data['ownerName'], '');
@@ -536,6 +546,7 @@ class AlarmModel {
       'isCalendarEvent': alarmRecord.isCalendarEvent,
       'ownerId': alarmRecord.ownerId,
       'lastEditedUserId': alarmRecord.lastEditedUserId,
+      'lastEditedTimestamp': alarmRecord.lastEditedTimestamp,
       'mutexLock': alarmRecord.mutexLock,
       'isOneTime': alarmRecord.isOneTime,
       'label': alarmRecord.label,

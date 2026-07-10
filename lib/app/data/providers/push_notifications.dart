@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -8,6 +9,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:ultimate_alarm_clock/app/data/models/user_model.dart';
 import 'package:ultimate_alarm_clock/app/data/providers/firestore_provider.dart';
 import 'package:ultimate_alarm_clock/app/data/providers/secure_storage_provider.dart';
 import 'package:ultimate_alarm_clock/app/utils/shared_alarm_logger.dart';
@@ -475,7 +477,7 @@ class PushNotifications {
   }
 
   Future<void> triggerSharedItemNotification(
-    List receivingUserIds, {
+    List<String> receivingUserIds, {
     Map<String, dynamic>? sharedItem,
   }) async {
     await _sendNotificationWithRetry(
@@ -485,10 +487,19 @@ class PushNotifications {
   }
 
   Future<void> _sendNotificationWithRetry(
-    List receivingUserIds, {
+    List<String> receivingUserIds, {
     Map<String, dynamic>? sharedItem,
     int maxRetries = 3,
   }) async {
+    // Get user model outside try block so it's accessible in catch
+    final userModel = await SecureStorageProvider().retrieveUserModel();
+    if (userModel == null) {
+      debugPrint(
+        '❌ No user model found, cannot send shared item notification',
+      );
+      return;
+    }
+
     for (int attempt = 1; attempt <= maxRetries; attempt++) {
       try {
         debugPrint(
@@ -496,14 +507,6 @@ class PushNotifications {
           '${receivingUserIds.length} users',
         );
         debugPrint('📦 Shared item data: $sharedItem');
-
-        var userModel = await SecureStorageProvider().retrieveUserModel();
-        if (userModel == null) {
-          debugPrint(
-            '❌ No user model found, cannot send shared item notification',
-          );
-          return;
-        }
 
         debugPrint('👤 Sender: ${userModel.fullName} (${userModel.email})');
         debugPrint('👥 Recipients: $receivingUserIds');
@@ -567,9 +570,11 @@ class PushNotifications {
             'not working properly.',
           );
           debugPrint(
-            '   The alarm sharing will continue without '
-            'notifications.',
+            '   Falling back to local notification storage...',
           );
+
+          // Fallback: Store notification locally in Firestore for each recipient
+          await _storeNotificationLocally(receivingUserIds, sharedItem, userModel);
           return;
         }
 
@@ -658,6 +663,64 @@ class PushNotifications {
         'error': e.toString(),
         'timestamp': DateTime.now().toIso8601String(),
       };
+    }
+  }
+
+  /// Fallback: Store notification directly in Firestore for each recipient
+  /// when Cloud Functions fail. This ensures users still receive the notification
+  /// when they open the app.
+  static Future<void> _storeNotificationLocally(
+    List<String> receivingUserIds,
+    Map<String, dynamic>? sharedItem,
+    UserModel? sender,
+  ) async {
+    if (receivingUserIds.isEmpty || sharedItem == null || sender == null) return;
+
+    try {
+      debugPrint('📦 Storing shared alarm notification locally for ${receivingUserIds.length} users');
+
+      final firestore = FirebaseFirestore.instance;
+      final batch = firestore.batch();
+
+      // Create the notification item
+      final notificationItem = {
+        'type': 'alarm',
+        'payloadVersion': 2,
+        'id': sharedItem['id'] ?? sharedItem['firestoreId'] ?? sharedItem['alarmId'] ?? '',
+        'firestoreId': sharedItem['firestoreId'],
+        'AlarmName': sharedItem['alarmName'] ?? sharedItem['AlarmName'] ?? '',
+        'alarmId': sharedItem['firestoreId'] ?? sharedItem['alarmId'] ?? '',
+        'owner': sender.fullName ?? sender.email ?? 'Someone',
+        'alarmTime': sharedItem['alarmTime'] ?? '',
+        'alarmLabel': sharedItem['label'] ?? sharedItem['alarmLabel'] ?? '',
+        'alarmRepeat': sharedItem['alarmRepeat'] ?? '',
+        'alarmData': sharedItem,
+        'sentAt': FieldValue.serverTimestamp(),
+      };
+
+      for (final userId in receivingUserIds) {
+        try {
+          final userRef = firestore.collection('users').doc(userId);
+          batch.set(userRef, {
+            'receivedItems': FieldValue.arrayUnion([notificationItem]),
+          }, SetOptions(merge: true));
+        } catch (e) {
+          debugPrint('❌ Error adding notification to batch for user $userId: $e');
+        }
+      }
+
+      await batch.commit();
+      debugPrint('✅ Local notification storage completed for ${receivingUserIds.length} users');
+
+      SharedAlarmLogger.log(
+        'LOCAL_NOTIFICATION_STORED',
+        details: {
+          'recipientCount': receivingUserIds.length,
+          'alarmId': sharedItem['id'] ?? '',
+        },
+      );
+    } catch (e) {
+      debugPrint('❌ Error storing notification locally: $e');
     }
   }
 }

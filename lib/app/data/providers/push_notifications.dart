@@ -279,6 +279,7 @@ Future<void> _sendNotificationWithRetry(List receivingUserIds, {Map<String, dyna
         if (responseData['failedTokens'] != null && responseData['failedTokens'].isNotEmpty) {
           print('⚠️  Some tokens failed: ${responseData['failedTokens']}');
         }
+<<<<<<< Updated upstream
         
         return; // Success, exit retry loop
       } else {
@@ -286,6 +287,71 @@ Future<void> _sendNotificationWithRetry(List receivingUserIds, {Map<String, dyna
         print('   Failed tokens: ${responseData['failedTokens']}');
         print('   Failed sends: ${responseData['failedSends']}');
         
+=======
+
+        debugPrint('👤 Sender: ${userModel.fullName} (${userModel.email})');
+        debugPrint('👥 Recipients: $receivingUserIds');
+
+        final HttpsCallable callable =
+            FirebaseFunctions.instance.httpsCallable('sendNotification');
+
+        final response = await callable.call({
+          'receivingUserIds': receivingUserIds,
+          'message': '${userModel.fullName} has shared an alarm with you!',
+          'sharedItem': sharedItem,
+        });
+
+        final responseData = response.data;
+
+        debugPrint('📊 Notification response: $responseData');
+
+        final noTokenResponse = responseData['message'] ==
+            'No valid FCM tokens found';
+        final savedWithoutPush = responseData['message'] ==
+            'Shared item saved, but no valid FCM tokens were found';
+
+        if (responseData['success'] == true ||
+            noTokenResponse ||
+            savedWithoutPush) {
+          debugPrint('✅ Shared item notification sent successfully!');
+          debugPrint(
+            '   Success count: ${responseData['successCount']}',
+          );
+          debugPrint(
+            '   Failure count: ${responseData['failureCount']}',
+          );
+
+          SharedAlarmLogger.notificationSent(
+            alarmId: sharedItem?['id'] ?? '',
+            alarmTime: sharedItem?['alarmTime'] ?? '',
+            recipientCount: responseData['successCount'] ?? 0,
+          );
+
+          if (responseData['failedTokens'] != null &&
+              responseData['failedTokens'].isNotEmpty) {
+            debugPrint(
+              '⚠️  Some tokens failed: ${responseData['failedTokens']}',
+            );
+          }
+
+          return; // Success, exit retry loop
+        } else {
+          debugPrint('❌ Notification failed: ${responseData['message']}');
+          debugPrint('   Failed tokens: ${responseData['failedTokens']}');
+          debugPrint('   Failed sends: ${responseData['failedSends']}');
+
+          if (attempt == maxRetries) {
+            debugPrint(
+              '❌ Max retry attempts reached. '
+              'Notification sending failed.',
+            );
+            return;
+          }
+        }
+      } catch (e) {
+        debugPrint('❌ Attempt $attempt failed: $e');
+
+>>>>>>> Stashed changes
         if (attempt == maxRetries) {
           print('❌ Max retry attempts reached. Notification sending failed.');
           return;

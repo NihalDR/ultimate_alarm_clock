@@ -24,6 +24,16 @@ import 'package:ultimate_alarm_clock/app/modules/timer/controllers/timer_control
 
 import '../../../data/models/profile_model.dart';
 import '../../../data/providers/google_cloud_api_provider.dart';
+<<<<<<< Updated upstream
+=======
+import '../../../data/providers/isar_provider.dart';
+import '../../../data/providers/push_notifications.dart';
+import '../../../data/providers/secure_storage_provider.dart';
+import '../../../utils/constants.dart';
+import '../../../utils/shared_alarm_logger.dart';
+import '../../../utils/utils.dart';
+import '../../settings/controllers/theme_controller.dart';
+>>>>>>> Stashed changes
 
 class Pair<T, U> {
   final T first;
@@ -161,6 +171,7 @@ class HomeController extends GetxController {
           email: googleSignInAccount.email,
         );
         await SecureStorageProvider().storeUserModel(userModel.value!);
+        await PushNotifications().updateStoredTokenIfNeeded();
         isUserSignedIn.value = true;
       }
     }
@@ -450,6 +461,7 @@ class HomeController extends GetxController {
         } else {
           debugPrint('✅ User signed in: ${user.email}');
           isUserSignedIn.value = true;
+          PushNotifications().updateStoredTokenIfNeeded();
           // Try to retrieve user model again after sign in
           _initializeUserAfterAuth();
         }
@@ -509,7 +521,18 @@ class HomeController extends GetxController {
     try {
       debugPrint('🔄 Initializing user after authentication...');
       userModel.value = await SecureStorageProvider().retrieveUserModel();
+<<<<<<< Updated upstream
       
+=======
+
+      final firebaseUser = FirebaseAuth.instance.currentUser;
+      if (firebaseUser != null) {
+        await _syncUserModelWithFirebase(firebaseUser);
+        await PushNotifications().updateStoredTokenIfNeeded();
+        await PushNotifications().updateStoredTokenIfNeeded();
+      }
+
+>>>>>>> Stashed changes
       if (userModel.value != null) {
         debugPrint('✅ User model retrieved: ${userModel.value!.email}');
         
@@ -556,7 +579,12 @@ class HomeController extends GetxController {
         // Store in Firestore and secure storage
         await FirestoreDb.addUser(newUserModel);
         await SecureStorageProvider().storeUserModel(newUserModel);
+<<<<<<< Updated upstream
         
+=======
+        await PushNotifications().updateStoredTokenIfNeeded();
+
+>>>>>>> Stashed changes
         debugPrint('✅ User document created in Firestore: ${newUserModel.id}');
         
         // Update controller state

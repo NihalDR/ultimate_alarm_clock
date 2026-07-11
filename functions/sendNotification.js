@@ -18,6 +18,29 @@ export const sendNotification = onCall(async (request) => {
   if (!receivingUserIds || !Array.isArray(receivingUserIds) || receivingUserIds.length === 0) {
     throw new Error("Invalid receivingUserIds");
   }
+<<<<<<< Updated upstream
+=======
+
+  // ── Build a compact data-only payload from the shared item ──────────
+  // FCM data values MUST be strings; we JSON-encode complex fields.
+  const alarmData = sharedItem?.alarmData || {};
+  const fcmData = {
+    silent: "false",
+    type: "sharedAlarm",
+    payloadVersion: "2",
+    message,
+    sharedItemId: sharedItem?.id || "",
+    firestoreId: sharedItem?.firestoreId || sharedItem?.id || "",
+    alarmTime: sharedItem?.alarmTime || alarmData.alarmTime || "",
+    alarmLabel: sharedItem?.alarmLabel || alarmData.label || "",
+    ownerName: sharedItem?.owner || alarmData.ownerName || "",
+    alarmRepeat: sharedItem?.alarmRepeat || "",
+    clickAction: "FLUTTER_NOTIFICATION_CLICK",
+    // Full alarm map as a JSON string so the client can reconstruct the
+    // AlarmModel without needing another Firestore read.
+    alarmDataJson: JSON.stringify(alarmData),
+  };
+>>>>>>> Stashed changes
 
   // Prepare document references
   const userDocRefs = receivingUserIds.map((id) => db.collection("users").doc(id));
@@ -54,6 +77,7 @@ export const sendNotification = onCall(async (request) => {
             channelId: "alarm_updates",
             sound: "default",
             autoCancel: true,
+<<<<<<< Updated upstream
           },
           data: {
             silent: "false",
@@ -61,6 +85,8 @@ export const sendNotification = onCall(async (request) => {
             message,
             sharedItemId: sharedItem?.id || "",
             clickAction: "FLUTTER_NOTIFICATION_CLICK",
+=======
+>>>>>>> Stashed changes
           },
         },
         apns: {
@@ -125,14 +151,19 @@ export const sendNotification = onCall(async (request) => {
       logger.info(`✅ Firestore batch updates completed`);
     }
 
-    // Send push notifications with retry mechanism
+    // If no tokens are available, keep the shared alarm flow successful.
+    // The Firestore batch has already completed, so recipients can still
+    // open the app and see the shared item even if push delivery is skipped.
     if (messages.length === 0) {
       logger.warn(`❌ No valid FCM tokens found. Failed users: ${failedTokens.join(", ")}`);
       return {
-        success: false, 
-        message: "No valid FCM tokens found",
+        success: true,
+        message: "Shared item saved, but no valid FCM tokens were found",
+        successCount: 0,
+        failureCount: 0,
         failedTokens,
         totalRequested: receivingUserIds.length,
+        responses: [],
       };
     }
     

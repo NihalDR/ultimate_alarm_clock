@@ -915,9 +915,16 @@ static Future<bool> addItemToUserByEmail(String email, dynamic sharedItem) async
         await _firebaseFirestore
             .collection('users')
             .doc(_firebaseAuthInstance.currentUser!.uid)
+<<<<<<< Updated upstream
             .update({
           'fcmToken': token
         });
+=======
+            .set(
+          {'fcmToken': token},
+          SetOptions(merge: true),
+        );
+>>>>>>> Stashed changes
       } else {
         debugPrint('No authenticated user found when updating FCM token');
       }
@@ -927,6 +934,7 @@ static Future<bool> addItemToUserByEmail(String email, dynamic sharedItem) async
   }
 
   static acceptSharedAlarm(String alarmOwnerId, AlarmModel alarm) async {
+<<<<<<< Updated upstream
     String? currentUserId = _firebaseAuthInstance.currentUser!.uid;
     
     
@@ -978,6 +986,33 @@ await _firebaseFirestore
       
       debugPrint('✅ User $currentUserId accepted shared alarm and added to offsetDetails');
     }
+=======
+    final currentUserId = await _resolveSharedAlarmUserId();
+    if (currentUserId == null || currentUserId.isEmpty) {
+      debugPrint('⚠️ No current user id available for shared alarm accept');
+      return;
+    }
+
+    alarm.isSharedAlarmEnabled = true;
+    alarm.lastEditedUserId = currentUserId;
+
+    final sharedUserIds = <String>{...alarm.sharedUserIds ?? []};
+    sharedUserIds.add(currentUserId);
+    alarm.sharedUserIds = sharedUserIds.toList();
+
+    await IsarDb.addAlarm(alarm);
+
+    SharedAlarmLogger.alarmAccepted(
+      alarmId: alarm.alarmID,
+      alarmTime: alarm.alarmTime,
+      firestoreId: alarm.firestoreId,
+    );
+
+    debugPrint(
+      '✅ User $currentUserId accepted shared alarm locally: '
+      '${alarm.firestoreId ?? alarm.alarmID}',
+    );
+>>>>>>> Stashed changes
   }
 
   static Future<AlarmModel> saveSharedAlarm(UserModel? user, AlarmModel alarmRecord) async {

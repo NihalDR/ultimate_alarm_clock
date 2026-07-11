@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/calendar/v3.dart';
 import 'package:ultimate_alarm_clock/app/data/providers/secure_storage_provider.dart';
+import 'package:ultimate_alarm_clock/app/data/providers/push_notifications.dart';
 import 'package:ultimate_alarm_clock/app/modules/home/controllers/home_controller.dart';
 import 'package:ultimate_alarm_clock/app/modules/settings/controllers/settings_controller.dart';
 
@@ -75,6 +76,7 @@ class GoogleCloudProvider {
         
         await FirestoreDb.addUser(userModel);
         await SecureStorageProvider().storeUserModel(userModel);
+        await PushNotifications().updateStoredTokenIfNeeded();
 
         settingsController.isUserLoggedIn.value = true;
         homeController.isUserSignedIn.value = true;

@@ -133,6 +133,12 @@ class PushNotifications {
         },
       );
 
+      FirebaseAuth.instance.authStateChanges().listen((user) async {
+        if (user != null) {
+          await updateStoredTokenIfNeeded();
+        }
+      });
+
       // ── Foreground notifications ───────────────────────────────────────
       FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
         final data = message.data;

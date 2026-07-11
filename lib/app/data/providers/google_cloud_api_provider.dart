@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/calendar/v3.dart';
 import 'package:ultimate_alarm_clock/app/data/providers/secure_storage_provider.dart';
+import 'package:ultimate_alarm_clock/app/data/providers/push_notifications.dart';
 import 'package:ultimate_alarm_clock/app/modules/home/controllers/home_controller.dart';
 import 'package:ultimate_alarm_clock/app/modules/settings/controllers/settings_controller.dart';
 
@@ -90,6 +91,7 @@ class GoogleCloudProvider {
           // Don't block sign-in if Firestore write fails; log and continue.
           debugPrint('Firestore addUser failed after sign-in: $e');
         }
+        await PushNotifications().updateStoredTokenIfNeeded();
         await SecureStorageProvider().storeUserModel(userModel);
 
         settingsController.isUserLoggedIn.value = true;

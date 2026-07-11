@@ -190,17 +190,22 @@ class FirestoreDb {
 
       final DocumentReference docRef = _usersCollection.doc(userModel.id);
       final user = await docRef.get();
+      final userData = Map<String, dynamic>.from(userModel.toJson());
 
       if (!user.exists) {
         // Ensure receivedItems is initialized as an empty array
-        Map<String, dynamic> userData = userModel.toJson();
         userData['receivedItems'] = userData['receivedItems'] ?? [];
 
         debugPrint('🔥 Creating new user document...');
-        await docRef.set(userData);
+        await docRef.set(userData, SetOptions(merge: true));
         debugPrint(
             '✅ Created new user document with receivedItems: ${userModel.id}');
       } else {
+        final dataToMerge = Map<String, dynamic>.from(userData)
+          ..remove('receivedItems');
+
+        await docRef.set(dataToMerge, SetOptions(merge: true));
+
         // Check if existing user has receivedItems field, add it if missing
         final data = user.data() as Map<String, dynamic>?;
         if (data != null && !data.containsKey('receivedItems')) {
@@ -1072,7 +1077,7 @@ class FirestoreDb {
         await _firebaseFirestore
             .collection('users')
             .doc(_firebaseAuthInstance.currentUser!.uid)
-            .update({'fcmToken': token});
+            .set({'fcmToken': token}, SetOptions(merge: true));
       } else {
         debugPrint('No authenticated user found when updating FCM token');
       }

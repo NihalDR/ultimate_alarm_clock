@@ -18,6 +18,7 @@ import '../../../data/providers/get_storage_provider.dart';
 import '../../../data/providers/google_cloud_api_provider.dart';
 import '../../../data/providers/isar_provider.dart';
 import '../../../data/providers/secure_storage_provider.dart';
+import '../../../data/providers/push_notifications.dart';
 import '../../../utils/constants.dart';
 import '../../../utils/shared_alarm_logger.dart';
 import '../../../utils/utils.dart';
@@ -506,6 +507,7 @@ class HomeController extends GetxController {
       if (FirebaseAuth.instance.currentUser != null) {
         try {
           await FirestoreDb.addUser(userModel.value!);
+          await PushNotifications().updateStoredTokenIfNeeded();
           debugPrint('✅ Ensured user document exists in Firestore');
         } catch (e) {
           debugPrint('⚠️ Error ensuring user document exists: $e');
@@ -635,6 +637,7 @@ class HomeController extends GetxController {
 
         // Store in Firestore and secure storage
         await FirestoreDb.addUser(newUserModel);
+        await PushNotifications().updateStoredTokenIfNeeded();
         await SecureStorageProvider().storeUserModel(newUserModel);
 
         debugPrint('✅ User document created in Firestore: ${newUserModel.id}');

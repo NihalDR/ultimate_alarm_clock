@@ -123,6 +123,9 @@ class HomeController extends GetxController {
 
   StreamSubscription<QuerySnapshot>? _sharedAlarmSubscription;
   StreamSubscription<QuerySnapshot>? _userNotificationSubscription;
+  StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>?
+      _receivedItemsSubscription;
+  final Set<String> _notifiedSharedAlarmIds = {};
 
   Timer? _periodicSharedAlarmTimer;
 
@@ -530,6 +533,7 @@ class HomeController extends GetxController {
         setupPeriodicSharedAlarmCheck();
 
         setupUserNotificationListener();
+        setupReceivedItemsListener();
       }
     }
 
@@ -569,6 +573,7 @@ class HomeController extends GetxController {
         setupSharedAlarmListener();
         setupPeriodicSharedAlarmCheck();
         setupUserNotificationListener();
+        setupReceivedItemsListener();
 
         // Refresh the alarm streams
         refreshUpcomingAlarms();
@@ -654,6 +659,7 @@ class HomeController extends GetxController {
         setupSharedAlarmListener();
         setupPeriodicSharedAlarmCheck();
         setupUserNotificationListener();
+        setupReceivedItemsListener();
 
         // Refresh the alarm streams
         refreshUpcomingAlarms();
@@ -2016,6 +2022,79 @@ class HomeController extends GetxController {
     );
 
     debugPrint('🔔 User notification listener setup completed');
+  }
+
+  void setupReceivedItemsListener() {
+    final authUid = FirebaseAuth.instance.currentUser?.uid;
+    if (userModel.value == null || authUid == null) {
+      debugPrint(
+        '⚠️ Skipping received-items listener; FirebaseAuth user is null',
+      );
+      return;
+    }
+
+    _receivedItemsSubscription?.cancel();
+    _notifiedSharedAlarmIds.clear();
+
+    debugPrint('🔔 Setting up received-items listener...');
+
+    _receivedItemsSubscription = FirebaseFirestore.instance
+        .collection('users')
+        .doc(authUid)
+        .snapshots()
+        .listen(
+      (DocumentSnapshot<Map<String, dynamic>> snapshot) async {
+        final data = snapshot.data();
+        final rawItems = data != null ? (data['receivedItems'] ?? []) : [];
+        if (rawItems is! List) return;
+
+        final currentIds = <String>{};
+        final newSharedItems = <Map<String, dynamic>>[];
+
+        for (final item in rawItems) {
+          if (item is! Map) continue;
+          final notification = Map<String, dynamic>.from(item);
+          final itemType = notification['type']?.toString() ?? '';
+          final itemId = (notification['sharedItemId'] ??
+                  notification['alarmId'] ??
+                  notification['id'])
+              ?.toString()
+              .trim();
+
+          if (itemId != null && itemId.isNotEmpty) {
+            currentIds.add(itemId);
+            if (!_notifiedSharedAlarmIds.contains(itemId) &&
+                (itemType == 'sharedAlarm' ||
+                    itemType == 'sharedItem' ||
+                    itemType == 'alarm')) {
+              newSharedItems.add(notification);
+            }
+          }
+        }
+
+        final unseenIds = currentIds.difference(_notifiedSharedAlarmIds);
+        if (_notifiedSharedAlarmIds.isEmpty) {
+          _notifiedSharedAlarmIds.addAll(currentIds);
+          return;
+        }
+
+        for (final notification in newSharedItems) {
+          try {
+            await PushNotifications()
+                .showSharedAlarmRequestNotification(notification);
+          } catch (e) {
+            debugPrint('❌ Error showing shared alarm invite notification: $e');
+          }
+        }
+
+        _notifiedSharedAlarmIds.addAll(unseenIds);
+      },
+      onError: (error) {
+        debugPrint('❌ Error in received-items listener: $error');
+      },
+    );
+
+    debugPrint('🔔 Received-items listener setup completed');
   }
 
   // Add method to handle shared alarm firing state

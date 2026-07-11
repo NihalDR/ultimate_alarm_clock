@@ -606,9 +606,7 @@ class FirestoreDb {
       Get.snackbar('Notification', 'Item Shared!');
     });
     for (final email in emails) {
-      await _firebaseFirestore.collection('users').doc(email).update({
-        'receivedItems': FieldValue.arrayUnion([sharedItem])
-      });
+      await addItemToUserByEmail(email, sharedItem);
     }
   }
 
@@ -624,7 +622,14 @@ class FirestoreDb {
           .where('email', whereIn: batch)
           .get();
 
-      for (var doc in querySnapshot.docs) {
+      final docs = querySnapshot.docs.toList();
+      final preferredDocs = docs.where((doc) {
+        final token = doc.data()['fcmToken'];
+        return token is String && token.isNotEmpty;
+      }).toList();
+
+      final docsToUse = preferredDocs.isNotEmpty ? preferredDocs : docs;
+      for (var doc in docsToUse) {
         userIds.add(doc.id);
       }
     }
@@ -663,9 +668,10 @@ class FirestoreDb {
     await _ensureSharedAlarmDocument(alarm);
     final alarmData = AlarmModel.toMap(alarm);
     Map sharedItem = {
-      'type': 'alarm',
+      'type': 'sharedAlarm',
       'payloadVersion': 2,
       'id': alarm.firestoreId ?? alarm.alarmID,
+      'sharedItemId': alarm.firestoreId ?? alarm.alarmID,
       'firestoreId': alarm.firestoreId,
       'AlarmName': alarm.alarmID,
       'alarmId': alarm.firestoreId ?? alarm.alarmID,
@@ -733,8 +739,16 @@ class FirestoreDb {
           .get();
 
       if (querySnapshot.docs.isNotEmpty) {
-        final docId = querySnapshot.docs.first.id;
-        final userData = querySnapshot.docs.first.data();
+        final docs = querySnapshot.docs.toList();
+        final preferredDoc = docs.firstWhere(
+          (doc) {
+            final token = doc.data()['fcmToken'];
+            return token is String && token.isNotEmpty;
+          },
+          orElse: () => docs.first,
+        );
+        final docId = preferredDoc.id;
+        final userData = preferredDoc.data();
         debugPrint('✅ Found user: ${userData['fullName']} (ID: $docId)');
         debugPrint('📦 Current receivedItems: ${userData['receivedItems']}');
         debugPrint('📦 Adding shared item to receivedItems: $sharedItem');

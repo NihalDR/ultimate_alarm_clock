@@ -268,11 +268,14 @@ class ShareDialog extends StatelessWidget {
                                       controller.alarmRecord.value,
                                     );
                                     final sharedItem = {
-                                      'type': 'alarm',
+                                      'type': 'sharedAlarm',
                                       'payloadVersion': 2,
                                       'id': controller
                                               .alarmRecord.value.firestoreId ??
                                           controller.alarmRecord.value.alarmID,
+                                      'sharedItemId': controller
+                                          .alarmRecord.value.firestoreId ??
+                                        controller.alarmRecord.value.alarmID,
                                       'firestoreId': controller
                                           .alarmRecord.value.firestoreId,
                                       'AlarmName': controller

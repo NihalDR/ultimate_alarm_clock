@@ -92,6 +92,39 @@ Future<void> _persistPendingSharedAlarm(Map<String, dynamic> data) async {
 // ─── PushNotifications class ─────────────────────────────────────────────────
 
 class PushNotifications {
+  Future<void> showSharedAlarmRequestNotification(
+    Map<String, dynamic> data,
+  ) async {
+    final alarmTime = data['alarmTime'] ?? data['newAlarmTime'] ?? '';
+    final ownerName = data['ownerName'] ?? data['owner'] ?? '';
+    final title = '🔔 Shared Alarm!';
+    final body = data['message'] ?? '$ownerName shared an alarm for $alarmTime';
+
+    const AndroidNotificationDetails androidDetails =
+        AndroidNotificationDetails(
+      _kSharedAlarmChannelId,
+      _kSharedAlarmChannelName,
+      channelDescription: _kSharedAlarmChannelDesc,
+      importance: Importance.max,
+      priority: Priority.high,
+      category: AndroidNotificationCategory.alarm,
+      visibility: NotificationVisibility.public,
+      autoCancel: true,
+    );
+
+    const NotificationDetails notificationDetails = NotificationDetails(
+      android: androidDetails,
+    );
+
+    await flutterLocalNotificationsPlugin.show(
+      DateTime.now().millisecondsSinceEpoch,
+      title,
+      body,
+      notificationDetails,
+      payload: jsonEncode(data),
+    );
+  }
+
   Future<void> initFirebaseMessaging() async {
     try {
       FirebaseMessaging messaging = FirebaseMessaging.instance;
@@ -317,36 +350,9 @@ class PushNotifications {
 
   /// Shows a rich notification specifically for shared alarm requests.
   Future<void> _showSharedAlarmNotification(RemoteMessage message) async {
-    final data = message.data;
-    final alarmTime = data['alarmTime'] ?? data['newAlarmTime'] ?? '';
-    final ownerName = data['ownerName'] ?? '';
-    final title = message.notification?.title ?? '🔔 Shared Alarm!';
-    final body = message.notification?.body ??
-        '$ownerName shared an alarm for $alarmTime';
-
-    const AndroidNotificationDetails androidDetails =
-        AndroidNotificationDetails(
-      _kSharedAlarmChannelId,
-      _kSharedAlarmChannelName,
-      channelDescription: _kSharedAlarmChannelDesc,
-      importance: Importance.max,
-      priority: Priority.high,
-      category: AndroidNotificationCategory.alarm,
-      visibility: NotificationVisibility.public,
-      autoCancel: true,
-    );
-
-    const NotificationDetails notificationDetails = NotificationDetails(
-      android: androidDetails,
-    );
-
-    await flutterLocalNotificationsPlugin.show(
-      message.notification?.hashCode ?? DateTime.now().millisecondsSinceEpoch,
-      title,
-      body,
-      notificationDetails,
-      payload: jsonEncode(data),
-    );
+    final data = Map<String, dynamic>.from(message.data);
+    data.putIfAbsent('message', () => message.notification?.body);
+    await showSharedAlarmRequestNotification(data);
   }
 
   /// Shows a basic notification for non-alarm messages.

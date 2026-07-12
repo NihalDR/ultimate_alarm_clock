@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:uuid/uuid.dart';
 import 'package:ultimate_alarm_clock/app/data/models/alarm_model.dart';
 import 'package:ultimate_alarm_clock/app/data/providers/firestore_provider.dart';
 import 'package:ultimate_alarm_clock/app/data/providers/isar_provider.dart';
@@ -649,7 +650,15 @@ class HomeView extends GetView<HomeController> {
                                             ? Dismissible(
                                                 confirmDismiss:
                                                     (direction) async {
-                                                  // Show confirmation dialog BEFORE removing the item
+                                                  if (direction ==
+                                                      DismissDirection
+                                                          .endToStart) {
+                                                    // Right swipe - Edit/Duplicate
+                                                    await _showEditDuplicateOptions(
+                                                        context, alarm,);
+                                                    return false; // Don't dismiss
+                                                  }
+                                                  // Left swipe - Delete
                                                   bool userConfirmed =
                                                       await showDeleteAlarmConfirmationPopupOnSwipe(
                                                     context,
@@ -662,22 +671,24 @@ class HomeView extends GetView<HomeController> {
                                                       alarm,
                                                     );
                                                   }
-                                                  // Returning true if delete is confirmed, false otherwise
                                                   return userConfirmed;
                                                 },
                                                 key: ValueKey(alarms[index]),
-                                                background: Container(
-                                                  color: Colors.red,
-                                                  // Set the background color to red
-                                                  padding: const EdgeInsets
-                                                      .symmetric(
-                                                    horizontal: 20,
-                                                  ),
-                                                  alignment: Alignment.center,
-                                                  child: const Icon(
-                                                    Icons.delete,
-                                                    color: Colors.white,
-                                                  ),
+                                                background: _buildSwipeBackground(
+                                                  context,
+                                                  Alignment.centerLeft,
+                                                  Icons.delete,
+                                                  Colors.red,
+                                                  'Delete'.tr,
+                                                ),
+                                                secondaryBackground:
+                                                    _buildSwipeBackground(
+                                                  context,
+                                                  Alignment.centerRight,
+                                                  Icons.edit,
+                                                  kprimaryColor,
+                                                  'Edit'.tr,
+                                                  showDuplicate: true,
                                                 ),
                                                 child: Obx(
                                                   () => GestureDetector(
@@ -916,99 +927,14 @@ class HomeView extends GetView<HomeController> {
                                                                                 alarm,
                                                                               ) ||
                                                                               alarm.isSharedAlarmEnabled)
-                                                                            Row(
-                                                                              mainAxisAlignment: MainAxisAlignment.start,
-                                                                              children: [
-                                                                                if (alarm.isSharedAlarmEnabled)
-                                                                                  Padding(
-                                                                                    padding: const EdgeInsets.symmetric(
-                                                                                      horizontal: 3.0,
-                                                                                    ),
-                                                                                    child: Icon(
-                                                                                      Icons.share_arrival_time,
-                                                                                      size: 24,
-                                                                                      color: alarm.isEnabled == true ? themeController.primaryTextColor.value.withOpacity(0.5) : themeController.primaryDisabledTextColor.value,
-                                                                                    ),
-                                                                                  ),
-                                                                                if (alarm.isLocationEnabled)
-                                                                                  Padding(
-                                                                                    padding: const EdgeInsets.symmetric(
-                                                                                      horizontal: 3.0,
-                                                                                    ),
-                                                                                    child: Icon(
-                                                                                      Icons.location_pin,
-                                                                                      size: 24,
-                                                                                      color: alarm.isEnabled == true ? themeController.primaryTextColor.value.withOpacity(0.5) : themeController.primaryDisabledTextColor.value,
-                                                                                    ),
-                                                                                  ),
-                                                                                if (alarm.isActivityEnabled)
-                                                                                  Padding(
-                                                                                    padding: const EdgeInsets.symmetric(
-                                                                                      horizontal: 3.0,
-                                                                                    ),
-                                                                                    child: Icon(
-                                                                                      Icons.screen_lock_portrait,
-                                                                                      size: 24,
-                                                                                      color: alarm.isEnabled == true ? themeController.primaryTextColor.value.withOpacity(0.5) : themeController.primaryDisabledTextColor.value,
-                                                                                    ),
-                                                                                  ),
-                                                                                if (alarm.isWeatherEnabled)
-                                                                                  Padding(
-                                                                                    padding: const EdgeInsets.symmetric(
-                                                                                      horizontal: 3.0,
-                                                                                    ),
-                                                                                    child: Icon(
-                                                                                      Icons.cloudy_snowing,
-                                                                                      size: 24,
-                                                                                      color: alarm.isEnabled == true ? themeController.primaryTextColor.value.withOpacity(0.5) : themeController.primaryDisabledTextColor.value,
-                                                                                    ),
-                                                                                  ),
-                                                                                if (alarm.isQrEnabled)
-                                                                                  Padding(
-                                                                                    padding: const EdgeInsets.symmetric(
-                                                                                      horizontal: 3.0,
-                                                                                    ),
-                                                                                    child: Icon(
-                                                                                      Icons.qr_code_scanner,
-                                                                                      size: 24,
-                                                                                      color: alarm.isEnabled == true ? themeController.primaryTextColor.value.withOpacity(0.5) : themeController.primaryDisabledTextColor.value,
-                                                                                    ),
-                                                                                  ),
-                                                                                if (alarm.isShakeEnabled)
-                                                                                  Padding(
-                                                                                    padding: const EdgeInsets.symmetric(
-                                                                                      horizontal: 3.0,
-                                                                                    ),
-                                                                                    child: Icon(
-                                                                                      Icons.vibration,
-                                                                                      size: 24,
-                                                                                      color: alarm.isEnabled == true ? themeController.primaryTextColor.value.withOpacity(0.5) : themeController.primaryDisabledTextColor.value,
-                                                                                    ),
-                                                                                  ),
-                                                                                if (alarm.isMathsEnabled)
-                                                                                  Padding(
-                                                                                    padding: const EdgeInsets.symmetric(
-                                                                                      horizontal: 3.0,
-                                                                                    ),
-                                                                                    child: Icon(
-                                                                                      Icons.calculate,
-                                                                                      size: 24,
-                                                                                      color: alarm.isEnabled == true ? themeController.primaryTextColor.value.withOpacity(0.5) : themeController.primaryDisabledTextColor.value,
-                                                                                    ),
-                                                                                  ),
-                                                                                if (alarm.isPedometerEnabled)
-                                                                                  Padding(
-                                                                                    padding: const EdgeInsets.symmetric(
-                                                                                      horizontal: 3.0,
-                                                                                    ),
-                                                                                    child: Icon(
-                                                                                      Icons.directions_walk,
-                                                                                      size: 24,
-                                                                                      color: alarm.isEnabled == true ? themeController.primaryTextColor.value.withOpacity(0.5) : themeController.primaryDisabledTextColor.value,
-                                                                                    ),
-                                                                                  ),
-                                                                              ],
+                                                                            Wrap(
+                                                                              spacing: 6,
+                                                                              runSpacing: 4,
+                                                                              children: _buildChallengeBadges(
+                                                                                alarm,
+                                                                                themeController,
                                                                             ),
+                                                                          ),
                                                                         ],
                                                                       ),
                                                                     ),
@@ -1275,5 +1201,324 @@ class HomeView extends GetView<HomeController> {
   Future<void> refresh() async {
     await controller.refreshUpcomingAlarms();
     await Future.delayed(const Duration(seconds: 3));
+  }
+
+  Widget _buildSwipeBackground(
+    BuildContext context,
+    Alignment alignment,
+    IconData icon,
+    Color color,
+    String label, {
+    bool showDuplicate = false,
+  }) {
+    return Container(
+      color: color,
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      alignment: alignment,
+      child: showDuplicate
+          ? Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                const Icon(Icons.content_copy, color: Colors.white, size: 28),
+                const SizedBox(width: 16),
+                Icon(icon, color: Colors.white, size: 28),
+                const SizedBox(width: 8),
+                Text(
+                  label,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
+                ),
+              ],
+            )
+          : Row(
+              mainAxisAlignment: alignment == Alignment.centerLeft
+                  ? MainAxisAlignment.start
+                  : MainAxisAlignment.end,
+              children: alignment == Alignment.centerLeft
+                  ? [
+                      Icon(icon, color: Colors.white, size: 28),
+                      const SizedBox(width: 8),
+                      Text(
+                        label,
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyMedium
+                            ?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                      ),
+                    ]
+                  : [
+                      Text(
+                        label,
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyMedium
+                            ?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                      ),
+                      const SizedBox(width: 8),
+                      Icon(icon, color: Colors.white, size: 28),
+                    ],
+            ),
+    );
+  }
+
+  Future<void> _showEditDuplicateOptions(
+    BuildContext context,
+    AlarmModel alarm,
+  ) async {
+    Utils.hapticFeedback();
+    await Get.bottomSheet(
+      Container(
+        decoration: BoxDecoration(
+          color: themeController.secondaryBackgroundColor.value,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        padding: const EdgeInsets.symmetric(vertical: 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 20),
+              decoration: BoxDecoration(
+                color: themeController.primaryDisabledTextColor.value
+                    .withOpacity(0.3),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            ListTile(
+              leading: Icon(Icons.edit,
+                  color: themeController.primaryTextColor.value, size: 28,),
+              title: Text('Edit Alarm'.tr,
+                  style: Theme.of(context).textTheme.bodyLarge,),
+              onTap: () {
+                Get.back();
+                controller.isProfile.value = false;
+                Get.toNamed('/add-update-alarm', arguments: alarm,);
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.content_copy,
+                  color: themeController.primaryTextColor.value, size: 28,),
+              title: Text('Duplicate Alarm'.tr,
+                  style: Theme.of(context).textTheme.bodyLarge,),
+              onTap: () {
+                Get.back();
+                _duplicateAlarm(alarm,);
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.preview,
+                  color: themeController.primaryTextColor.value, size: 28,),
+              title: Text('Preview Alarm'.tr,
+                  style: Theme.of(context).textTheme.bodyLarge,),
+              onTap: () {
+                Get.back();
+                Get.toNamed('/alarm-ring', arguments: {
+                  'alarm': alarm,
+                  'preview': true,
+                },);
+              },
+            ),
+          ],
+        ),
+      ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+    );
+  }
+
+  void _duplicateAlarm(AlarmModel alarm) {
+    final newAlarm = AlarmModel(
+      alarmTime: alarm.alarmTime,
+      alarmID: const Uuid().v4(),
+      calendarEventId: alarm.calendarEventId,
+      calendarEventStart: alarm.calendarEventStart,
+      calendarEventUpdated: alarm.calendarEventUpdated,
+      calendarId: alarm.calendarId,
+      isCalendarEvent: alarm.isCalendarEvent,
+      isEnabled: true,
+      isLocationEnabled: alarm.isLocationEnabled,
+      locationConditionType: alarm.locationConditionType,
+      isSharedAlarmEnabled: false, // Duplicated alarms are local by default
+      isWeatherEnabled: alarm.isWeatherEnabled,
+      weatherConditionType: alarm.weatherConditionType,
+      activityConditionType: alarm.activityConditionType,
+      location: alarm.location,
+      activityInterval: alarm.activityInterval,
+      minutesSinceMidnight: alarm.minutesSinceMidnight,
+      days: List<bool>.from(alarm.days),
+      weatherTypes: List<int>.from(alarm.weatherTypes),
+      shakeTimes: alarm.shakeTimes,
+      numberOfSteps: alarm.numberOfSteps,
+      numMathsQuestions: alarm.numMathsQuestions,
+      mathsDifficulty: alarm.mathsDifficulty,
+      isMathsEnabled: alarm.isMathsEnabled,
+      isShakeEnabled: alarm.isShakeEnabled,
+      isQrEnabled: alarm.isQrEnabled,
+      qrValue: alarm.qrValue,
+      isPedometerEnabled: alarm.isPedometerEnabled,
+      isActivityEnabled: alarm.isActivityEnabled,
+      intervalToAlarm: alarm.intervalToAlarm,
+      sharedUserIds: [],
+      ownerId: alarm.ownerId,
+      ownerName: alarm.ownerName,
+      lastEditedUserId: alarm.lastEditedUserId,
+      mutexLock: false,
+      mainAlarmTime: alarm.mainAlarmTime,
+      label: '${alarm.label} (Copy)'.tr,
+      isOneTime: alarm.isOneTime,
+      snoozeDuration: alarm.snoozeDuration,
+      maxSnoozeCount: alarm.maxSnoozeCount,
+      gradient: alarm.gradient,
+      ringtoneName: alarm.ringtoneName,
+      note: alarm.note,
+      tasks: List<String>.from(alarm.tasks),
+      deleteAfterGoesOff: alarm.deleteAfterGoesOff,
+      showMotivationalQuote: alarm.showMotivationalQuote,
+      volMax: alarm.volMax,
+      volMin: alarm.volMin,
+      activityMonitor: alarm.activityMonitor,
+      alarmDate: alarm.alarmDate,
+      profile: alarm.profile,
+      isGuardian: alarm.isGuardian,
+      guardianTimer: alarm.guardianTimer,
+      guardian: alarm.guardian,
+      isCall: alarm.isCall,
+      ringOn: alarm.ringOn,
+      isSunriseEnabled: alarm.isSunriseEnabled,
+      sunriseDuration: alarm.sunriseDuration,
+      sunriseIntensity: alarm.sunriseIntensity,
+      sunriseColorScheme: alarm.sunriseColorScheme,
+      timezoneId: alarm.timezoneId,
+      isTimezoneEnabled: alarm.isTimezoneEnabled,
+      targetTimezoneOffset: alarm.targetTimezoneOffset,
+      smartControlCombinationType: alarm.smartControlCombinationType,
+    );
+    controller.isProfile.value = false;
+    Get.toNamed('/add-update-alarm', arguments: newAlarm);
+  }
+
+List<Widget> _buildChallengeBadges(
+    AlarmModel alarm,
+    ThemeController themeController,
+  ) {
+    const Color enabledColor = kprimaryColor;
+    final Color disabledColor = themeController.primaryDisabledTextColor.value;
+
+    final List<Widget> badges = [];
+
+    if (alarm.isSharedAlarmEnabled) {
+      badges.add(_ChallengeBadge(
+        icon: Icons.share_arrival_time,
+        color: alarm.isEnabled ? enabledColor : disabledColor,
+        tooltip: 'Shared Alarm',
+      ),);
+    }
+    if (alarm.isLocationEnabled) {
+      badges.add(_ChallengeBadge(
+        icon: Icons.location_pin,
+        color: alarm.isEnabled ? Colors.blue : disabledColor,
+        tooltip: 'Location',
+      ),);
+    }
+    if (alarm.isActivityEnabled) {
+      badges.add(_ChallengeBadge(
+        icon: Icons.screen_lock_portrait,
+        color: alarm.isEnabled ? Colors.orange : disabledColor,
+        tooltip: 'Activity',
+      ),);
+    }
+    if (alarm.isWeatherEnabled) {
+      badges.add(_ChallengeBadge(
+        icon: Icons.cloudy_snowing,
+        color: alarm.isEnabled ? Colors.lightBlue : disabledColor,
+        tooltip: 'Weather',
+      ),);
+    }
+    if (alarm.isQrEnabled) {
+      badges.add(_ChallengeBadge(
+        icon: Icons.qr_code_scanner,
+        color: alarm.isEnabled ? Colors.purple : disabledColor,
+        tooltip: 'QR Code',
+      ),);
+    }
+    if (alarm.isShakeEnabled) {
+      badges.add(_ChallengeBadge(
+        icon: Icons.vibration,
+        color: alarm.isEnabled ? Colors.redAccent : disabledColor,
+        tooltip: 'Shake',
+      ),);
+    }
+    if (alarm.isMathsEnabled) {
+      badges.add(_ChallengeBadge(
+        icon: Icons.calculate,
+        color: alarm.isEnabled ? Colors.green : disabledColor,
+        tooltip: 'Math',
+      ),);
+    }
+    if (alarm.isPedometerEnabled) {
+      badges.add(_ChallengeBadge(
+        icon: Icons.directions_walk,
+        color: alarm.isEnabled ? Colors.teal : disabledColor,
+        tooltip: 'Steps',
+      ),);
+    }
+    if (alarm.isSunriseEnabled) {
+      badges.add(_ChallengeBadge(
+        icon: Icons.wb_sunny,
+        color: alarm.isEnabled ? Colors.amber : disabledColor,
+        tooltip: 'Sunrise',
+      ),);
+    }
+    if (alarm.isGuardian) {
+      badges.add(_ChallengeBadge(
+        icon: Icons.favorite,
+        color: alarm.isEnabled ? Colors.pink : disabledColor,
+        tooltip: 'Guardian',
+      ),);
+    }
+
+    return badges;
+  }
+}
+
+class _ChallengeBadge extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final String tooltip;
+
+  const _ChallengeBadge({
+    required this.icon,
+    required this.color,
+    required this.tooltip,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltip,
+      child: Container(
+        padding: const EdgeInsets.all(6),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.15),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: color.withOpacity(0.4), width: 1.2),
+        ),
+        child: Icon(
+          icon,
+          size: 16,
+          color: color,
+        ),
+      ),
+    );
   }
 }

@@ -425,7 +425,10 @@ class AlarmRingView extends GetView<AlarmRingController> {
                       onPressed: () {
                         Utils.hapticFeedback();
                         controller.cancelForegroundLock();
-                        Get.offAllNamed('/bottom-navigation-bar');
+                        // Defer navigation to avoid setState during build
+                        Future.microtask(() {
+                          Get.offAllNamed('/bottom-navigation-bar');
+                        });
                       },
                       child: Text(
                         'Exit Preview'.tr,

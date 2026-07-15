@@ -419,6 +419,10 @@ class AlarmRingController extends GetxController {
       isPreviewMode.value = false;
     }
 
+    if (!isPreviewMode.value) {
+      homeController.setAlarmRingScreenActive(true);
+    }
+
     _initializeTaskCompletion();
 
     // Initialize maxSnoozeCount with the correct value from alarm model
@@ -555,6 +559,7 @@ class AlarmRingController extends GetxController {
   void onClose() async {
     super.onClose();
     debugPrint('🔔 Alarm ring view is closing...');
+    homeController.setAlarmRingScreenActive(false);
     _subscription?.cancel();
     _subscription = null;
     debugPrint('🔔 FGBG subscription cancelled immediately');

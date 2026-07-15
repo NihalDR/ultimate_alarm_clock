@@ -1280,9 +1280,26 @@ class AddOrUpdateAlarmController extends GetxController {
         ownerId.value = alarmRecord.value.ownerId;
         ownerName.value = alarmRecord.value.ownerName;
       }
-
-      mutexLock.value = alarmRecord.value.mutexLock;
       isSharedAlarmEnabled.value = alarmRecord.value.isSharedAlarmEnabled;
+
+      if (isSharedAlarmEnabled.value == true &&
+          alarmRecord.value.firestoreId?.isNotEmpty == true &&
+          alarmRecord.value.mutexLock == true) {
+        final currentUserId = userModel.value?.id ?? '';
+        final canReleaseLock = alarmRecord.value.ownerId == currentUserId ||
+            alarmRecord.value.lastEditedUserId == currentUserId;
+
+        if (canReleaseLock) {
+          await FirestoreDb.releaseSharedAlarmLock(
+            alarmRecord.value.firestoreId!,
+          );
+          alarmRecord.value.mutexLock = false;
+        }
+      }
+
+      final currentUserId = userModel.value?.id ?? '';
+      mutexLock.value = alarmRecord.value.mutexLock == true &&
+          alarmRecord.value.lastEditedUserId != currentUserId;
 
       if (isSharedAlarmEnabled.value) {
         selectedTime.value = Utils.timeOfDayToDateTime(
@@ -1307,18 +1324,6 @@ class AddOrUpdateAlarmController extends GetxController {
         }
       }
 
-      // Set lock only if its not locked
-      if (isSharedAlarmEnabled.value == true &&
-          alarmRecord.value.mutexLock == false) {
-        alarmRecord.value.mutexLock = true;
-        alarmRecord.value.lastEditedUserId = userModel.value!.id;
-        await FirestoreDb.updateAlarm(
-          userModel.value!.id,
-          alarmRecord.value,
-        );
-        alarmRecord.value.mutexLock = false;
-        mutexLock.value = false;
-      }
     } else {
       hours.value = selectedTime.value.hour;
       minutes.value = selectedTime.value.minute;
@@ -1534,6 +1539,11 @@ class AddOrUpdateAlarmController extends GetxController {
 
     await SystemRingtoneService.stopSystemRingtone();
     playingSystemRingtoneUri.value = '';
+
+    if (isSharedAlarmEnabled.value == true &&
+        alarmRecord.value.firestoreId?.isNotEmpty == true) {
+      await FirestoreDb.releaseSharedAlarmLock(alarmRecord.value.firestoreId!);
+    }
 
     if (Get.arguments == null) {
       // Shared alarm was not suddenly enabled, so we can update doc
@@ -2102,33 +2112,6 @@ class AddOrUpdateAlarmController extends GetxController {
         developer.log('✅ Cloud function notification sent');
       } catch (e) {
         developer.log('⚠️ Cloud function notification failed: $e');
-      }
-
-      for (String userId in alarmData.sharedUserIds!) {
-        try {
-          await FirebaseFirestore.instance
-              .collection('userNotifications')
-              .doc(userId)
-              .collection('notifications')
-              .add({
-            'type': 'alarm_update',
-            'title': 'Shared Alarm Updated! 🔔',
-            'message': '${alarmData.ownerName} updated the alarm time to '
-                '${alarmData.alarmTime}',
-            'alarmId': alarmData.firestoreId,
-            'newAlarmTime': alarmData.alarmTime,
-            'ownerName': alarmData.ownerName,
-            'timestamp': FieldValue.serverTimestamp(),
-            'read': false,
-          });
-          developer.log(
-            '✅ Firestore notification created for user: $userId',
-          );
-        } catch (e) {
-          developer.log(
-            '⚠️ Failed to create Firestore notification for $userId: $e',
-          );
-        }
       }
 
       try {

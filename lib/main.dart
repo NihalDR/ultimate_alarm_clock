@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:ultimate_alarm_clock/app/data/providers/get_storage_provider.dart';
 import 'package:ultimate_alarm_clock/app/data/providers/push_notifications.dart';
+import 'package:ultimate_alarm_clock/app/modules/home/controllers/home_controller.dart';
 import 'package:ultimate_alarm_clock/app/modules/settings/controllers/theme_controller.dart';
 import 'package:ultimate_alarm_clock/app/utils/language.dart';
 import 'package:ultimate_alarm_clock/app/utils/constants.dart';
@@ -87,6 +88,10 @@ void main() async {
 /// page so the user can accept or decline them.
 Future<void> _checkPendingSharedAlarms() async {
   try {
+    if (_isAlarmRingUiActive()) {
+      return;
+    }
+
     final pendingCount = await PushNotifications.getPendingSharedAlarmCount();
     if (pendingCount > 0) {
       SharedAlarmLogger.log(
@@ -97,11 +102,25 @@ Future<void> _checkPendingSharedAlarms() async {
       );
       // Wait for the splash screen to finish before navigating
       await Future.delayed(const Duration(seconds: 3));
+      if (_isAlarmRingUiActive()) {
+        return;
+      }
+
       Get.toNamed('/notifications');
     }
   } catch (e) {
     debugPrint('❌ Error checking pending shared alarms on startup: $e');
   }
+}
+
+bool _isAlarmRingUiActive() {
+  final routeIsAlarmRing = Get.currentRoute == Routes.ALARM_RING;
+  final homeControllerRegistered = Get.isRegistered<HomeController>();
+  final controllerSaysRinging = homeControllerRegistered
+      ? Get.find<HomeController>().isAlarmRingScreenActive
+      : false;
+
+  return routeIsAlarmRing || controllerSaysRinging;
 }
 
 class UltimateAlarmClockApp extends StatelessWidget {

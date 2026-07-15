@@ -71,6 +71,7 @@ class MainActivity : FlutterActivity() {
     private var alarmManager: AlarmManager? = null
     private var lastScheduledAlarmTime: Long = 0
     private var lastScheduledAlarmType: String = ""
+    private var methodChannel1: MethodChannel? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -97,10 +98,48 @@ class MainActivity : FlutterActivity() {
         }
     }
 
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        Log.d("MainActivity", "onNewIntent received")
+        
+        if (intent.hasExtra(EXTRA_KEY)) {
+            val receivedData = intent.getStringExtra(EXTRA_KEY)
+            if (receivedData == "true") {
+                alarmConfig["shouldAlarmRing"] = true
+            }
+            isAlarm = intent.getStringExtra(ALARM_TYPE)
+            
+            isSharedAlarm = intent.getBooleanExtra(SHARED_ALARM_KEY, false)
+            if (isSharedAlarm) {
+                alarmConfig["isSharedAlarm"] = true
+                Log.d("MainActivity", "onNewIntent: Received shared alarm")
+            } else {
+                alarmConfig["isSharedAlarm"] = false
+                Log.d("MainActivity", "onNewIntent: Received local alarm")
+            }
+            
+            val cleanIntent = Intent(intent)
+            cleanIntent.removeExtra(EXTRA_KEY)
+            cleanIntent.removeExtra(SHARED_ALARM_KEY)
+            setIntent(cleanIntent)
+            
+            if (isAlarm == "true") {
+                val cleanIntent2 = Intent(intent)
+                cleanIntent2.removeExtra(EXTRA_KEY)
+                cleanIntent2.removeExtra(SHARED_ALARM_KEY)
+                
+                methodChannel1?.invokeMethod("appStartup", alarmConfig)
+                
+                alarmConfig["shouldAlarmRing"] = false
+                alarmConfig["isSharedAlarm"] = false
+            }
+        }
+    }
+
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         // Don't add window flags globally - they will be set only when alarm rings
-        var methodChannel1 = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL1)
+        methodChannel1 = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL1)
         var methodChannel2 = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL2)
         var methodChannel3 = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL3)
 
@@ -139,7 +178,7 @@ class MainActivity : FlutterActivity() {
             cleanIntent.removeExtra(SHARED_ALARM_KEY)
             
             
-            methodChannel1.invokeMethod("appStartup", alarmConfig)
+            methodChannel1?.invokeMethod("appStartup", alarmConfig)
             
             
             alarmConfig["shouldAlarmRing"] = false
@@ -196,7 +235,7 @@ class MainActivity : FlutterActivity() {
                 result.notImplemented()
             }
         }
-        methodChannel1.setMethodCallHandler { call, result ->
+        methodChannel1?.setMethodCallHandler { call, result ->
             if (call.method == "scheduleAlarm") {
                 println("FLUTTER CALLED SCHEDULE")
 

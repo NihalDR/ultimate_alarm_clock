@@ -128,6 +128,14 @@ class HomeController extends GetxController {
   final Set<String> _notifiedSharedAlarmIds = {};
 
   Timer? _periodicSharedAlarmTimer;
+  bool _isAlarmRingScreenActive = false;
+
+  bool get isAlarmRingScreenActive => _isAlarmRingScreenActive;
+
+  void setAlarmRingScreenActive(bool isActive) {
+    _isAlarmRingScreenActive = isActive;
+    debugPrint('🔔 Alarm ring screen active: $_isAlarmRingScreenActive');
+  }
 
   loginWithGoogle() async {
     // Logging in again to ensure right details if User has linked account
@@ -1917,6 +1925,13 @@ class HomeController extends GetxController {
 
   /// Shows a notification when a shared alarm is updated by another user
   void showSharedAlarmUpdateNotification(String alarmTime, String ownerName) {
+    if (_isAlarmRingScreenActive) {
+      debugPrint(
+        '🔕 Suppressed shared alarm update notification while alarm is ringing',
+      );
+      return;
+    }
+
     try {
       // Show a snackbar notification for immediate user feedback
       Get.snackbar(
@@ -2078,15 +2093,6 @@ class HomeController extends GetxController {
           return;
         }
 
-        for (final notification in newSharedItems) {
-          try {
-            await PushNotifications()
-                .showSharedAlarmRequestNotification(notification);
-          } catch (e) {
-            debugPrint('❌ Error showing shared alarm invite notification: $e');
-          }
-        }
-
         _notifiedSharedAlarmIds.addAll(unseenIds);
       },
       onError: (error) {
@@ -2106,6 +2112,13 @@ class HomeController extends GetxController {
 
       // Wait 10 seconds before refreshing to allow alarm to ring properly
       await Future.delayed(const Duration(seconds: 10));
+
+      if (_isAlarmRingScreenActive) {
+        debugPrint(
+          '🔕 Skipping delayed shared alarm refresh while alarm is still ringing',
+        );
+        return;
+      }
 
       debugPrint('🔄 Delayed refresh after shared alarm fired');
       await forceRefreshSharedAlarms();

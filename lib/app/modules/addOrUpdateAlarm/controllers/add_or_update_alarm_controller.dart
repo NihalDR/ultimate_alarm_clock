@@ -1012,12 +1012,6 @@ class AddOrUpdateAlarmController extends GetxController {
 
         await FirestoreDb.triggerRescheduleUpdate(alarmData);
 
-        try {
-          await sendDirectNotificationToSharedUsers(alarmData);
-        } catch (e) {
-          developer.log('Direct notification failed (this is ok): $e');
-        }
-
         homeController.forceRefreshAfterAlarmUpdate(
           alarmData.firestoreId,
           true,

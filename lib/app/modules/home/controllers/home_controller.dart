@@ -795,11 +795,6 @@ class HomeController extends GetxController {
                       '👥 Alarm updated by another user - this is a receiver '
                       'update',
                     );
-
-                    showSharedAlarmUpdateNotification(
-                      updatedAlarm.alarmTime,
-                      updatedAlarm.ownerName,
-                    );
                   }
                 } else {
                   debugPrint(
@@ -2013,9 +2008,6 @@ class HomeController extends GetxController {
               String ownerName = notificationData['ownerName'] ?? 'Someone';
 
               debugPrint('📬 Received Firestore notification: $title');
-
-              // Show the notification to the user
-              showSharedAlarmUpdateNotification(newAlarmTime, ownerName);
 
               // Mark the notification as read
               change.doc.reference.update({'read': true});

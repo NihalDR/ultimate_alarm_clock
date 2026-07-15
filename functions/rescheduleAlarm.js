@@ -165,56 +165,7 @@ export const rescheduleAlarm = onCall(async (request, context) => {
       }
 
       messages.push(message);
-
-      const dataOnlyMessage = {
-        token,
-        android: {
-          priority: "high",
-          data: {
-            silent: "true",
-            type: "rescheduleAlarm",
-            alarmId: firestoreAlarmId,
-            firestoreAlarmId: firestoreAlarmId,
-            newAlarmTime: triggerTimeForUser,
-            ownerName: changedUserName,
-            isLocation: alarmData.isLocationEnabled.toString(),
-            isActivity: alarmData.isActivityEnabled.toString(),
-            isWeather: alarmData.isWeatherEnabled.toString(),
-            location: alarmData.location,
-            weatherTypes: JSON.stringify(alarmData.weatherTypes),
-            triggerTime: triggerTimeForUser,
-          },
-        },
-        apns: {
-          headers: {
-            "apns-priority": "10",
-            "apns-push-type": "background",
-          },
-          payload: {
-            aps: {
-              contentAvailable: true,
-            },
-          },
-        },
-        data: {
-          silent: "true",
-          type: "rescheduleAlarm",
-          alarmId: firestoreAlarmId,
-          firestoreAlarmId: firestoreAlarmId,
-          newAlarmTime: triggerTimeForUser,
-          ownerName: changedUserName,
-          isLocation: alarmData.isLocationEnabled.toString(),
-          isActivity: alarmData.isActivityEnabled.toString(),
-          isWeather: alarmData.isWeatherEnabled.toString(),
-          location: alarmData.location,
-          weatherTypes: JSON.stringify(alarmData.weatherTypes),
-          triggerTime: triggerTimeForUser,
-        },
-      };
-
-      messages.push(dataOnlyMessage);
-      logger.info(`📨 Added 2 messages (notification + data-only) for ` +
-        `user ${userId}`);
+      logger.info(`📨 Added 1 message for user ${userId}`);
     }
 
     if (messages.length > 0) {

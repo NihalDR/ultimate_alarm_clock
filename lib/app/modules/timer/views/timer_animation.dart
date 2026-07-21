@@ -264,7 +264,7 @@ class TimerAnimatedCardState extends State<TimerAnimatedCard>
                                               ? Icons.pause
                                               : Icons.play_arrow,
                                           size: 30,
-                                          color: Colors.white,
+                                          color: Colors.black,
                                         ),
                                       ),
                                     ),

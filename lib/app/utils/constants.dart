@@ -78,7 +78,17 @@ ThemeData kThemeData = ThemeData(
   fontFamily: 'poppins',
   checkboxTheme: CheckboxThemeData(
     checkColor: WidgetStatePropertyAll(kprimaryTextColor),
-    fillColor: WidgetStatePropertyAll(kprimaryBackgroundColor),
+    fillColor: WidgetStatePropertyAll(Colors.transparent),
+    overlayColor: WidgetStatePropertyAll(Colors.transparent),
+    side: WidgetStateBorderSide.resolveWith(
+      (states) => BorderSide(
+        color: states.contains(WidgetState.selected) ? kprimaryColor : kprimaryTextColor,
+        width: 2,
+      ),
+    ),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(4),
+    ),
   ),
   textTheme: const TextTheme(
     titleSmall: TextStyle(color: kprimaryTextColor, letterSpacing: 0.15),
@@ -198,8 +208,18 @@ ThemeData kLightThemeData = ThemeData(
   ),
   fontFamily: 'poppins',
   checkboxTheme: CheckboxThemeData(
-    checkColor: WidgetStatePropertyAll(kprimaryTextColor),
-    fillColor: WidgetStatePropertyAll(kLightPrimaryBackgroundColor),
+    checkColor: WidgetStatePropertyAll(kLightPrimaryTextColor),
+    fillColor: WidgetStatePropertyAll(Colors.transparent),
+    overlayColor: WidgetStatePropertyAll(Colors.transparent),
+    side: WidgetStateBorderSide.resolveWith(
+      (states) => BorderSide(
+        color: states.contains(WidgetState.selected) ? kprimaryColor : kLightPrimaryTextColor,
+        width: 2,
+      ),
+    ),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(4),
+    ),
   ),
   textTheme: const TextTheme(
     titleSmall: TextStyle(color: kLightPrimaryTextColor, letterSpacing: 0.15),

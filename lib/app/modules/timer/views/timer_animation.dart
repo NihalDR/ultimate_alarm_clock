@@ -68,10 +68,10 @@ class TimerAnimatedCardState extends State<TimerAnimatedCard>
             widget.timer.timerValue &&
         widget.timer.isPaused == 0) {
       widget.timer.timeElapsed = widget.timer.timerValue -
-          Utils.getDifferenceMillisFromNow(
-            widget.timer.startedOn,
-            widget.timer.timerValue,
-          );
+        Utils.getDifferenceMillisFromNow(
+          widget.timer.startedOn,
+          widget.timer.timerValue,
+        );
       IsarDb.updateTimerPauseStatus(widget.timer);
     }
     if (widget.timer.isPaused == 0) {
@@ -88,6 +88,8 @@ class TimerAnimatedCardState extends State<TimerAnimatedCard>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    final isCompleted = widget.timer.timeElapsed >= widget.timer.timerValue;
+    
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: 10.0,
@@ -96,31 +98,49 @@ class TimerAnimatedCardState extends State<TimerAnimatedCard>
         height: context.height / 3.0,
         width: context.width,
         child: Obx(
-          () => Card(
+          () => AnimatedContainer(
+            duration: const Duration(milliseconds: 400),
+            curve: Curves.easeOutCubic,
             margin: const EdgeInsets.all(5),
-            color: widget.timer.timeElapsed < widget.timer.timerValue
-                ? themeController.secondaryBackgroundColor.value
-                : themeController.secondaryColor.value,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(
-                18,
-              ),
+            decoration: BoxDecoration(
+              color: isCompleted ? const Color(0xFF1F2028) : themeController.secondaryBackgroundColor.value,
+              borderRadius: BorderRadius.circular(18),
+              border: isCompleted 
+                  ? Border.all(color: const Color(0xFFB4FF2A), width: 2)
+                  : null,
+              boxShadow: isCompleted
+                  ? [
+                      BoxShadow(
+                        color: const Color(0xFFB4FF2A).withOpacity(0.25),
+                        blurRadius: 24,
+                        spreadRadius: 2,
+                        offset: const Offset(0, 0),
+                      ),
+                      BoxShadow(
+                        color: const Color(0xFFB4FF2A).withOpacity(0.15),
+                        blurRadius: 48,
+                        spreadRadius: 4,
+                        offset: const Offset(0, 0),
+                      ),
+                    ]
+                  : null,
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(18),
               child: Stack(
                 children: [
-                  AnimatedContainer(
-                    decoration: BoxDecoration(
-                      color: kprimaryDisabledTextColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(18),
+                  if (!isCompleted)
+                    AnimatedContainer(
+                      decoration: BoxDecoration(
+                        color: kprimaryDisabledTextColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      duration: const Duration(milliseconds: 1000),
+                      height: context.height / 3.3,
+                      width: context.width *
+                          ((widget.timer.timeElapsed) /
+                              (widget.timer.timerValue)),
                     ),
-                    duration: const Duration(milliseconds: 1000),
-                    height: context.height / 3.3,
-                    width: context.width *
-                        ((widget.timer.timeElapsed) /
-                            (widget.timer.timerValue)),
-                  ),
                   Center(
                     child: Padding(
                       padding: const EdgeInsets.all(10.0),
@@ -132,16 +152,38 @@ class TimerAnimatedCardState extends State<TimerAnimatedCard>
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Expanded(
-                                child: Text(
-                                  widget.timer.timerName,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: Theme.of(
-                                    context,
-                                  ).textTheme.bodySmall!.copyWith(
-                                        fontWeight: FontWeight.w500,
-                                        color: kprimaryColor,
-                                        fontSize: 18,
+                                child: Row(
+                                  children: [
+                                    if (isCompleted)
+                                      Container(
+                                        margin: const EdgeInsets.only(right: 10),
+                                        padding: const EdgeInsets.all(8),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFB4FF2A).withOpacity(0.15),
+                                          borderRadius: BorderRadius.circular(10),
+                                        ),
+                                        child: const Icon(
+                                          Icons.check_circle_rounded,
+                                          color: Color(0xFFB4FF2A),
+                                          size: 22,
+                                        ),
                                       ),
+                                    Flexible(
+                                      child: Text(
+                                        widget.timer.timerName,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: Theme.of(
+                                          context,
+                                        ).textTheme.bodySmall!.copyWith(
+                                              fontWeight: FontWeight.w600,
+                                              color: isCompleted 
+                                                  ? Colors.white 
+                                                  : kprimaryColor,
+                                              fontSize: 18,
+                                            ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                               Row(
@@ -164,10 +206,12 @@ class TimerAnimatedCardState extends State<TimerAnimatedCard>
                                         }
                                       });
                                     },
-                                    icon: const Icon(
-                                      Icons.refresh,
-                                      size: 18,
-                                      color: Colors.white,
+                                    icon: Icon(
+                                      Icons.refresh_rounded,
+                                      size: 20,
+                                      color: isCompleted 
+                                          ? const Color(0xFFB4FF2A).withOpacity(0.8)
+                                          : Colors.white,
                                     ),
                                   ),
                                   IconButton(
@@ -179,10 +223,12 @@ class TimerAnimatedCardState extends State<TimerAnimatedCard>
                                         widget.timer.timerId,
                                       );
                                     },
-                                    icon: const Icon(
-                                      Icons.close,
-                                      size: 18,
-                                      color: Colors.white,
+                                    icon: Icon(
+                                      Icons.close_rounded,
+                                      size: 20,
+                                      color: isCompleted 
+                                          ? Colors.white.withOpacity(0.7)
+                                          : Colors.white,
                                     ),
                                   ),
                                 ],
@@ -199,17 +245,23 @@ class TimerAnimatedCardState extends State<TimerAnimatedCard>
                                   () => AnimatedContainer(
                                     duration: const Duration(seconds: 1),
                                     child: Text(
-                                      Utils.formatMilliseconds(
-                                        widget.timer.timerValue -
-                                            widget.timer.timeElapsed,
-                                      ),
+                                      isCompleted 
+                                          ? '00:00:00'
+                                          : Utils.formatMilliseconds(
+                                              widget.timer.timerValue -
+                                                  widget.timer.timeElapsed,
+                                            ),
                                       style: Theme.of(context)
                                           .textTheme
                                           .displayLarge!
                                           .copyWith(
-                                            color: themeController
-                                                .primaryTextColor.value,
-                                            fontSize: 44,
+                                            color: isCompleted 
+                                                ? Colors.white 
+                                                : themeController
+                                                    .primaryTextColor.value,
+                                            fontSize: 48,
+                                            fontWeight: FontWeight.w700,
+                                            letterSpacing: -1.5,
                                           ),
                                     ),
                                   ),
@@ -251,20 +303,37 @@ class TimerAnimatedCardState extends State<TimerAnimatedCard>
                                           });
                                         }
                                       },
-                                      child: Container(
+                                      child: AnimatedContainer(
+                                        duration: const Duration(milliseconds: 300),
+                                        curve: Curves.easeOutCubic,
                                         decoration: BoxDecoration(
-                                          color: kprimaryColor,
-                                          borderRadius:
-                                              BorderRadius.circular(80),
+                                          color: isCompleted 
+                                              ? const Color(0xFFB4FF2A)
+                                              : kprimaryColor,
+                                          borderRadius: BorderRadius.circular(80),
+                                          boxShadow: isCompleted
+                                              ? [
+                                                  BoxShadow(
+                                                    color: const Color(0xFFB4FF2A).withOpacity(0.4),
+                                                    blurRadius: 20,
+                                                    spreadRadius: 2,
+                                                    offset: const Offset(0, 4),
+                                                  ),
+                                                ]
+                                              : null,
                                         ),
-                                        width: 80,
-                                        height: 80,
+                                        width: 88,
+                                        height: 88,
                                         child: Icon(
-                                          widget.timer.isPaused == 0
-                                              ? Icons.pause
-                                              : Icons.play_arrow,
-                                          size: 30,
-                                          color: Colors.black,
+                                          isCompleted
+                                              ? Icons.replay_rounded
+                                              : widget.timer.isPaused == 0
+                                                  ? Icons.pause_rounded
+                                                  : Icons.play_arrow_rounded,
+                                          size: 32,
+                                          color: isCompleted 
+                                              ? const Color(0xFF1F2028)
+                                              : Colors.black,
                                         ),
                                       ),
                                     ),

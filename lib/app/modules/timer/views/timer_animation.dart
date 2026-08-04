@@ -103,7 +103,10 @@ class TimerAnimatedCardState extends State<TimerAnimatedCard>
             curve: Curves.easeOutCubic,
             margin: const EdgeInsets.all(5),
             decoration: BoxDecoration(
-              color: isCompleted ? const Color(0xFF1F2028) : themeController.secondaryBackgroundColor.value,
+              color: isCompleted 
+              ? const Color(0xFF1F2028) 
+              : themeController.secondaryBackgroundColor.value,
+              
               borderRadius: BorderRadius.circular(18),
               border: isCompleted 
                   ? Border.all(color: const Color(0xFFB4FF2A), width: 2)
@@ -149,18 +152,24 @@ class TimerAnimatedCardState extends State<TimerAnimatedCard>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            mainAxisAlignment: 
+                             MainAxisAlignment.spaceBetween,
                             children: [
                               Expanded(
                                 child: Row(
                                   children: [
                                     if (isCompleted)
                                       Container(
-                                        margin: const EdgeInsets.only(right: 10),
+                                        margin: const EdgeInsets.only(
+                                          right: 10,
+                                          ),
                                         padding: const EdgeInsets.all(8),
                                         decoration: BoxDecoration(
-                                          color: const Color(0xFFB4FF2A).withOpacity(0.15),
-                                          borderRadius: BorderRadius.circular(10),
+                                          color: const Color(
+                                            0xFFB4FF2A,
+                                          ).withOpacity(0.15),
+                                          borderRadius:
+                                           BorderRadius.circular(10),
                                         ),
                                         child: const Icon(
                                           Icons.check_circle_rounded,
@@ -210,7 +219,9 @@ class TimerAnimatedCardState extends State<TimerAnimatedCard>
                                       Icons.refresh_rounded,
                                       size: 20,
                                       color: isCompleted 
-                                          ? const Color(0xFFB4FF2A).withOpacity(0.8)
+                                          ? const Color(
+                                            0xFFB4FF2A,
+                                            ).withOpacity(0.8)
                                           : Colors.white,
                                     ),
                                   ),
@@ -227,7 +238,9 @@ class TimerAnimatedCardState extends State<TimerAnimatedCard>
                                       Icons.close_rounded,
                                       size: 20,
                                       color: isCompleted 
-                                          ? Colors.white.withOpacity(0.7)
+                                          ? const Color(
+                                            0xFFB4FF2A,
+                                            ).withOpacity(0.7)
                                           : Colors.white,
                                     ),
                                   ),
@@ -237,7 +250,9 @@ class TimerAnimatedCardState extends State<TimerAnimatedCard>
                           ),
                           const Spacer(),
                           Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 10,
+                              ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
@@ -304,17 +319,22 @@ class TimerAnimatedCardState extends State<TimerAnimatedCard>
                                         }
                                       },
                                       child: AnimatedContainer(
-                                        duration: const Duration(milliseconds: 300),
+                                        duration: const Duration(
+                                          milliseconds: 300,
+                                          ),
                                         curve: Curves.easeOutCubic,
                                         decoration: BoxDecoration(
                                           color: isCompleted 
                                               ? const Color(0xFFB4FF2A)
                                               : kprimaryColor,
-                                          borderRadius: BorderRadius.circular(80),
+                                          borderRadius: 
+                                          BorderRadius.circular(80),
                                           boxShadow: isCompleted
                                               ? [
                                                   BoxShadow(
-                                                    color: const Color(0xFFB4FF2A).withOpacity(0.4),
+                                                    color: const Color(
+                                                      0xFFB4FF2A,
+                                                      ).withOpacity(0.4),
                                                     blurRadius: 20,
                                                     spreadRadius: 2,
                                                     offset: const Offset(0, 4),

@@ -82,7 +82,11 @@ ThemeData kThemeData = ThemeData(
     overlayColor: WidgetStatePropertyAll(Colors.transparent),
     side: WidgetStateBorderSide.resolveWith(
       (states) => BorderSide(
-        color: states.contains(WidgetState.selected) ? kprimaryColor : kprimaryTextColor,
+        color: states.contains(
+          WidgetState.selected,
+        )
+        ? kprimaryColor
+        : kprimaryTextColor,
         width: 2,
       ),
     ),
@@ -213,7 +217,11 @@ ThemeData kLightThemeData = ThemeData(
     overlayColor: WidgetStatePropertyAll(Colors.transparent),
     side: WidgetStateBorderSide.resolveWith(
       (states) => BorderSide(
-        color: states.contains(WidgetState.selected) ? kprimaryColor : kLightPrimaryTextColor,
+        color: states.contains(
+          WidgetState.selected,
+        )
+        ? kprimaryColor
+        : kLightPrimaryTextColor,
         width: 2,
       ),
     ),

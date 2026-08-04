@@ -296,13 +296,10 @@ class ShareDialog extends StatelessWidget {
                                       'alarmData': alarmData,
                                     };
 
-                                    await Future.any([
-                                      PushNotifications()
-                                          .triggerSharedItemNotification(
-                                              sharedUserIds,
-                                              sharedItem: sharedItem),
-                                      Future.delayed(const Duration(seconds: 3))
-                                    ]);
+                                    await PushNotifications()
+                                      .triggerSharedItemNotification(
+                                          sharedUserIds,
+                                          sharedItem: sharedItem);
                                     debugPrint(
                                         '✅ Step 3 completed: Push notifications sent');
 

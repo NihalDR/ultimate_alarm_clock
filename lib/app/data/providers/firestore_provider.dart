@@ -27,36 +27,71 @@ class FirestoreDb {
 
     final dir = await getDatabasesPath();
     final dbPath = '$dir/alarms.db';
-    print(dir);
-    db = await openDatabase(dbPath, version: 6, onCreate: _onCreate, onUpgrade: _onUpgrade);
+    debugPrint(dir);
+    db = await openDatabase(
+      dbPath,
+      version: 6,
+      onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
+    );
     return db;
   }
 
-  void _onUpgrade(Database db, int oldVersion, int newVersion) async {
+void _onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
       // Add weatherConditionType column
-      await db.execute('ALTER TABLE alarms ADD COLUMN weatherConditionType INTEGER NOT NULL DEFAULT 2');
+      await db.execute(
+        'ALTER TABLE alarms ADD COLUMN weatherConditionType '
+        'INTEGER NOT NULL DEFAULT 2',
+      );
     }
     if (oldVersion < 3) {
       // Add activityConditionType column
-      await db.execute('ALTER TABLE alarms ADD COLUMN activityConditionType INTEGER NOT NULL DEFAULT 2');
+      await db.execute(
+        'ALTER TABLE alarms ADD COLUMN activityConditionType '
+        'INTEGER NOT NULL DEFAULT 2',
+      );
     }
     if (oldVersion < 4) {
       // Add sunrise alarm columns
-      await db.execute('ALTER TABLE alarms ADD COLUMN isSunriseEnabled INTEGER NOT NULL DEFAULT 0');
-      await db.execute('ALTER TABLE alarms ADD COLUMN sunriseDuration INTEGER NOT NULL DEFAULT 30');
-      await db.execute('ALTER TABLE alarms ADD COLUMN sunriseIntensity REAL NOT NULL DEFAULT 1.0');
-      await db.execute('ALTER TABLE alarms ADD COLUMN sunriseColorScheme INTEGER NOT NULL DEFAULT 0');
+      await db.execute(
+        'ALTER TABLE alarms ADD COLUMN isSunriseEnabled '
+        'INTEGER NOT NULL DEFAULT 0',
+      );
+      await db.execute(
+        'ALTER TABLE alarms ADD COLUMN sunriseDuration '
+        'INTEGER NOT NULL DEFAULT 30',
+      );
+      await db.execute(
+        'ALTER TABLE alarms ADD COLUMN sunriseIntensity '
+        'REAL NOT NULL DEFAULT 1.0',
+      );
+      await db.execute(
+        'ALTER TABLE alarms ADD COLUMN sunriseColorScheme '
+        'INTEGER NOT NULL DEFAULT 0',
+      );
     }
     if (oldVersion < 5) {
       // Add timezone columns
-      await db.execute('ALTER TABLE alarms ADD COLUMN timezoneId TEXT NOT NULL DEFAULT ""');
-      await db.execute('ALTER TABLE alarms ADD COLUMN isTimezoneEnabled INTEGER NOT NULL DEFAULT 0');
-      await db.execute('ALTER TABLE alarms ADD COLUMN targetTimezoneOffset INTEGER NOT NULL DEFAULT 0');
+      await db.execute(
+        'ALTER TABLE alarms ADD COLUMN timezoneId '
+        'TEXT NOT NULL DEFAULT ""',
+      );
+      await db.execute(
+        'ALTER TABLE alarms ADD COLUMN isTimezoneEnabled '
+        'INTEGER NOT NULL DEFAULT 0',
+      );
+      await db.execute(
+        'ALTER TABLE alarms ADD COLUMN targetTimezoneOffset '
+        'INTEGER NOT NULL DEFAULT 0',
+      );
     }
     if (oldVersion < 6) {
       // Add smart control combination type column
-      await db.execute('ALTER TABLE alarms ADD COLUMN smartControlCombinationType INTEGER NOT NULL DEFAULT 0');
+      await db.execute(
+        'ALTER TABLE alarms ADD COLUMN smartControlCombinationType '
+        'INTEGER NOT NULL DEFAULT 0',
+      );
     }
   }
 
@@ -137,7 +172,8 @@ class FirestoreDb {
   }
 
   static CollectionReference _alarmsCollection(UserModel? user) {
-    // Always use sharedAlarms collection since we're using shared alarm functionality
+    // Always use sharedAlarms collection since we're using shared
+    // alarm functionality
     return _firebaseFirestore.collection('sharedAlarms');
   }
 
@@ -145,29 +181,37 @@ class FirestoreDb {
     try {
       debugPrint('🔥 Attempting to add user to Firestore:');
       debugPrint('   - User ID: ${userModel.id}');
-      debugPrint('   - Firebase Auth User: ${_firebaseAuthInstance.currentUser?.uid}');
+      debugPrint(
+          '   - Firebase Auth User: '
+          '${_firebaseAuthInstance.currentUser?.uid},');
       debugPrint('   - User Email: ${userModel.email}');
-      
+
       final DocumentReference docRef = _usersCollection.doc(userModel.id);
       final user = await docRef.get();
-      
+
       if (!user.exists) {
         // Ensure receivedItems is initialized as an empty array
         Map<String, dynamic> userData = userModel.toJson();
         userData['receivedItems'] = userData['receivedItems'] ?? [];
-        
+
         debugPrint('🔥 Creating new user document...');
         await docRef.set(userData);
-        debugPrint('✅ Created new user document with receivedItems: ${userModel.id}');
+        debugPrint(
+            '✅ Created new user document with receivedItems: '
+            '${userModel.id},');
       } else {
         // Check if existing user has receivedItems field, add it if missing
         final data = user.data() as Map<String, dynamic>?;
         if (data != null && !data.containsKey('receivedItems')) {
           debugPrint('🔥 Adding receivedItems field to existing user...');
           await docRef.update({'receivedItems': []});
-          debugPrint('✅ Added receivedItems field to existing user: ${userModel.id}');
+          debugPrint(
+              '✅ Added receivedItems field to existing user: '
+              '${userModel.id},');
         } else {
-          debugPrint('✅ User document already exists with receivedItems: ${userModel.id}');
+          debugPrint(
+              '✅ User document already exists with receivedItems: '
+              '${userModel.id},');
         }
       }
     } catch (e) {
@@ -180,17 +224,20 @@ class FirestoreDb {
     if (user == null) {
       return alarmRecord;
     }
-    
+
     if (alarmRecord.isSharedAlarmEnabled) {
       // Create shared alarm in Firestore
       await _firebaseFirestore
           .collection('sharedAlarms')
           .add(AlarmModel.toMap(alarmRecord))
           .then((value) => alarmRecord.firestoreId = value.id);
-      debugPrint('✅ Created shared alarm in Firestore: ${alarmRecord.firestoreId}');
-      
-      // Detailed shared alarm creation log (NORMAL - always visible) 
-      String detailedMessage = IsarDb.buildDetailedAlarmCreationMessage(alarmRecord, 'SHARED');
+      debugPrint(
+          '✅ Created shared alarm in Firestore: '
+          '${alarmRecord.firestoreId},');
+
+      // Detailed shared alarm creation log (NORMAL - always visible)
+      String detailedMessage =
+          IsarDb.buildDetailedAlarmCreationMessage(alarmRecord, 'SHARED');
       await IsarDb().insertLog(
         detailedMessage,
         status: Status.success,
@@ -203,10 +250,10 @@ class FirestoreDb {
         // Try to insert with all fields including new columns
         await sql!
             .insert('alarms', alarmRecord.toSQFliteMap())
-            .then((value) => print('insert success'));
+            .then((value) => debugPrint('insert success'));
       } catch (e) {
-        if (e.toString().contains('locationConditionType') || 
-            e.toString().contains('weatherConditionType') || 
+        if (e.toString().contains('locationConditionType') ||
+            e.toString().contains('weatherConditionType') ||
             e.toString().contains('activityConditionType') ||
             e.toString().contains('isSunriseEnabled') ||
             e.toString().contains('sunriseDuration') ||
@@ -216,8 +263,10 @@ class FirestoreDb {
             e.toString().contains('timezoneId') ||
             e.toString().contains('isTimezoneEnabled') ||
             e.toString().contains('targetTimezoneOffset')) {
-          // If new columns don't exist, insert without them for backward compatibility
-          Map<String, dynamic> fallbackMap = Map.from(alarmRecord.toSQFliteMap());
+          // If new columns don't exist, insert without them
+          // for backward compatibility
+          Map<String, dynamic> fallbackMap =
+              Map.from(alarmRecord.toSQFliteMap());
           fallbackMap.remove('locationConditionType');
           fallbackMap.remove('weatherConditionType');
           fallbackMap.remove('activityConditionType');
@@ -229,16 +278,16 @@ class FirestoreDb {
           fallbackMap.remove('timezoneId');
           fallbackMap.remove('isTimezoneEnabled');
           fallbackMap.remove('targetTimezoneOffset');
-          await sql!
-              .insert('alarms', fallbackMap)
-              .then((value) => print('insert success (backward compatibility)'));
+          await sql!.insert('alarms', fallbackMap).then(
+              (value) => debugPrint('insert success (backward compatibility)'),
+            );
         } else {
           rethrow; // Re-throw other errors
         }
       }
-      debugPrint('✅ Created normal alarm in SQLite');
+      debugPrint('✅ Created normal alarm in SQLite,');
     }
-    
+
     return alarmRecord;
   }
 
@@ -304,24 +353,25 @@ class FirestoreDb {
 
     late List<AlarmModel> alarms = [];
 
-    
     QuerySnapshot snapshotSharedAlarms = await _firebaseFirestore
         .collection('sharedAlarms')
         .where('isEnabled', isEqualTo: true)
-        .where(      
-        Filter.or(
-        Filter('sharedUserIds', arrayContains:  user.id),
-        Filter('ownerId', isEqualTo: user.id),
-      ),)
+        .where(
+          Filter.or(
+            Filter('sharedUserIds', arrayContains: user.id),
+            Filter('ownerId', isEqualTo: user.id),
+          ),
+        )
         .get();
 
-    final sharedAlarms = snapshotSharedAlarms.docs.map((DocumentSnapshot document) {
+    final sharedAlarms =
+        snapshotSharedAlarms.docs.map((DocumentSnapshot document) {
       return AlarmModel.fromDocumentSnapshot(
         documentSnapshot: document,
         user: user,
       );
     }).toList();
-    
+
     alarms.addAll(sharedAlarms);
 
     if (alarms.isEmpty) {
@@ -377,7 +427,7 @@ class FirestoreDb {
 
   static updateAlarm(String? userId, AlarmModel alarmRecord) async {
     final sql = await FirestoreDb().getSQLiteDatabase();
-    
+
     try {
       // Try to update with all fields including new columns
       await sql!.update(
@@ -387,8 +437,8 @@ class FirestoreDb {
         whereArgs: [alarmRecord.alarmID],
       );
     } catch (e) {
-      if (e.toString().contains('locationConditionType') || 
-          e.toString().contains('weatherConditionType') || 
+      if (e.toString().contains('locationConditionType') ||
+          e.toString().contains('weatherConditionType') ||
           e.toString().contains('activityConditionType') ||
           e.toString().contains('smartControlCombinationType') ||
           e.toString().contains('timezoneId') ||
@@ -398,7 +448,6 @@ class FirestoreDb {
           e.toString().contains('sunriseDuration') ||
           e.toString().contains('sunriseIntensity') ||
           e.toString().contains('sunriseColorScheme')) {
-      
         Map<String, dynamic> fallbackMap = Map.from(alarmRecord.toSQFliteMap());
         fallbackMap.remove('locationConditionType');
         fallbackMap.remove('weatherConditionType');
@@ -417,31 +466,33 @@ class FirestoreDb {
           where: 'alarmID = ?',
           whereArgs: [alarmRecord.alarmID],
         );
-        debugPrint('Updated alarm without new columns (backward compatibility)');
+        debugPrint(
+            'Updated alarm without new columns (backward compatibility),',
+          );
       } else {
         rethrow;
       }
     }
-    
+
     await _firebaseFirestore
         .collection('sharedAlarms')
         .doc(alarmRecord.firestoreId)
         .update(AlarmModel.toMap(alarmRecord));
   }
 
-static Future<String> userExists(String email) async {
-  final querySnapshot = await _firebaseFirestore
-      .collection('users')
-      .where('email', isEqualTo: email)
-      .limit(1)
-      .get();
+  static Future<String> userExists(String email) async {
+    final querySnapshot = await _firebaseFirestore
+        .collection('users')
+        .where('email', isEqualTo: email)
+        .limit(1)
+        .get();
 
-  if (querySnapshot.docs.isNotEmpty) {
-    return querySnapshot.docs.first.data()['fullName'];
+    if (querySnapshot.docs.isNotEmpty) {
+      return querySnapshot.docs.first.data()['fullName'];
+    }
+
+    return 'error';
   }
-
-  return 'error';
-}
 
   static shareProfile(List emails) async {
     final profileSet = await IsarDb.getProfileAlarms();
@@ -452,7 +503,7 @@ static Future<String> userExists(String email) async {
     Map sharedItem = {
       'type': 'profile',
       'profileName': currentProfileName,
-      'owner': currentUserEmail
+      'owner': currentUserEmail,
     };
     await _firebaseFirestore
         .collection('users')
@@ -463,37 +514,38 @@ static Future<String> userExists(String email) async {
         .then((v) {
       Get.snackbar('Notification', 'Item Shared!');
     });
-    ;
     for (final email in emails) {
       await _firebaseFirestore.collection('users').doc(email).update({
-        'receivedItems': FieldValue.arrayUnion([sharedItem])
+        'receivedItems': FieldValue.arrayUnion([sharedItem]),
       });
     }
   }
 
-static Future<List<String>> getUserIdsByEmails(List emails) async {
-  List<String> userIds = [];
+  static Future<List<String>> getUserIdsByEmails(List emails) async {
+    List<String> userIds = [];
 
-  const batchSize = 10;
-  for (int i = 0; i < emails.length; i += batchSize) {
-    final batch = emails.sublist(i, i + batchSize > emails.length ? emails.length : i + batchSize);
-    final querySnapshot = await _firebaseFirestore
-        .collection('users')
-        .where('email', whereIn: batch)
-        .get();
+    const batchSize = 10;
+    for (int i = 0; i < emails.length; i += batchSize) {
+      final batch = emails.sublist(
+          i,
+          i + batchSize > emails.length ? emails.length : i + batchSize,
+        );
+      final querySnapshot = await _firebaseFirestore
+          .collection('users')
+          .where('email', whereIn: batch)
+          .get();
 
-    for (var doc in querySnapshot.docs) {
-      userIds.add(doc.id);
+      for (var doc in querySnapshot.docs) {
+        userIds.add(doc.id);
+      }
     }
+
+    return userIds;
   }
-
-  return userIds;
-}
-
 
   static Future<void> shareAlarm(List emails, AlarmModel alarm) async {
     debugPrint('🚀 shareAlarm called with ${emails.length} emails');
-    
+
     if (emails.isEmpty) {
       debugPrint('❌ No emails provided for sharing');
       return;
@@ -501,31 +553,31 @@ static Future<List<String>> getUserIdsByEmails(List emails) async {
 
     final currentUserEmail = _firebaseAuthInstance.currentUser!.email;
     final currentUserId = _firebaseAuthInstance.currentUser!.uid;
-    
+
     debugPrint('👤 Current user: $currentUserEmail (ID: $currentUserId)');
-    
+
     // Get current user's name for the notification
     String ownerName = currentUserEmail ?? 'Someone';
     try {
-      final currentUserDoc = await _firebaseFirestore
-          .collection('users')
-          .doc(currentUserId)
-          .get();
+      final currentUserDoc =
+          await _firebaseFirestore.collection('users').doc(currentUserId).get();
       if (currentUserDoc.exists) {
         final userData = currentUserDoc.data() as Map<String, dynamic>;
         ownerName = userData['fullName'] ?? currentUserEmail ?? 'Someone';
-        debugPrint('✅ Found owner name: $ownerName');
+        debugPrint(
+          '✅ Found owner name: $ownerName,',
+        );
       }
     } catch (e) {
       debugPrint('❌ Could not fetch owner name: $e');
     }
-    
+
     alarm.profile = 'Default';
     Map sharedItem = {
       'type': 'alarm',
       'AlarmName': alarm.firestoreId,
-      'owner': ownerName,  // Use readable name instead of userId
-      'alarmTime': alarm.alarmTime
+      'owner': ownerName, // Use readable name instead of userId
+      'alarmTime': alarm.alarmTime,
     };
 
     debugPrint('🔄 Sharing alarm with ${emails.length} users');
@@ -540,22 +592,24 @@ static Future<List<String>> getUserIdsByEmails(List emails) async {
       for (int i = 0; i < emails.length; i++) {
         final email = emails[i];
         debugPrint('📧 Processing recipient ${i + 1}/${emails.length}: $email');
-        
+
         try {
           bool success = await addItemToUserByEmail(email, sharedItem);
           if (success) {
             successCount++;
             debugPrint('✅ Successfully shared alarm with $email');
           } else {
-            debugPrint('❌ Failed to share alarm with $email - user not found');
+            debugPrint('❌ Failed to share alarm with $email - user not found,');
           }
         } catch (e) {
           debugPrint('❌ Error sharing alarm with $email: $e');
         }
       }
-      
+
       if (successCount > 0) {
-        debugPrint('✅ Alarm shared successfully with $successCount/${emails.length} recipients');
+        debugPrint(
+            '✅ Alarm shared successfully with $successCount/${emails.length} recipients,',
+          );
       } else {
         debugPrint('❌ Failed to share alarm with any recipients');
       }
@@ -565,44 +619,46 @@ static Future<List<String>> getUserIdsByEmails(List emails) async {
     }
   }
 
-static Future<bool> addItemToUserByEmail(String email, dynamic sharedItem) async {
-  try {
-    debugPrint('🔍 Looking up user by email: $email');
-    final querySnapshot = await _firebaseFirestore
-        .collection('users')
-        .where('email', isEqualTo: email)
-        .limit(1)
-        .get();
+  static Future<bool> addItemToUserByEmail(
+      String email,
+      dynamic sharedItem,) async {
+    try {
+      debugPrint('🔍 Looking up user by email: $email');
+      final querySnapshot = await _firebaseFirestore
+          .collection('users')
+          .where('email', isEqualTo: email)
+          .limit(1)
+          .get();
 
-    if (querySnapshot.docs.isNotEmpty) {
-      final docId = querySnapshot.docs.first.id;
-      final userData = querySnapshot.docs.first.data() as Map<String, dynamic>;
-      debugPrint('✅ Found user: ${userData['fullName']} (ID: $docId)');
-      debugPrint('📦 Current receivedItems: ${userData['receivedItems']}');
-      debugPrint('📦 Adding shared item to receivedItems: $sharedItem');
-      
-      // Verify the document update
-      await _firebaseFirestore.collection('users').doc(docId).update({
-        'receivedItems': FieldValue.arrayUnion([sharedItem])
-      });
-      
-      // Verify the update was successful
-      final updatedDoc = await _firebaseFirestore.collection('users').doc(docId).get();
-      final updatedData = updatedDoc.data() as Map<String, dynamic>;
-      debugPrint('✅ Updated receivedItems: ${updatedData['receivedItems']}');
-      debugPrint('✅ Successfully added shared item to user $email');
-      return true;
-    } else {
-      debugPrint('❌ User not found with email: $email');
+      if (querySnapshot.docs.isNotEmpty) {
+        final docId = querySnapshot.docs.first.id;
+        final userData = querySnapshot.docs.first.data();
+        debugPrint('✅ Found user: ${userData['fullName']} (ID: $docId),');
+        debugPrint('📦 Current receivedItems: ${userData['receivedItems']},');
+        debugPrint('📦 Adding shared item to receivedItems: $sharedItem,');
+
+        // Verify the document update
+        await _firebaseFirestore.collection('users').doc(docId).update({
+          'receivedItems': FieldValue.arrayUnion([sharedItem]),
+        });
+
+        // Verify the update was successful
+        final updatedDoc =
+            await _firebaseFirestore.collection('users').doc(docId).get();
+        final updatedData = updatedDoc.data() as Map<String, dynamic>;
+        debugPrint('✅ Updated receivedItems: ${updatedData['receivedItems']},');
+        debugPrint('✅ Successfully added shared item to user $email,');
+        return true;
+      } else {
+        debugPrint('❌ User not found with email: $email');
+        return false;
+      }
+    } catch (e) {
+      debugPrint('❌ Error adding item to user $email: $e');
+      debugPrint('❌ Stack trace: ${StackTrace.current}');
       return false;
     }
-  } catch (e) {
-    debugPrint('❌ Error adding item to user $email: $e');
-    debugPrint('❌ Stack trace: ${StackTrace.current}');
-    return false; 
   }
-}
-
 
   static Future receiveProfile(String email, String profileName) async {
     final profile = await _firebaseFirestore
@@ -615,10 +671,8 @@ static Future<bool> addItemToUserByEmail(String email, dynamic sharedItem) async
   }
 
   static Future receiveAlarm(String ownerId, String alarmId) async {
-    final alarm = await _firebaseFirestore
-        .collection('sharedAlarms')
-        .doc(alarmId)
-        .get();
+    final alarm =
+        await _firebaseFirestore.collection('sharedAlarms').doc(alarmId).get();
     return alarm.data();
   }
 
@@ -632,10 +686,10 @@ static Future<bool> addItemToUserByEmail(String email, dynamic sharedItem) async
           .collection('sharedAlarms')
           .doc(firestoreId)
           .delete();
-      
-      
+
       final sql = await FirestoreDb().getSQLiteDatabase();
-      await sql!.delete('alarms', where: 'firestoreId = ?', whereArgs: [firestoreId]);
+      await sql!
+          .delete('alarms', where: 'firestoreId = ?', whereArgs: [firestoreId]);
 
       debugPrint('Alarm deleted successfully from Firestore.');
     } catch (e) {
@@ -648,7 +702,6 @@ static Future<bool> addItemToUserByEmail(String email, dynamic sharedItem) async
     String userId,
   ) async {
     try {
-      
       await FirebaseFirestore.instance
           .collection('sharedAlarms')
           .doc(firestoreId)
@@ -656,31 +709,28 @@ static Future<bool> addItemToUserByEmail(String email, dynamic sharedItem) async
         'dismissedByUsers': FieldValue.arrayUnion([userId]),
         'lastDismissedAt': FieldValue.serverTimestamp(),
       });
-      
+
       debugPrint('Marked shared alarm as dismissed by user: $userId');
-      
-      
+
       final alarmDoc = await FirebaseFirestore.instance
           .collection('sharedAlarms')
           .doc(firestoreId)
           .get();
-      
+
       if (alarmDoc.exists) {
         final data = alarmDoc.data() as Map<String, dynamic>;
         final sharedUserIds = List<String>.from(data['sharedUserIds'] ?? []);
         final ownerId = data['ownerId'] as String?;
-        final dismissedByUsers = List<String>.from(data['dismissedByUsers'] ?? []);
-        
-      
+        final dismissedByUsers =
+            List<String>.from(data['dismissedByUsers'] ?? []);
+
         final offsetDetailsRaw = data['offsetDetails'];
         final Set<String> acceptedUsers = <String>{};
-        
+
         if (offsetDetailsRaw is Map) {
-      
           final offsetDetails = Map<String, dynamic>.from(offsetDetailsRaw);
-          acceptedUsers.addAll(offsetDetails.keys.cast<String>());
+          acceptedUsers.addAll(offsetDetails.keys);
         } else if (offsetDetailsRaw is List) {
-      
           final offsetDetailsList = List<dynamic>.from(offsetDetailsRaw);
           for (final item in offsetDetailsList) {
             if (item is Map && item.containsKey('userId')) {
@@ -688,35 +738,37 @@ static Future<bool> addItemToUserByEmail(String email, dynamic sharedItem) async
             }
           }
         }
-        
-      
-      
+
         final allUsers = <String>{};
         if (ownerId != null) {
           allUsers.add(ownerId);
         }
-      
+
         allUsers.addAll(acceptedUsers);
-        
-      
+
         debugPrint('🔍 Dismissal check for alarm $firestoreId:');
         debugPrint('   - sharedUserIds (invited): $sharedUserIds');
-        debugPrint('   - acceptedUsers (from offsetDetails): ${acceptedUsers.toList()}');
+        debugPrint(
+            '   - acceptedUsers (from offsetDetails): '
+            '${acceptedUsers.toList()},');
         debugPrint('   - ownerId: $ownerId');
         debugPrint('   - dismissedByUsers: $dismissedByUsers');
         debugPrint('   - allUsers (who actually have the alarm): $allUsers');
         debugPrint('   - dismissedByUsers.length: ${dismissedByUsers.length}');
         debugPrint('   - allUsers.length: ${allUsers.length}');
-        
-      
+
         if (dismissedByUsers.length >= allUsers.length) {
           await FirebaseFirestore.instance
               .collection('sharedAlarms')
               .doc(firestoreId)
               .delete();
-          debugPrint('✅ All users who have the alarm dismissed it - deleted shared alarm completely: $firestoreId');
+          debugPrint(
+              '✅ All users who have the alarm dismissed it - deleted '
+              'shared alarm completely: $firestoreId,');
         } else {
-          debugPrint('⏳ Not all users who have the alarm have dismissed yet - keeping alarm: $firestoreId');
+          debugPrint(
+              '⏳ Not all users who have the alarm have dismissed yet - '
+              'keeping alarm: $firestoreId,');
         }
       }
     } catch (e) {
@@ -739,16 +791,19 @@ static Future<bool> addItemToUserByEmail(String email, dynamic sharedItem) async
     if (user != null) {
       Stream<QuerySnapshot<Object?>> sharedAlarmsStream = _firebaseFirestore
           .collection('sharedAlarms')
-        .where(      
-        Filter.or(
-        Filter('sharedUserIds', arrayContains:  user.id),
-        Filter('ownerId', isEqualTo: user.id),
-      ),)          .snapshots();
+          .where(
+            Filter.or(
+              Filter('sharedUserIds', arrayContains: user.id),
+              Filter('ownerId', isEqualTo: user.id),
+            ),
+          )
+          .snapshots();
 
       return sharedAlarmsStream;
     } else {
-      // Return a stream that emits from an empty collection to provide a proper QuerySnapshot
-      // This prevents the StreamBuilder from hanging on loading
+      // Return a stream that emits from an empty collection
+      // to provide a proper QuerySnapshot.
+      // This prevents the StreamBuilder from hanging on loading.
       return _firebaseFirestore
           .collection('_empty_shared_alarms_placeholder')
           .limit(0)
@@ -759,11 +814,12 @@ static Future<bool> addItemToUserByEmail(String email, dynamic sharedItem) async
   static Stream<QuerySnapshot<Object?>> getAlarms(UserModel? user) {
     if (user != null) {
       Stream<QuerySnapshot<Object?>> userAlarmsStream = _alarmsCollection(user)
-                .where(      
-        Filter.or(
-        Filter('sharedUserIds', arrayContains:  user.id),
-        Filter('ownerId', isEqualTo: user.id),
-      ),)
+          .where(
+            Filter.or(
+              Filter('sharedUserIds', arrayContains: user.id),
+              Filter('ownerId', isEqualTo: user.id),
+            ),
+          )
           .snapshots(includeMetadataChanges: true);
 
       return userAlarmsStream;
@@ -776,15 +832,10 @@ static Future<bool> addItemToUserByEmail(String email, dynamic sharedItem) async
 
   static deleteAlarm(UserModel? user, String id) async {
     if (user == null) return;
-    
+
     try {
-      
-      await _firebaseFirestore
-          .collection('sharedAlarms')
-          .doc(id)
-          .delete();
-      
-      
+      await _firebaseFirestore.collection('sharedAlarms').doc(id).delete();
+
       final sql = await FirestoreDb().getSQLiteDatabase();
       await sql!.delete('alarms', where: 'firestoreId = ?', whereArgs: [id]);
     } catch (e) {
@@ -862,7 +913,8 @@ static Future<bool> addItemToUserByEmail(String email, dynamic sharedItem) async
             offsetDetails[id] = {
               'isOffsetBefore': item['isOffsetBefore'] ?? true,
               'offsetDuration': item['offsetDuration'] ?? 0,
-              'offsettedTime': item['offsettedTime'] ?? alarmDoc.data()['alarmTime'],
+              'offsettedTime':
+                  item['offsettedTime'] ?? alarmDoc.data()['alarmTime'],
             };
           }
         }
@@ -894,7 +946,7 @@ static Future<bool> addItemToUserByEmail(String email, dynamic sharedItem) async
       // Return empty stream that never emits anything for unauthenticated users
       return;
     }
-    
+
     Stream<DocumentSnapshot<Map<String, dynamic>>> userNotifications =
         _firebaseFirestore
             .collection('users')
@@ -905,16 +957,15 @@ static Future<bool> addItemToUserByEmail(String email, dynamic sharedItem) async
   }
 
   static removeItem(Map item) async {
-    print(item);
+    debugPrint(item.toString());
 
     await _firebaseFirestore
         .collection('users')
         .doc(_firebaseAuthInstance.currentUser!.uid)
         .update({
-      'receivedItems': FieldValue.arrayRemove([item])
+      'receivedItems': FieldValue.arrayRemove([item]),
     });
   }
-
 
   static updateToken(String token) async {
     try {
@@ -922,9 +973,7 @@ static Future<bool> addItemToUserByEmail(String email, dynamic sharedItem) async
         await _firebaseFirestore
             .collection('users')
             .doc(_firebaseAuthInstance.currentUser!.uid)
-            .update({
-          'fcmToken': token
-        });
+            .update({'fcmToken': token});
       } else {
         debugPrint('No authenticated user found when updating FCM token');
       }
@@ -935,25 +984,21 @@ static Future<bool> addItemToUserByEmail(String email, dynamic sharedItem) async
 
   static acceptSharedAlarm(String alarmOwnerId, AlarmModel alarm) async {
     String? currentUserId = _firebaseAuthInstance.currentUser!.uid;
-    
-    
+
     final alarmDoc = await _firebaseFirestore
         .collection('sharedAlarms')
         .doc(alarm.firestoreId)
         .get();
-    
+
     if (alarmDoc.exists) {
       final data = alarmDoc.data() as Map<String, dynamic>;
-      
-      
+
       final offsetDetailsRaw = data['offsetDetails'];
       Map<String, dynamic> offsetDetails = {};
-      
-      if (offsetDetailsRaw is Map) {
 
+      if (offsetDetailsRaw is Map) {
         offsetDetails = Map<String, dynamic>.from(offsetDetailsRaw);
       } else if (offsetDetailsRaw is List) {
-
         final offsetDetailsList = List<dynamic>.from(offsetDetailsRaw);
         for (final item in offsetDetailsList) {
           if (item is Map && item.containsKey('userId')) {
@@ -967,60 +1012,59 @@ static Future<bool> addItemToUserByEmail(String email, dynamic sharedItem) async
         }
         debugPrint('🔧 Converted offsetDetails from Array to Map format');
       }
-      
 
-      offsetDetails[currentUserId!] = {
+      offsetDetails[currentUserId] = {
         'isOffsetBefore': true,
         'offsetDuration': 0,
         'offsettedTime': alarm.alarmTime,
       };
-      
-await _firebaseFirestore
-    .collection('sharedAlarms')
-    .doc(alarm.firestoreId)
-    .update({
+
+      await _firebaseFirestore
+          .collection('sharedAlarms')
+          .doc(alarm.firestoreId)
+          .update({
         'offsetDetails': offsetDetails,
-  'sharedUserIds': FieldValue.arrayUnion([currentUserId]), 
-});
-      
-      debugPrint('✅ User $currentUserId accepted shared alarm and added to offsetDetails');
+        'sharedUserIds': FieldValue.arrayUnion([currentUserId]),
+      });
+
+      debugPrint(
+          '✅ User $currentUserId accepted shared alarm and added '
+          'to offsetDetails,');
     }
   }
 
-  static Future<AlarmModel> saveSharedAlarm(UserModel? user, AlarmModel alarmRecord) async {
+  static Future<AlarmModel> saveSharedAlarm(
+      UserModel? user, AlarmModel alarmRecord,) async {
     if (user == null) {
       return alarmRecord;
     }
-    
 
     alarmRecord.isSharedAlarmEnabled = true;
-    
 
     await _firebaseFirestore
         .collection('sharedAlarms')
         .add(AlarmModel.toMap(alarmRecord))
         .then((value) => alarmRecord.firestoreId = value.id);
-    
+
     return alarmRecord;
   }
 
   static Future<void> triggerRescheduleUpdate(AlarmModel alarmData) async {
     try {
-
-
       await _firebaseFirestore
           .collection('sharedAlarms')
           .doc(alarmData.firestoreId)
           .update({
         'lastUpdated': FieldValue.serverTimestamp(),
         'lastEditedUserId': _firebaseAuthInstance.currentUser?.uid,
-
         'alarmTime': alarmData.alarmTime,
         'minutesSinceMidnight': alarmData.minutesSinceMidnight,
         'isEnabled': alarmData.isEnabled,
       });
-      
-      debugPrint('✅ Triggered Firestore update for shared alarm reschedule: ${alarmData.firestoreId}');
+
+      debugPrint(
+          '✅ Triggered Firestore update for shared alarm reschedule: '
+          '${alarmData.firestoreId},');
     } catch (e) {
       debugPrint('❌ Error triggering Firestore reschedule update: $e');
     }
@@ -1028,10 +1072,13 @@ await _firebaseFirestore
 
   static Future<void> releaseSharedAlarmLock(String firestoreId) async {
     try {
-      await _firebaseFirestore.collection('sharedAlarms').doc(firestoreId).update({
+      await _firebaseFirestore
+          .collection('sharedAlarms')
+          .doc(firestoreId)
+          .update({
         'mutexLock': false,
       });
-      debugPrint('✅ Released shared alarm lock: $firestoreId');
+      debugPrint('✅ Released shared alarm lock: $firestoreId,');
     } catch (e) {
       debugPrint('⚠️ Failed to release shared alarm lock: $e');
     }
